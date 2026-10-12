@@ -1,0 +1,16 @@
+packages/atk.sh
+  h_2ae8077fa5063a 1-10
+tests/lib/atk_test.c
+  h_2ae8077fa5063a 1-24
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "b302f8a2c5033618c5004bf63578123a752742be",
+  "prompts": {},
+  "humans": {
+    "h_2ae8077fa5063a": {
+      "author": "Jacob Trock <jgh@geocrypt.me>"
+    }
+  }
+}
