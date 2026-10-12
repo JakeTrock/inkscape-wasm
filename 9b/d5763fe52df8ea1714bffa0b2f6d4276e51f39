@@ -1,0 +1,16 @@
+packages/fontconfig.sh
+  h_2ae8077fa5063a 7-8
+packages/harfbuzz.sh
+  h_2ae8077fa5063a 7-8
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "9bd5763fe52df8ea1714bffa0b2f6d4276e51f39",
+  "prompts": {},
+  "humans": {
+    "h_2ae8077fa5063a": {
+      "author": "Jacob Trock <jgh@geocrypt.me>"
+    }
+  }
+}
