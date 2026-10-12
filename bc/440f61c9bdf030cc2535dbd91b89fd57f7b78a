@@ -1,0 +1,18 @@
+packages/pango.sh
+  h_2ae8077fa5063a 1-22
+patches/pango/no-tool-install-emscripten.patch
+  h_2ae8077fa5063a 1-29
+tests/lib/pango_test.c
+  h_2ae8077fa5063a 1-38
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "bc440f61c9bdf030cc2535dbd91b89fd57f7b78a",
+  "prompts": {},
+  "humans": {
+    "h_2ae8077fa5063a": {
+      "author": "Jacob Trock <jgh@geocrypt.me>"
+    }
+  }
+}
