@@ -1,0 +1,48 @@
+packages/cairo.sh
+  h_2ae8077fa5063a 12,18-20
+packages/common.sh
+  h_2ae8077fa5063a 26-27,32-53,83
+packages/emsdk.cross
+  h_2ae8077fa5063a 10-12
+packages/gdk-pixbuf.sh
+  h_2ae8077fa5063a 12
+packages/glib.sh
+  h_2ae8077fa5063a 4-5,15-16,22,33-37
+packages/gtk3.sh
+  h_2ae8077fa5063a 1-33
+packages/harfbuzz.sh
+  h_2ae8077fa5063a 11-12
+packages/pango.sh
+  h_2ae8077fa5063a 12
+packages/pthread_supp.c
+  h_2ae8077fa5063a 6,70-104
+patches/glib/no-posix-spawn-emscripten.patch
+  h_2ae8077fa5063a 3,9
+patches/glib/no-threads-emscripten.patch
+  h_2ae8077fa5063a 3
+patches/glib/no-tool-install-emscripten.patch
+  h_2ae8077fa5063a 3,11,17,24,30,41,48,52-61,70-71,79,87,96,105,114,117,123,134,136,144,146,154,156
+patches/glib/unix-fd-query-path-emscripten.patch
+  h_2ae8077fa5063a 1-11
+patches/glib/wasm32-gsize-long.patch
+  h_2ae8077fa5063a 3,10
+patches/gtk3/no-print-backend-module.patch
+  h_2ae8077fa5063a 1-28
+patches/gtk3/no-to-pixdata.patch
+  h_2ae8077fa5063a 1-20
+patches/gtk3/no-tool-install-emscripten.patch
+  h_2ae8077fa5063a 1-56
+tests/lib/gtk3_test.c
+  h_2ae8077fa5063a 1-43
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "b9c1c463eaae20f0a7d200eb96ed80e87cc7d866",
+  "prompts": {},
+  "humans": {
+    "h_2ae8077fa5063a": {
+      "author": "Jacob Trock <jgh@geocrypt.me>"
+    }
+  }
+}
