@@ -1,0 +1,16 @@
+packages/zlib.sh
+  h_2ae8077fa5063a 1-10
+tests/lib/zlib_test.c
+  h_2ae8077fa5063a 1-16
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "c58a889a043a7905cba7b482ab0e7807874284ec",
+  "prompts": {},
+  "humans": {
+    "h_2ae8077fa5063a": {
+      "author": "Jacob Trock <jgh@geocrypt.me>"
+    }
+  }
+}
