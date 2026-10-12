@@ -1,0 +1,11 @@
+--- a/gdk-pixbuf/meson.build
++++ b/gdk-pixbuf/meson.build
+@@ -406,7 +406,7 @@
+                    dependencies: gdkpixbuf_dep,
+                    include_directories: [ root_inc, gdk_pixbuf_inc ],
+                    c_args: common_cflags + gdk_pixbuf_cflags,
+-                   install: true)
++                   install: host_machine.system() != 'emscripten')
+   meson.override_find_program(bin_name, bin)
+ 
+   # Used in tests
