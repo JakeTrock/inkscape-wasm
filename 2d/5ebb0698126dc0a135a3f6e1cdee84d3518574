@@ -1,0 +1,20 @@
+packages/libxml2.sh
+  h_2ae8077fa5063a 1-29
+packages/libxslt.sh
+  h_2ae8077fa5063a 1-13
+tests/lib/libxml2_test.c
+  h_2ae8077fa5063a 1-18
+tests/lib/libxslt_test.c
+  h_2ae8077fa5063a 1-29
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "2d5ebb0698126dc0a135a3f6e1cdee84d3518574",
+  "prompts": {},
+  "humans": {
+    "h_2ae8077fa5063a": {
+      "author": "Jacob Trock <jgh@geocrypt.me>"
+    }
+  }
+}
