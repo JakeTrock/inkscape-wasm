@@ -1,0 +1,36 @@
+packages/glib.sh
+  h_2ae8077fa5063a 1-33
+packages/pcre2.sh
+  h_2ae8077fa5063a 1-17
+packages/pthread_supp.c
+  h_2ae8077fa5063a 1-78
+packages/pthread_supp.sh
+  h_2ae8077fa5063a 1-9
+patches/glib/no-posix-spawn-emscripten.patch
+  h_2ae8077fa5063a 1-13
+patches/glib/no-resolv-emscripten.patch
+  h_2ae8077fa5063a 1-11
+patches/glib/no-threads-emscripten.patch
+  h_2ae8077fa5063a 1-18
+patches/glib/no-tool-install-emscripten.patch
+  h_2ae8077fa5063a 1-162
+patches/glib/wasm32-gsize-long.patch
+  h_2ae8077fa5063a 1-20
+tests/lib/glib_test.c
+  h_2ae8077fa5063a 1-31
+tests/lib/pcre2_test.c
+  h_2ae8077fa5063a 1-20
+tests/lib/pthread_supp_test.c
+  h_2ae8077fa5063a 1-35
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "96a6cd21d1c79f92daa421d695c9cdd065c45847",
+  "prompts": {},
+  "humans": {
+    "h_2ae8077fa5063a": {
+      "author": "Jacob Trock <jgh@geocrypt.me>"
+    }
+  }
+}
