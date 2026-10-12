@@ -16,8 +16,8 @@ else
   export CC="emcc" CXX="em++"
 fi
 export AR="emar" RANLIB="emranlib"
-export CFLAGS="-O1 -g1 -ffunction-sections -fdata-sections -fexceptions"
-export CXXFLAGS="$CFLAGS -frtti"
+export CFLAGS="-O1 -g1 -ffunction-sections -fdata-sections"
+export CXXFLAGS="$CFLAGS -fexceptions -frtti"
 export PKG_CONFIG_PATH="$SYSROOT/lib/pkgconfig:$SYSROOT/share/pkgconfig"
 export PKG_CONFIG_LIBDIR="$SYSROOT/lib/pkgconfig:$SYSROOT/share/pkgconfig"
 export PKG_CONFIG_SYSROOT_DIR="$SYSROOT"
@@ -43,7 +43,10 @@ extract_auto() { # extract_auto <archive-basename> <name> — extract, rename to
 cm() { # cm <name> [cmake args...] — CMake+Ninja build+install
   local name="$1"; shift
   cmake -S "$SRC/$name" -B "$BUILD/$name" -G Ninja \
-    -DCMAKE_INSTALL_PREFIX="$SYSROOT" -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_TOOLCHAIN_FILE="$EMSDK/upstream/emscripten/cmake/Modules/Platform/Emscripten.cmake" \
+    -DCMAKE_FIND_ROOT_PATH="$SYSROOT" \
+    -DCMAKE_INSTALL_PREFIX="$SYSROOT" -DCMAKE_PREFIX_PATH="$SYSROOT" \
+    -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache "$@"
   cmake --build "$BUILD/$name" -j 64
   cmake --install "$BUILD/$name"
