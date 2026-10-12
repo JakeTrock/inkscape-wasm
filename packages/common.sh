@@ -9,6 +9,7 @@ PATCHES="$ROOT/patches"
 EMSDK_DIR="/data/jake/reversing/toki/emsdk"
 
 source "$EMSDK_DIR/emsdk_env.sh" >/dev/null 2>&1
+export PATH="$EMSDK_DIR:$EMSDK_DIR/upstream/emscripten:$PATH"
 
 if command -v ccache >/dev/null 2>&1; then
   export CC="ccache emcc" CXX="ccache em++"
@@ -16,8 +17,10 @@ else
   export CC="emcc" CXX="em++"
 fi
 export AR="emar" RANLIB="emranlib"
-export CFLAGS="-O1 -g1 -ffunction-sections -fdata-sections"
-export CXXFLAGS="$CFLAGS -fexceptions -frtti"
+# Flags are used by wasmtest() only — NOT exported, so build systems use
+# their own flag logic (harfbuzz etc. deliberately build C++ w/o exceptions).
+CFLAGS="-O1 -g1 -ffunction-sections -fdata-sections"
+CXXFLAGS="$CFLAGS -fexceptions -frtti"
 export PKG_CONFIG_PATH="$SYSROOT/lib/pkgconfig:$SYSROOT/share/pkgconfig"
 export PKG_CONFIG_LIBDIR="$SYSROOT/lib/pkgconfig:$SYSROOT/share/pkgconfig"
 export PKG_CONFIG_SYSROOT_DIR="$SYSROOT"
@@ -73,7 +76,7 @@ wasmtest() { # wasmtest <name> <src-under-tests/lib> [link args...]
   local preload=()
   [ -d "$ROOT/tests/fixtures" ] && preload=(--preload-file "$ROOT/tests/fixtures@/fixtures")
   "$comp" "$src" -o "$TEST/$name.js" $CXXFLAGS \
-    -sALLOW_MEMORY_GROWTH -sEXIT_RUNTIME=1 "${preload[@]}" \
+    -sALLOW_MEMORY_GROWTH -sEXIT_RUNTIME=1 -sDEFAULT_TO_CXX=1 "${preload[@]}" \
     -I"$SYSROOT/include" -L"$SYSROOT/lib" "$@"
   ( cd "$TEST" && node "$name.js" )
   echo "PASS: $name"
