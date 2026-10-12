@@ -1,0 +1,18 @@
+packages/gdk-pixbuf.sh
+  h_2ae8077fa5063a 1-23
+patches/gdk-pixbuf/no-tool-install-emscripten.patch
+  h_2ae8077fa5063a 1-11
+tests/lib/gdkpixbuf_test.c
+  h_2ae8077fa5063a 1-23
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "00fe2a6f56e17a64e18a0cf8b1b7cb1ab49bd2ef",
+  "prompts": {},
+  "humans": {
+    "h_2ae8077fa5063a": {
+      "author": "Jacob Trock <jgh@geocrypt.me>"
+    }
+  }
+}
