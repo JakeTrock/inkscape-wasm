@@ -76,6 +76,12 @@ and record the final pin in `packages/<pkg>.sh` + `manifest.txt`.
 | 26 | potrace | 1.16 | optional; include if free |
 | 27 | **lib2geom** | 1.4.x | from the Inkscape 1.4.4 release (matching submodule ref) |
 
+Addendum (2026-10-12, from planning): glib requires **libffi** (GObject
+closures). Build it immediately before glib (pin 3.4.7). WASM closure
+support is a known hazard — it gets a dedicated T1 smoke test like libgc,
+and if stock libffi fails, the known emscripten fork patches are the
+fallback.
+
 GTK3 configure essentials: `--enable-broadway-backend --disable-x11-backend
 --disable-wayland-backend --disable-quartz-backend` plus the usual
 `--disable-gtk-doc`, introspection off, demos/tests off. The `broadwayd`
