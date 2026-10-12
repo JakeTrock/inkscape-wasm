@@ -1,0 +1,22 @@
+packages/expat.sh
+  h_2ae8077fa5063a 1-10
+packages/fontconfig.sh
+  h_2ae8077fa5063a 1-15
+patches/fontconfig/no-threads.patch
+  h_2ae8077fa5063a 1-11
+tests/lib/expat_test.c
+  h_2ae8077fa5063a 1-17
+tests/lib/fontconfig_test.c
+  h_2ae8077fa5063a 1-19
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "86e6bfa2f984965ec214e9e727354bb30f014c4f",
+  "prompts": {},
+  "humans": {
+    "h_2ae8077fa5063a": {
+      "author": "Jacob Trock <jgh@geocrypt.me>"
+    }
+  }
+}
