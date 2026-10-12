@@ -1,0 +1,29 @@
+--- a/utils/meson.build
++++ b/utils/meson.build
+@@ -33,7 +33,7 @@
+ pango_view = executable('pango-view', pango_view_sources,
+                         dependencies: pango_view_deps,
+                         include_directories: [ root_inc ],
+-                        install: true,
++                        install: host_machine.system() != 'emscripten',
+                         c_args: common_cflags + pango_debug_cflags + [
+                           '-DPACKAGE_NAME="@0@"'.format(meson.project_name()),
+                           '-DPACKAGE_VERSION="@0@"'.format(meson.project_version()),
+@@ -53,7 +53,7 @@
+   pango_list = executable('pango-list', pango_list_sources,
+                           dependencies: pango_list_deps,
+                           include_directories: [ root_inc ],
+-                          install: true,
++                          install: host_machine.system() != 'emscripten',
+                           c_args: common_cflags + pango_debug_cflags + [
+                            '-DPACKAGE_NAME="@0@"'.format(meson.project_name()),
+                            '-DPACKAGE_VERSION="@0@"'.format(meson.project_version()),
+@@ -73,7 +73,7 @@
+                                   pango_segmentation_sources,
+                                   dependencies: pango_segmentation_deps,
+                                   include_directories: [ root_inc ],
+-                                  install: true,
++                                  install: host_machine.system() != 'emscripten',
+                                   c_args: common_cflags + pango_debug_cflags + [
+                                    '-DPACKAGE_NAME="@0@"'.format(meson.project_name()),
+                                    '-DPACKAGE_VERSION="@0@"'.format(meson.project_version()),
