@@ -1,0 +1,22 @@
+packages/cairo.sh
+  h_2ae8077fa5063a 1-24
+packages/pixman.sh
+  h_2ae8077fa5063a 7-8
+patches/cairo/no-pthreads-emscripten.patch
+  h_2ae8077fa5063a 1-24
+patches/pixman/no-threads-emscripten.patch
+  h_2ae8077fa5063a 1-11
+tests/lib/cairo_test.c
+  h_2ae8077fa5063a 1-26
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "f5f8d9bbb77a8b979b641d300cd80f54a4f45e48",
+  "prompts": {},
+  "humans": {
+    "h_2ae8077fa5063a": {
+      "author": "Jacob Trock <jgh@geocrypt.me>"
+    }
+  }
+}
