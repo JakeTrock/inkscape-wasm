@@ -70,7 +70,8 @@ wasmtest() { # wasmtest <name> <src-under-tests/lib> [link args...]
   local preload=()
   [ -d "$ROOT/tests/fixtures" ] && preload=(--preload-file "$ROOT/tests/fixtures@/fixtures")
   "$comp" "$src" -o "$TEST/$name.js" $CXXFLAGS \
-    -sALLOW_MEMORY_GROWTH -sEXIT_RUNTIME=1 "${preload[@]}" "$@"
+    -sALLOW_MEMORY_GROWTH -sEXIT_RUNTIME=1 "${preload[@]}" \
+    -I"$SYSROOT/include" -L"$SYSROOT/lib" "$@"
   ( cd "$TEST" && node "$name.js" )
   echo "PASS: $name"
 }
