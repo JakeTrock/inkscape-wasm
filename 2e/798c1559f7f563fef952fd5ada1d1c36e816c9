@@ -1,0 +1,26 @@
+.gitignore
+  h_2ae8077fa5063a 1-10
+docs/superpowers/specs/2026-10-12-inkscape-wasm/00-overview.md
+  h_2ae8077fa5063a 1-92
+docs/superpowers/specs/2026-10-12-inkscape-wasm/01-toolchain-sysroot.md
+  h_2ae8077fa5063a 1-119
+docs/superpowers/specs/2026-10-12-inkscape-wasm/02-broadway-bridge.md
+  h_2ae8077fa5063a 1-120
+docs/superpowers/specs/2026-10-12-inkscape-wasm/03-inkscape-build.md
+  h_2ae8077fa5063a 1-101
+docs/superpowers/specs/2026-10-12-inkscape-wasm/04-testing-ladder.md
+  h_2ae8077fa5063a 1-61
+docs/superpowers/specs/2026-10-12-inkscape-wasm/05-harness.md
+  h_2ae8077fa5063a 1-61
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "2e798c1559f7f563fef952fd5ada1d1c36e816c9",
+  "prompts": {},
+  "humans": {
+    "h_2ae8077fa5063a": {
+      "author": "Jacob Trock <jgh@geocrypt.me>"
+    }
+  }
+}
