@@ -1,0 +1,11 @@
+--- a/meson.build
++++ b/meson.build
+@@ -381,7 +381,7 @@
+   endif
+ endif
+ 
+-if host_machine.system() != 'windows'
++if host_machine.system() != 'windows' and host_machine.system() != 'emscripten'
+   thread_dep = dependency('threads')
+   conf.set('HAVE_PTHREAD', 1)
+   deps += [thread_dep]
