@@ -1,0 +1,10 @@
+# Build artifacts
+build/
+src/
+harness/node_modules/
+tests/node_modules/
+tests/playwright-report/
+tests/test-results/
+*.wasm
+*.data
+*.tar.*
