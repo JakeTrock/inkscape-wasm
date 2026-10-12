@@ -1,0 +1,24 @@
+packages/boost.sh
+  h_2ae8077fa5063a 1-11
+packages/dconv.sh
+  h_2ae8077fa5063a 1-10
+packages/gsl.sh
+  h_2ae8077fa5063a 1-12
+tests/lib/boost_test.cpp
+  h_2ae8077fa5063a 1-13
+tests/lib/dconv_test.cpp
+  h_2ae8077fa5063a 1-18
+tests/lib/gsl_test.c
+  h_2ae8077fa5063a 1-17
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "287ee9c904d97671bf310ecf7a83243881a13821",
+  "prompts": {},
+  "humans": {
+    "h_2ae8077fa5063a": {
+      "author": "Jacob Trock <jgh@geocrypt.me>"
+    }
+  }
+}
