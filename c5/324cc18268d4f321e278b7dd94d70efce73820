@@ -1,0 +1,22 @@
+Makefile
+  h_2ae8077fa5063a 1-23
+packages/common.sh
+  h_2ae8077fa5063a 1-76
+packages/emsdk.cross
+  h_2ae8077fa5063a 1-15
+tests/lib/t0_smoke.cpp
+  h_2ae8077fa5063a 1-19
+tests/t0/run.sh
+  h_2ae8077fa5063a 1-4
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "c5324cc18268d4f321e278b7dd94d70efce73820",
+  "prompts": {},
+  "humans": {
+    "h_2ae8077fa5063a": {
+      "author": "Jacob Trock <jgh@geocrypt.me>"
+    }
+  }
+}
