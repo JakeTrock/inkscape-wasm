@@ -1,0 +1,18 @@
+docs/superpowers/plans/2026-10-12-inkscape-wasm-roadmap.md
+  h_2ae8077fa5063a 1-19
+docs/superpowers/plans/2026-10-12-leg-a-toolchain-sysroot.md
+  h_2ae8077fa5063a 1-1861
+docs/superpowers/specs/2026-10-12-inkscape-wasm/01-toolchain-sysroot.md
+  h_2ae8077fa5063a 79-84
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "5e471e25c8ff8d59fc455ef8fd6d788eaf89acc3",
+  "prompts": {},
+  "humans": {
+    "h_2ae8077fa5063a": {
+      "author": "Jacob Trock <jgh@geocrypt.me>"
+    }
+  }
+}
