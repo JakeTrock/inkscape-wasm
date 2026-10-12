@@ -1,0 +1,13 @@
+--- a/meson.build
++++ b/meson.build
+@@ -844,7 +844,9 @@
+ endif
+ 
+ # Check that posix_spawn() is usable; must use header
+-if cc.has_function('posix_spawn', prefix : '#include <spawn.h>')
++if host_system != 'emscripten' and cc.has_function('posix_spawn', prefix : '#include <spawn.h>')
++  # emscripten has posix_spawn but not posix_spawnp; without this the
++  # gspawn-posix.c posix_spawn path references an undefined symbol
+   glib_conf.set('HAVE_POSIX_SPAWN', 1)
+ endif
+ 

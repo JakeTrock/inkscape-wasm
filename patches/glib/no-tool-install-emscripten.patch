@@ -1,0 +1,162 @@
+--- a/glib/meson.build
++++ b/glib/meson.build
+@@ -470,30 +470,30 @@
+ if host_system == 'windows'
+   if host_machine.cpu_family() == 'x86'
+     gspawn_helpers += executable('gspawn-win32-helper', 'gspawn-win32-helper.c',
+-      install : true,
++      install : host_machine.system() != 'emscripten',
+       win_subsystem : 'windows',
+       include_directories : configinc,
+       dependencies : [libglib_dep])
+     gspawn_helpers += executable('gspawn-win32-helper-console', 'gspawn-win32-helper.c',
+-      install : true,
++      install : host_machine.system() != 'emscripten',
+       c_args : ['-DHELPER_CONSOLE'],
+       include_directories : configinc,
+       dependencies : [libglib_dep])
+   else
+     gspawn_helpers += executable('gspawn-win64-helper', 'gspawn-win32-helper.c',
+-      install : true,
++      install : host_machine.system() != 'emscripten',
+       win_subsystem : 'windows',
+       include_directories : configinc,
+       dependencies : [libglib_dep])
+     gspawn_helpers += executable('gspawn-win64-helper-console', 'gspawn-win32-helper.c',
+-      install : true,
++      install : host_machine.system() != 'emscripten',
+       c_args : ['-DHELPER_CONSOLE'],
+       include_directories : configinc,
+       dependencies : [libglib_dep])
+   endif
+ else
+   gtester = executable('gtester', 'gtester.c',
+-    install : true,
++    install : host_machine.system() != 'emscripten',
+     install_tag : 'bin-devel',
+     c_args : ['-UG_DISABLE_ASSERT'],
+     include_directories : configinc,
+--- a/gobject/meson.build
++++ b/gobject/meson.build
+@@ -171,7 +171,7 @@
+ meson.override_dependency('gobject-2.0', libgobject_dep)
+ 
+ gobject_query = executable('gobject-query', 'gobject-query.c',
+-  install : true,
++  install : host_machine.system() != 'emscripten',
+   install_tag : 'bin-devel',
+   dependencies : [libglib_dep, libgobject_dep])
+ 
+--- a/gio/meson.build
++++ b/gio/meson.build
+@@ -413,7 +413,7 @@
+ 
+     gio_launch_desktop = executable('gio-launch-desktop', launch_desktop_sources,
+       include_directories : glibinc,
+-      install : true,
++      install : host_machine.system() != 'emscripten',
+       install_dir : multiarch_libexecdir,
+       install_tag : 'bin',
+       c_args : gio_c_args,
+@@ -988,7 +988,7 @@
+ ]
+ 
+ gio_tool = executable('gio', gio_tool_sources,
+-  install : true,
++  install : host_machine.system() != 'emscripten',
+   install_tag : 'bin',
+   c_args : gio_c_args,
+   # intl.lib is not compatible with SAFESEH
+@@ -996,14 +996,14 @@
+   dependencies : [libgio_dep, libgobject_dep, libgmodule_dep, libglib_dep])
+ 
+ executable('gresource', 'gresource-tool.c',
+-  install : true,
++  install : host_machine.system() != 'emscripten',
+   install_tag : 'bin',
+   # intl.lib is not compatible with SAFESEH
+   link_args : noseh_link_args,
+   dependencies : [libelf, libgio_dep, libgobject_dep, libgmodule_dep, libglib_dep])
+ 
+ gio_querymodules = executable('gio-querymodules', 'gio-querymodules.c', 'giomodule-priv.c',
+-  install : true,
++  install : host_machine.system() != 'emscripten',
+   install_dir : multiarch_bindir,
+   install_tag : 'bin',
+   c_args : gio_c_args,
+@@ -1013,7 +1013,7 @@
+ 
+ glib_compile_schemas = executable('glib-compile-schemas',
+   ['glib-compile-schemas.c'],
+-  install : true,
++  install : host_machine.system() != 'emscripten',
+   install_dir : multiarch_bindir,
+   install_tag : 'bin',
+   # intl.lib is not compatible with SAFESEH
+@@ -1022,7 +1022,7 @@
+ 
+ glib_compile_resources = executable('glib-compile-resources',
+   [gconstructor_as_data_h, 'glib-compile-resources.c'],
+-  install : true,
++  install : host_machine.system() != 'emscripten',
+   install_tag : 'bin-devel',
+   c_args : gio_c_args,
+   # intl.lib is not compatible with SAFESEH
+@@ -1043,7 +1043,7 @@
+ endif
+ 
+ executable('gsettings', 'gsettings-tool.c',
+-  install : true,
++  install : host_machine.system() != 'emscripten',
+   install_tag : 'bin',
+   c_args : gio_c_args,
+   # intl.lib is not compatible with SAFESEH
+@@ -1060,7 +1060,7 @@
+ )
+ 
+ executable('gdbus', 'gdbus-tool.c',
+-  install : true,
++  install : host_machine.system() != 'emscripten',
+   install_tag : 'bin',
+   c_args : gio_c_args,
+   # intl.lib is not compatible with SAFESEH
+@@ -1069,7 +1069,7 @@
+ 
+ if host_system != 'windows' and not glib_have_cocoa
+   executable('gapplication', 'gapplication-tool.c',
+-    install : true,
++    install : host_machine.system() != 'emscripten',
+     install_tag : 'bin',
+     c_args : gio_c_args,
+     # intl.lib is not compatible with SAFESEH
+--- a/girepository/decompiler/meson.build
++++ b/girepository/decompiler/meson.build
+@@ -20,6 +20,6 @@
+     libgirepository_internals_dep,
+     libgio_dep,
+   ],
+-  install: true,
++  install: host_machine.system() != 'emscripten',
+   c_args: custom_c_args,
+ )
+--- a/girepository/inspector/meson.build
++++ b/girepository/inspector/meson.build
+@@ -19,6 +19,6 @@
+     libgirepository_dep,
+     libgio_dep,
+   ],
+-  install: true,
++  install: host_machine.system() != 'emscripten',
+   c_args: custom_c_args,
+ )
+--- a/girepository/compiler/meson.build
++++ b/girepository/compiler/meson.build
+@@ -20,7 +20,7 @@
+     libgirepository_internals_dep,
+     libgio_dep,
+   ],
+-  install: true,
++  install: host_machine.system() != 'emscripten',
+   c_args: custom_c_args,
+ )
+ 

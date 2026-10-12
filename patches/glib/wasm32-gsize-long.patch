@@ -1,0 +1,20 @@
+--- a/meson.build
++++ b/meson.build
+@@ -1756,6 +1756,17 @@
+   'long long': sizet_size == long_long_size,
+ }
+ 
++if host_machine.system() == 'emscripten'
++  # musl's size_t is `unsigned long` even on wasm32; gsize must match it
++  # exactly or clang rejects gsize* against size_t* in libc prototypes
++  g_sizet_compatibility = {
++    'short': false,
++    'int': false,
++    'long': true,
++    'long long': false,
++  }
++endif
++
+ # Do separate checks for gcc/clang (and ignore other compilers for now), since
+ # we need to explicitly pass -Werror to the compilers.
+ # FIXME: https://github.com/mesonbuild/meson/issues/5399

@@ -1,0 +1,11 @@
+--- a/gio/meson.build
++++ b/gio/meson.build
+@@ -39,7 +39,7 @@
+ 
+ network_libs = [ ]
+ network_args = [ ]
+-if host_system != 'windows'
++if host_system != 'windows' and host_system != 'emscripten'
+   # res_query()
+   res_query_test = '''#include <resolv.h>
+                       int main (int argc, char ** argv) {

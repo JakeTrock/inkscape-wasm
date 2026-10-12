@@ -1,0 +1,18 @@
+--- a/meson.build
++++ b/meson.build
+@@ -2089,7 +2089,14 @@
+   glibconfig_conf.set('g_threads_impl_def', 'WIN32')
+   glib_conf.set('THREADS_WIN32', 1)
+ else
+-  thread_dep = dependency('threads')
++  if host_system == 'emscripten'
++    # single-threaded wasm: no -pthread anywhere (clang lowers __atomic to
++    # plain ops without it); pthread symbols come from emscripten libc stubs
++    # plus our libpthread supplement in the sysroot
++    thread_dep = []
++  else
++    thread_dep = dependency('threads')
++  endif
+   threads_implementation = 'posix'
+   pthread_prefix = '''
+       #ifndef _GNU_SOURCE
