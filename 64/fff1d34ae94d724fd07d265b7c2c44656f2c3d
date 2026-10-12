@@ -1,0 +1,20 @@
+packages/fribidi.sh
+  h_2ae8077fa5063a 1-11
+packages/pixman.sh
+  h_2ae8077fa5063a 1-10
+tests/lib/fribidi_test.c
+  h_2ae8077fa5063a 1-15
+tests/lib/pixman_test.c
+  h_2ae8077fa5063a 1-16
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "64fff1d34ae94d724fd07d265b7c2c44656f2c3d",
+  "prompts": {},
+  "humans": {
+    "h_2ae8077fa5063a": {
+      "author": "Jacob Trock <jgh@geocrypt.me>"
+    }
+  }
+}
