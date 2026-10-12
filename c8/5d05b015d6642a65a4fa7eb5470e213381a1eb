@@ -1,0 +1,20 @@
+packages/common.sh
+  h_2ae8077fa5063a 12,20-23,79
+packages/harfbuzz.sh
+  h_2ae8077fa5063a 1-13
+patches/harfbuzz/no-threads.patch
+  h_2ae8077fa5063a 1-11
+tests/lib/harfbuzz_test.c
+  h_2ae8077fa5063a 1-21
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "c85d05b015d6642a65a4fa7eb5470e213381a1eb",
+  "prompts": {},
+  "humans": {
+    "h_2ae8077fa5063a": {
+      "author": "Jacob Trock <jgh@geocrypt.me>"
+    }
+  }
+}
