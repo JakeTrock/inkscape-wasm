@@ -1,0 +1,42 @@
+packages/atkmm.sh
+  h_2ae8077fa5063a 1-18
+packages/cairomm.sh
+  h_2ae8077fa5063a 1-17
+packages/glibmm.sh
+  h_2ae8077fa5063a 1-28
+packages/gtkmm.sh
+  h_2ae8077fa5063a 1-19
+packages/pangomm.sh
+  h_2ae8077fa5063a 1-18
+packages/sigcpp.sh
+  h_2ae8077fa5063a 1-12
+patches/atkmm/no-extra-defs-tool.patch
+  h_2ae8077fa5063a 1-40
+patches/gtkmm/no-extra-defs-tool.patch
+  h_2ae8077fa5063a 1-52
+patches/pangomm/no-extra-defs-tool.patch
+  h_2ae8077fa5063a 1-41
+tests/lib/atkmm_test.cpp
+  h_2ae8077fa5063a 1-7
+tests/lib/cairomm_test.cpp
+  h_2ae8077fa5063a 1-15
+tests/lib/glibmm_test.cpp
+  h_2ae8077fa5063a 1-13
+tests/lib/gtkmm_test.cpp
+  h_2ae8077fa5063a 1-7
+tests/lib/pangomm_test.cpp
+  h_2ae8077fa5063a 1-7
+tests/lib/sigcpp_test.cpp
+  h_2ae8077fa5063a 1-11
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "3d95a9ac6bdf7499b441c2d193ba4edaea62755b",
+  "prompts": {},
+  "humans": {
+    "h_2ae8077fa5063a": {
+      "author": "Jacob Trock <jgh@geocrypt.me>"
+    }
+  }
+}
