@@ -1,0 +1,20 @@
+packages/common.sh
+  h_2ae8077fa5063a 79-80
+packages/libffi.sh
+  h_2ae8077fa5063a 1-17
+patches/libffi/em-js-deps-stack-funcs.patch
+  h_2ae8077fa5063a 1-11
+tests/lib/libffi_test.c
+  h_2ae8077fa5063a 1-33
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "f30ead96271766dc13fb1f7478e99a4e9dc0cc30",
+  "prompts": {},
+  "humans": {
+    "h_2ae8077fa5063a": {
+      "author": "Jacob Trock <jgh@geocrypt.me>"
+    }
+  }
+}
