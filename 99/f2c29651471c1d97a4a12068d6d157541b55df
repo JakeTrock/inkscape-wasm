@@ -1,0 +1,22 @@
+packages/freetype.sh
+  h_2ae8077fa5063a 1-11
+tests/fixtures/basic.svg
+  h_2ae8077fa5063a 1-4
+tests/fixtures/fc/fonts.conf
+  h_2ae8077fa5063a 1-6
+tests/fixtures/fonts.conf
+  h_2ae8077fa5063a 1-6
+tests/lib/freetype_test.c
+  h_2ae8077fa5063a 1-17
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "99f2c29651471c1d97a4a12068d6d157541b55df",
+  "prompts": {},
+  "humans": {
+    "h_2ae8077fa5063a": {
+      "author": "Jacob Trock <jgh@geocrypt.me>"
+    }
+  }
+}
