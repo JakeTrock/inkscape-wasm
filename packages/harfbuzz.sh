@@ -8,7 +8,8 @@ grep -q "!= 'emscripten'" "$SRC/harfbuzz/meson.build" \
   || patch -d "$SRC/harfbuzz" -p1 < "$PATCHES/harfbuzz/no-threads.patch"
 me harfbuzz -Dtests=disabled -Ddocs=disabled -Dutilities=disabled \
   -Dicu=disabled -Dglib=disabled -Dgobject=disabled -Dcairo=disabled \
-  -Dfreetype=enabled -Dintrospection=disabled
+  -Dfreetype=enabled -Dintrospection=disabled \
+  -Dcpp_args='-DHB_NO_MT' -Dc_args='-DHB_NO_MT'
 wasmtest harfbuzz harfbuzz_test.c $(pkg-config --static --cflags --libs harfbuzz)
 manifest harfbuzz "$VER"
 touch "$STAMPS/harfbuzz.ok"

@@ -1,6 +1,6 @@
 --- a/meson.build
 +++ b/meson.build
-@@ -2089,7 +2089,14 @@
+@@ -2139,7 +2139,14 @@
    glibconfig_conf.set('g_threads_impl_def', 'WIN32')
    glib_conf.set('THREADS_WIN32', 1)
  else

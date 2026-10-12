@@ -23,10 +23,33 @@ CFLAGS="-O1 -g1 -ffunction-sections -fdata-sections"
 CXXFLAGS="$CFLAGS -fexceptions -frtti"
 export PKG_CONFIG_PATH="$SYSROOT/lib/pkgconfig:$SYSROOT/share/pkgconfig"
 export PKG_CONFIG_LIBDIR="$SYSROOT/lib/pkgconfig:$SYSROOT/share/pkgconfig"
-export PKG_CONFIG_SYSROOT_DIR="$SYSROOT"
+# NOTE: no PKG_CONFIG_SYSROOT_DIR — our .pc files use absolute prefixes, and
+# sysroot-rewriting mangles host tool paths (glib_compile_resources etc.)
 export CMAKE_TOOLCHAIN_FILE="$EMSDK/upstream/emscripten/cmake/Modules/Platform/Emscripten.cmake"
 
 mkdir -p "$SYSROOT" "$STAMPS" "$LOGS" "$SRC" "$DL" "$TEST" "$PATCHES"
+
+# Generated cross file: same as packages/emsdk.cross but with an absolute
+# path to our pthread supplement (link lines carry no -L to the sysroot).
+cat > "$BUILD/emsdk.cross" <<EOF
+[binaries]
+c = 'emcc'
+cpp = 'em++'
+ar = 'emar'
+strip = 'emstrip'
+pkg-config = 'pkg-config'
+
+[properties]
+needs_exe_wrapper = true
+c_link_args = ['$SYSROOT/lib/libpthread.a']
+cpp_link_args = ['$SYSROOT/lib/libpthread.a']
+
+[host_machine]
+system = 'emscripten'
+cpu_family = 'wasm32'
+cpu = 'wasm32'
+endian = 'little'
+EOF
 
 begin_pkg() { # begin_pkg <name> — exit 0 if already stamped
   if [ -e "$STAMPS/$1.ok" ]; then echo "$1: cached (rm build/stamps/$1.ok to rebuild)"; exit 0; fi
@@ -57,7 +80,7 @@ cm() { # cm <name> [cmake args...] — CMake+Ninja build+install
 me() { # me <name> [meson args...] — Meson build+install (cross file, static)
   local name="$1"; shift
   meson setup "$BUILD/$name" "$SRC/$name" --prefix="$SYSROOT" \
-    --cross-file "$ROOT/packages/emsdk.cross" --buildtype=release \
+    --cross-file "$BUILD/emsdk.cross" --buildtype=release \
     --default-library=static "$@"
   meson compile -C "$BUILD/$name" -j 64
   meson install -C "$BUILD/$name"

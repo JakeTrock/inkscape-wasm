@@ -9,7 +9,7 @@ grep -q "!= 'emscripten'" "$SRC/pango/utils/meson.build" \
 # Libraries only: pango's tools (pango-view etc.) fail to link on emscripten
 # (C links miss libc++ which harfbuzz's std::mutex fallback needs).
 meson setup "$BUILD/pango" "$SRC/pango" --prefix="$SYSROOT" \
-  --cross-file "$ROOT/packages/emsdk.cross" --buildtype=release \
+  --cross-file "$BUILD/emsdk.cross" --buildtype=release \
   --default-library=static \
   -Dbuild-testsuite=false -Dbuild-examples=false -Ddocumentation=false -Dintrospection=disabled \
   -Dfontconfig=enabled -Dfreetype=enabled -Dcairo=enabled \

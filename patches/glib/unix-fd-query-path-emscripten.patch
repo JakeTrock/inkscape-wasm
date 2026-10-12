@@ -1,0 +1,11 @@
+--- a/glib/glib-unix.c
++++ b/glib/glib-unix.c
+@@ -996,7 +996,7 @@
+     }
+ 
+   return g_strdup (file_path);
+-#elif defined (__GNU__)
++#elif defined (__GNU__) || defined(__EMSCRIPTEN__)
+   /*
+    * Hurd allows to open("/dev/fd/%u") to open the very same fd, but it's not
+    * possible to get the file name from it, see:

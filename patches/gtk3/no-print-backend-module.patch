@@ -1,0 +1,28 @@
+--- a/modules/printbackends/meson.build
++++ b/modules/printbackends/meson.build
+@@ -35,11 +35,14 @@
+ print_backends = []
+ 
+ if not enabled_print_backends.contains('file')
+-  if os_unix
++  if os_unix and host_machine.system() != 'emscripten'
+     error('\'file\' print backed needs to be enabled')
+   endif
+ else
+-  print_backends += ['file']
++  # wasm: no shared print backend modules (printing cut for v1)
++  if host_machine.system() != 'emscripten'
++    print_backends += ['file']
++  endif
+ endif
+ 
+ if enabled_print_backends.contains('lpr')
+@@ -97,7 +100,7 @@
+ 
+ gio_module_dirs += printbackends_install_dir
+ 
+-if print_backends.contains('file')
++if print_backends.contains('file') and host_machine.system() != 'emscripten'
+   shared_module('printbackend-file',
+                 'file/gtkprintbackendfile.c',
+                 c_args: printbackends_args,

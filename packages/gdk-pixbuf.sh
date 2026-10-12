@@ -9,7 +9,7 @@ grep -q "!= 'emscripten')" "$SRC/gdk-pixbuf/gdk-pixbuf/meson.build" \
 # Libraries only (tools fail to link on emscripten, as with pango/cairo/glib);
 # man/journal/intspection off; png+jpeg built-in, tiff off.
 meson setup "$BUILD/gdk-pixbuf" "$SRC/gdk-pixbuf" --prefix="$SYSROOT" \
-  --cross-file "$ROOT/packages/emsdk.cross" --buildtype=release \
+  --cross-file "$BUILD/emsdk.cross" --buildtype=release \
   --default-library=static \
   -Dtests=false -Ddocumentation=false -Dintrospection=disabled -Dman=false \
   -Dinstalled_tests=false -Dgio_sniffing=false -Drelocatable=false -Dthumbnailer=disabled \
