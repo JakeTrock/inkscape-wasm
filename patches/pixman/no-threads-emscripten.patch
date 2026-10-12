@@ -1,0 +1,11 @@
+--- a/meson.build
++++ b/meson.build
+@@ -452,7 +452,7 @@
+   config.set('HAVE_LIBPNG', 1)
+ endif
+ dep_m = cc.find_library('m', required : false)
+-dep_threads = dependency('threads')
++dep_threads = host_machine.system() == 'emscripten' ? null_dep : dependency('threads')
+ 
+ # MSVC-style compilers do not come with pthreads, so we must link
+ # to it explicitly, currently pthreads-win32 is supported

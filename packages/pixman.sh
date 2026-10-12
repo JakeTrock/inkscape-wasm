@@ -4,6 +4,8 @@ begin_pkg pixman
 VER=0.44.0
 fetch "https://www.cairographics.org/releases/pixman-$VER.tar.gz"
 extract_auto "pixman-$VER.tar.gz" pixman
+grep -q "== 'emscripten' ? null_dep" "$SRC/pixman/meson.build" \
+  || patch -d "$SRC/pixman" -p1 < "$PATCHES/pixman/no-threads-emscripten.patch"
 me pixman -Dtests=disabled -Ddemos=disabled -Dlibpng=disabled -Dgtk=disabled
 wasmtest pixman pixman_test.c $(pkg-config --static --cflags --libs pixman-1)
 manifest pixman "$VER"
