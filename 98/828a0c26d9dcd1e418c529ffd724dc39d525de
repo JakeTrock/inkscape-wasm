@@ -1,0 +1,32 @@
+Makefile
+  h_2ae8077fa5063a 5,22
+packages/boost.sh
+  h_2ae8077fa5063a 9-27
+packages/lcms2.sh
+  h_2ae8077fa5063a 1-11
+packages/potrace.sh
+  h_2ae8077fa5063a 1-14
+tests/check-1.sh
+  h_2ae8077fa5063a 9,16,21-22
+tests/lib/boost_fs_test.cpp
+  h_2ae8077fa5063a 1-14
+tests/lib/lcms2_test.c
+  h_2ae8077fa5063a 1-15
+tests/lib/potrace_test.c
+  h_2ae8077fa5063a 1-11
+tests/t4/run.sh
+  h_2ae8077fa5063a 1-57
+tests/t4/xfail.txt
+  h_2ae8077fa5063a 1-2
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "98828a0c26d9dcd1e418c529ffd724dc39d525de",
+  "prompts": {},
+  "humans": {
+    "h_2ae8077fa5063a": {
+      "author": "Jacob Trock <jgh@geocrypt.me>"
+    }
+  }
+}
