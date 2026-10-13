@@ -1,0 +1,42 @@
+--- a/src/inkscape-application.cpp
++++ b/src/inkscape-application.cpp
+@@ -1350,6 +1350,26 @@
+ #endif // WITH_GNU_READLINE
+ 
+ 
++#ifdef __EMSCRIPTEN__
++/* wasm: JS entry into the action system (harness toolbar / tests).
++ * Same path as --batch-process, wrapped for the active window like shell(). */
++void
++InkscapeApplication::run_actions(const Glib::ustring &input)
++{
++    Glib::ustring wrapped = "active-window-start;" + input + ";active-window-end";
++    action_vector_t action_vector;
++    parse_actions(wrapped, action_vector);
++    activate_any_actions(action_vector, _gio_application, _active_window, _active_document);
++}
++
++extern "C" __attribute__((used)) void
++inkscape_run_actions(const char *input)
++{
++    auto *app = InkscapeApplication::instance();
++    if (app) app->run_actions(input);
++}
++#endif // __EMSCRIPTEN__
++
+ // Once we don't need to create a window just to process verbs!
+ void
+ InkscapeApplication::shell(bool active_window)
+--- a/src/inkscape-application.h
++++ b/src/inkscape-application.h
+@@ -67,6 +67,10 @@
+     bool destroy_all();
+     void print_action_list();
+     void print_input_type_list() const;
++#ifdef __EMSCRIPTEN__
++    /// Run an action string (e.g. "file-save") in the active window context.
++    void run_actions(const Glib::ustring &input);
++#endif
+ 
+     void on_startup2();
+     InkFileExportCmd *file_export() { return &_file_export; }

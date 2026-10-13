@@ -11,7 +11,8 @@ VER=1.4.4
 git -C "$SRC/inkscape-1.4.4" submodule update --init --quiet -- src/3rdparty
 
 # patches (reverse-dry-run guards, gtk3.sh pattern)
-for p in broadway-env libcxx-compat no-boost-stacktrace no-boost-stacktrace-runtime no-asio-threadpool; do
+for p in broadway-env libcxx-compat no-boost-stacktrace no-boost-stacktrace-runtime no-asio-threadpool \
+         main-loop-yield-emscripten action-hook-emscripten; do
   patch -d "$SRC/inkscape-1.4.4" -p1 -R --dry-run -f < "$PATCHES/inkscape/$p.patch" >/dev/null 2>&1 \
     || patch -d "$SRC/inkscape-1.4.4" -p1 < "$PATCHES/inkscape/$p.patch"
 done
@@ -71,6 +72,7 @@ cmake -S "$SRC/inkscape-1.4.4" -B "$BUILD/inkscape" -G Ninja \
     -sALLOW_MEMORY_GROWTH=1 -sALLOW_TABLE_GROWTH=1 -sEMULATE_FUNCTION_POINTER_CASTS=1 \
     -sBINARYEN_EXTRA_PASSES=--pass-arg=max-func-params@64 \
     -sMODULARIZE=1 -sEXPORT_NAME=Module \
+    -sEXPORTED_FUNCTIONS=_main,_malloc,_free,_bridge_frame,_bridge_js_connect,_bridge_js_write,_bridge_js_poll,_bridge_js_poll_ptr \
     -sEXPORTED_RUNTIME_METHODS=HEAPU8,callMain,FS -sINITIAL_MEMORY=536870912 \
     --preload-file $FS@/" \
   -DBUILD_TESTING=OFF -DENABLE_BINRELOC=OFF \

@@ -1,0 +1,27 @@
+--- a/src/inkscape-main.cpp
++++ b/src/inkscape-main.cpp
+@@ -242,6 +242,16 @@
+     set_themes_env();
+     set_extensions_env();
+ 
++#ifdef __EMSCRIPTEN__
++    /* wasm: never enter g_application_run's blocking loop — the single JS
++     * thread must return to the page, whose rAF tick drives the default
++     * main context via bridge_frame(). register emits ::startup (gtk_init),
++     * activate emits ::activate -> on_activate -> create_window. */
++    InkscapeApplication app;
++    app.gio_app()->register_application();
++    app.gio_app()->activate();
++    return 0;
++#else
+     auto ret = InkscapeApplication().gio_app()->run(argc, argv);
+ 
+ #ifdef _WIN32
+@@ -250,6 +260,7 @@
+ #endif
+ 
+     return ret;
++#endif
+ }
+ 
+ /*

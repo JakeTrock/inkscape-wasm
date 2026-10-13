@@ -5,7 +5,7 @@ PKGS := zlib libpng freetype expat fontconfig pixman fribidi harfbuzz cairo \
         gtkmm libxml2 libxslt gsl dconv lcms2 boost libgc potrace lib2geom
 
 .PHONY: deps deps-real pkg-% check-0 check-1 check-2 check-3 check-4 check-5 \
-        native-inkscape goldens-regen clean
+        check-6 check-7 serve native-inkscape goldens-regen clean
 
 deps:
 	$(OBG) build/logs/deps -- $(MAKE) deps-real
@@ -22,6 +22,11 @@ check-2: ; bash tests/t2/run.sh
 check-3: ; bash tests/t3/run.sh
 check-4: ; bash tests/t4/run.sh
 check-5: ; bash tests/t5/run.sh
+check-6: ; bash tests/t6/run.sh
+check-7: ; bash tests/t7/run.sh
+
+serve:
+	python3 -m http.server 8824 --directory build
 
 native-inkscape: ; bash packages/native-inkscape.sh
 goldens-regen: ; bash tests/golden/gen.sh
