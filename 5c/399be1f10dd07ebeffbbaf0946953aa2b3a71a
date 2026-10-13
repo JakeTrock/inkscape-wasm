@@ -1,0 +1,14 @@
+patches/inkscape/main-loop-yield-emscripten.patch
+  h_2ae8077fa5063a 3,11-13,15-27,41
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "5c399be1f10dd07ebeffbbaf0946953aa2b3a71a",
+  "prompts": {},
+  "humans": {
+    "h_2ae8077fa5063a": {
+      "author": "Jacob Trock <jgh@geocrypt.me>"
+    }
+  }
+}
