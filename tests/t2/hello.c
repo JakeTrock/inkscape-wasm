@@ -1,6 +1,11 @@
 /* T2: GTK hello world on broadway-over-bridge. Prints "button clicked" on
  * stdout (-> browser console) when the button is activated. main() returns;
- * the page's rAF tick drives g_main_context_iteration via bridge_frame(). */
+ * the page's rAF tick drives g_main_context_iteration via bridge_frame().
+ *
+ * Geometry note (for tests): CSD adds a (26,60) margin (shadow + titlebar)
+ * around the 300x200 content, so the toplevel surface is 352x289 at the
+ * daemon position (-26,-23) and the button's event window is at
+ * surface-relative (46,180)-(146,220), center (96,200). */
 #include <gtk/gtk.h>
 #include <gdk/gdkbroadway.h>
 #include <stdio.h>

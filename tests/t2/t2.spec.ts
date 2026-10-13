@@ -24,8 +24,16 @@ test('T2: gtk hello world paints and click registers', async ({ page }) => {
   });
   expect(dark).toBeGreaterThan(50);
 
-  // button at (20,120) size (100,40) in the window at (0,0)
-  await page.mouse.click(70, 140);
+  // Button center in surface coords: CSD margin (26,60) + fixed pos (20,120)
+  // + half size (50,20) => (96,200) relative to the window canvas (which
+  // includes the CSD shadow, so it is bigger than the 300x200 content).
+  const rect = await page.evaluate(() => {
+    const c = document.querySelector('canvas') as HTMLCanvasElement;
+    const r = c.getBoundingClientRect();
+    return { x: r.x, y: r.y, w: r.width, h: r.height };
+  });
+  expect(rect.w).toBeGreaterThan(300); // 352: content + CSD margins
+  await page.mouse.click(rect.x + 96, rect.y + 200);
   await expect.poll(() => clicks.length, { timeout: 10000 }).toBeGreaterThan(0);
 
   await page.screenshot({ path: '../build/t2/t2-shot.png' });

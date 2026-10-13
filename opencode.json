@@ -1,0 +1,12 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "permissions": [
+    { "action": "read", "resource": "*.png", "effect": "deny" },
+    { "action": "read", "resource": "*.jpg", "effect": "deny" },
+    { "action": "read", "resource": "*.jpeg", "effect": "deny" },
+    { "action": "read", "resource": "*.gif", "effect": "deny" },
+    { "action": "read", "resource": "*.webp", "effect": "deny" },
+    { "action": "read", "resource": "*.bmp", "effect": "deny" },
+    { "action": "read", "resource": "*.pdf", "effect": "deny" }
+  ]
+}
