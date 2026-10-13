@@ -1,0 +1,7 @@
+{
+  "basic": 0.001,
+  "text": 0.02,
+  "gradients": 0.001,
+  "transforms": 0.001,
+  "clip-mask": 0.001
+}

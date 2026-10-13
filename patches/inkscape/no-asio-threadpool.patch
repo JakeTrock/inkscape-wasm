@@ -1,0 +1,20 @@
+--- a/src/ui/widget/canvas.cpp
++++ b/src/ui/widget/canvas.cpp
+@@ -24,8 +24,17 @@
+ #include <thread>
+ #include <utility>
+ #include <vector>
++#ifdef __EMSCRIPTEN__
++// wasm: asio rejects emscripten at config level; headless export never hits
++// the canvas, so run posted jobs synchronously instead of in a thread pool.
++namespace boost::asio {
++struct thread_pool { thread_pool(unsigned) {} };
++template <typename F> void post(thread_pool &, F &&f) { f(); }
++}
++#else
+ #include <boost/asio/thread_pool.hpp>
+ #include <boost/asio/post.hpp>
++#endif
+ #include <gdkmm/frameclock.h>
+ #include <gdkmm/glcontext.h>
+ #include <gtkmm/applicationwindow.h>

@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="300" height="200" viewBox="0 0 300 200">
+  <rect width="300" height="200" fill="white"/>
+  <text x="20" y="60" font-family="DejaVu Sans" font-size="32" fill="black">Hello WASM</text>
+  <text x="20" y="110" font-family="DejaVu Sans" font-size="20" font-weight="bold" fill="#204a87">Inkscape headless</text>
+  <text x="20" y="160" font-family="DejaVu Sans" font-size="14" font-style="italic" fill="#4d4d4d">export-do via node</text>
+</svg>

@@ -125,3 +125,17 @@ daemon_objs() { # daemon_objs <outdir> — broadwayd relay sources to .o files
       -I"$SYSROOT/include" $(pkg-config --cflags gtk+-3.0) || return 1
   done
 }
+
+bridge_objs() { # bridge_objs <outdir> — bridge .c sources to .o files
+  # (must be compiled as C even for C++ consumers: C++ rejects their
+  # implicit void* casts)
+  local out="$1" f
+  mkdir -p "$out"
+  for f in bytepipe bridge; do
+    [ "$out/$f.o" -nt "$ROOT/bridge/$f.c" ] && continue
+    emcc "$ROOT/bridge/$f.c" -c -o "$out/$f.o" -O1 -g1 -ffunction-sections -fdata-sections \
+      -I"$BUILD/gtk3" -I"$BUILD/gtk3/gdk/broadway" \
+      -I"$SRC/gtk3/gdk" -I"$SRC/gtk3/gdk/broadway" \
+      -I"$SYSROOT/include" $(pkg-config --cflags gtk+-3.0) || return 1
+  done
+}

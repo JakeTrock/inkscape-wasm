@@ -17,7 +17,7 @@ cp -r "$SRC/boost/boost" "$SYSROOT/include/"
   # boost's emscripten toolset maps <exception-handling-method>js to
   # -fexceptions (our stack's EH); with no method set clang emits native
   # wasm-EH (__gxx_wasm_personality_v0) that our links reject.
-  ./b2 toolset=emscripten link=static threading=multi \
+  ./b2 toolset=emscripten link=static threading=multi address-model=32 \
      exception-handling=on exception-handling-method=js rtti=on \
      --with-filesystem --with-stacktrace \
      boost.stacktrace.from_exception=off \

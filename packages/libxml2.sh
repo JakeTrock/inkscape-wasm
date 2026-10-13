@@ -12,6 +12,7 @@ me libxml2 -Dhistory=false -Dhttp=false -Dftp=false -Dreadline=false -Diconv=ena
 # upstream .pc bug: Cflags lacks the libxml2/ include subdir; also strip
 # meson's injected -pthread (consumers must stay non-mt)
 sed -i 's|^Cflags: -I\${includedir}.*|Cflags: -I${includedir}/libxml2|' "$SYSROOT/lib/pkgconfig/libxml-2.0.pc"
+sed -i 's| -pthread -sPTHREAD_POOL_SIZE=4||' "$SYSROOT/lib/pkgconfig/libxml-2.0.pc"
 # meson builds install no xml2-config; libxslt's configure prefers one over
 # pkg-config and would pick the host's (2.15) — version-skewing the build.
 cat > "$SYSROOT/bin/xml2-config" <<'EOF'

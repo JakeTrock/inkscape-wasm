@@ -1,0 +1,18 @@
+diff -ru a/src/inkscape-main.cpp b/src/inkscape-main.cpp
+--- a/src/inkscape-main.cpp	2026-10-13 06:53:51.350417903 +0000
++++ b/src/inkscape-main.cpp	2026-10-13 06:58:19.981519289 +0000
+@@ -166,6 +166,14 @@
+ 
+ int main(int argc, char *argv[])
+ {
++#ifdef __EMSCRIPTEN__
++    /* wasm: broadway GDK over the in-module daemon (leg B bridge), minimal
++     * fontconfig, writable profile dir inside the mounted FS */
++    setenv("GDK_BACKEND", "broadway", 1);
++    setenv("FONTCONFIG_FILE", "/fixtures/fonts.conf", 1);
++    setenv("INKSCAPE_PROFILE_DIR", "/home/web_user", 1);
++#endif
++
+     convert_legacy_options(argc, argv);
+ 
+ #ifdef __APPLE__

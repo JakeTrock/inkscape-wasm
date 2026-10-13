@@ -1,0 +1,65 @@
+--- a/src/util/parse-int-range.cpp
++++ b/src/util/parse-int-range.cpp
+@@ -40,7 +40,7 @@
+ T from_chars(std::string_view const &v)
+ {
+     T result = 0;
+-    std::from_chars(v.begin(), v.end(), result);
++    std::from_chars(v.data(), v.data() + v.size(), result);
+     return result;
+ };
+ 
+@@ -100,7 +100,8 @@
+             assert(false); // both groups above cannot be empty
+             break;
+         }
+-        pos = fetch(m, 0).end();
++        auto const whole = fetch(m, 0);
++        pos = whole.data() + whole.size();
+     }
+ 
+     return out;
+--- a/src/ui/widget/canvas/glgraphics.cpp
++++ b/src/ui/widget/canvas/glgraphics.cpp
+@@ -693,8 +693,8 @@
+             glDisable(GL_BLEND);
+             glUseProgram(checker.id);
+             glUniform1f(checker.loc("size"), 12.0 * scale_factor);
+-            glUniform3fv(checker.loc("col1"), 1, std::begin(rgb_to_array(page)));
+-            glUniform3fv(checker.loc("col2"), 1, std::begin(checkerboard_darken(page)));
++            glUniform3fv(checker.loc("col1"), 1, rgb_to_array(page).data());
++            glUniform3fv(checker.loc("col2"), 1, checkerboard_darken(page).data());
+             geom_to_uniform(Geom::Scale(2.0, -2.0) * Geom::Translate(-1.0, 1.0), checker.loc("mat"), checker.loc("trans"));
+             geom_to_uniform({1.0, 1.0}, checker.loc("subrect"));
+             glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+@@ -712,8 +712,8 @@
+         // Pages
+         glUseProgram(checker.id);
+         glUniform1f(checker.loc("size"), 12.0 * scale_factor);
+-        glUniform3fv(checker.loc("col1"), 1, std::begin(rgb_to_array(page)));
+-        glUniform3fv(checker.loc("col2"), 1, std::begin(checkerboard_darken(page)));
++        glUniform3fv(checker.loc("col1"), 1, rgb_to_array(page).data());
++        glUniform3fv(checker.loc("col2"), 1, checkerboard_darken(page).data());
+         geom_to_uniform({1.0, 1.0}, checker.loc("subrect"));
+         for (auto &rect : pi.pages) {
+             set_page_transform(rect, checker);
+@@ -723,8 +723,8 @@
+         glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
+ 
+         // Desk
+-        glUniform3fv(checker.loc("col1"), 1, std::begin(rgb_to_array(desk)));
+-        glUniform3fv(checker.loc("col2"), 1, std::begin(checkerboard_darken(desk)));
++        glUniform3fv(checker.loc("col1"), 1, rgb_to_array(desk).data());
++        glUniform3fv(checker.loc("col2"), 1, checkerboard_darken(desk).data());
+         geom_to_uniform(Geom::Scale(2.0, -2.0) * Geom::Translate(-1.0, 1.0), checker.loc("mat"), checker.loc("trans"));
+         geom_to_uniform({1.0, 1.0}, checker.loc("subrect"));
+         glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+@@ -740,7 +740,7 @@
+             glUniform2fv(shadow.loc("wh"), 1, std::begin({(GLfloat)view.rect.width(), (GLfloat)view.rect.height()}));
+             glUniform1f(shadow.loc("size"), 40.0 * std::pow(std::abs(view.affine.det()), 0.25));
+             glUniform2fv(shadow.loc("dir"), 1, std::begin({(GLfloat)dir.x(), (GLfloat)dir.y()}));
+-            glUniform4fv(shadow.loc("shadow_col"), 1, std::begin(premultiplied(rgba_to_array(border))));
++            glUniform4fv(shadow.loc("shadow_col"), 1, premultiplied(rgba_to_array(border)).data());
+             for (auto &rect : pi.pages) {
+                 set_page_transform(rect, shadow);
+                 glDrawArrays(GL_TRIANGLES, 0, 3);

@@ -4,7 +4,8 @@ PKGS := zlib libpng freetype expat fontconfig pixman fribidi harfbuzz cairo \
         libffi glib pango gdk-pixbuf atk gtk3 sigcpp glibmm cairomm pangomm \
         gtkmm libxml2 libxslt gsl dconv lcms2 boost libgc potrace lib2geom
 
-.PHONY: deps deps-real pkg-% check-0 check-1 check-2 check-3 clean
+.PHONY: deps deps-real pkg-% check-0 check-1 check-2 check-3 check-4 check-5 \
+        native-inkscape goldens-regen clean
 
 deps:
 	$(OBG) build/logs/deps -- $(MAKE) deps-real
@@ -20,6 +21,10 @@ check-1: ; bash tests/check-1.sh
 check-2: ; bash tests/t2/run.sh
 check-3: ; bash tests/t3/run.sh
 check-4: ; bash tests/t4/run.sh
+check-5: ; bash tests/t5/run.sh
+
+native-inkscape: ; bash packages/native-inkscape.sh
+goldens-regen: ; bash tests/golden/gen.sh
 
 clean:
 	rm -rf build

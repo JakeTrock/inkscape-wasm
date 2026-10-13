@@ -1,0 +1,20 @@
+--- a/src/inkscape.cpp
++++ b/src/inkscape.cpp
+@@ -19,7 +19,17 @@
+ 
+ #include <fstream>
+ #include <map>
++#ifndef __EMSCRIPTEN__
+ #include <boost/stacktrace.hpp>
++#else
++// wasm: no unwinder — real stacktrace pulls _Unwind_* symbols emscripten
++// lacks; a crash is just a trap there anyway.
++namespace boost { namespace stacktrace {
++struct stacktrace {};
++inline std::string to_string(const stacktrace &) { return "(no stacktrace on wasm)"; }
++inline std::ostream &operator<<(std::ostream &os, const stacktrace &) { return os << "(no stacktrace on wasm)"; }
++}}
++#endif
+ #include <glibmm/regex.h>
+ #include <glibmm/i18n.h>
+ #include <glibmm/miscutils.h>
