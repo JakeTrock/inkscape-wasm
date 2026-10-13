@@ -10,10 +10,21 @@ build_harness() { # build_harness <name> <src> [extra args...]
   mkdir -p "$out"
   daemon_objs "$TEST/daemon"
 
+  # C sources must be compiled as C (C++ rejects their implicit void* casts),
+  # so both bridge .c files become .o first — same treatment as daemon_objs.
+  local cobjs=""
+  for f in "$ROOT/bridge/bytepipe.c" "$ROOT/bridge/bridge.c"; do
+    local o="$TEST/$(basename "$f" .c).o"
+    emcc "$f" -c -o "$o" -O1 -g1 -ffunction-sections -fdata-sections \
+      -I"$BUILD/gtk3" -I"$BUILD/gtk3/gdk/broadway" \
+      -I"$SRC/gtk3/gdk" -I"$SRC/gtk3/gdk/broadway" \
+      -I"$SYSROOT/include" $(pkg-config --cflags gtk+-3.0)
+    cobjs="$cobjs $o"
+  done
+
   local comp=emcc; case "$src" in *.cpp|*.cc|*.mm) comp=em++;; esac
 
-  "$comp" "$ROOT/$src" "$ROOT/bridge/bytepipe.c" "$ROOT/bridge/bridge.c" \
-    "$TEST/daemon"/*.o \
+  "$comp" "$ROOT/$src" $cobjs "$TEST/daemon"/*.o \
     -o "$out/$name.js" \
     -O1 -g1 -ffunction-sections -fdata-sections -fexceptions -frtti \
     -I"$BUILD/gtk3" -I"$BUILD/gtk3/gdk/broadway" \

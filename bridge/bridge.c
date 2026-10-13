@@ -12,6 +12,16 @@ static BroadwayServer *bserver = NULL;
 static char  *js_buf = NULL;
 static gsize  js_len = 0;
 
+/* C++ apps: static ctors in the gtkmm archives touch glib (creating quarks)
+ * before glib's own unprioritized constructor runs, leaving quark_ht NULL.
+ * Priority 101 (first user priority) beats every archive ctor. */
+extern void glib_init (void);
+__attribute__((constructor(101)))
+static void bridge_glib_early_init (void)
+{
+  glib_init ();
+}
+
 static void
 pipe_a_pump (void *user)
 {

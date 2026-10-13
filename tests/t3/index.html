@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf8">
+<title>t3</title>
+<style type="text/css">body { overflow: hidden; }</style>
+<script type="text/javascript" src="t3.js"></script>
+<script type="text/javascript" src="bridge.js"></script>
+<script type="text/javascript" src="rawinflate.min.js"></script>
+<script type="text/javascript" src="broadway.js"></script>
+</head>
+<body>
+<script type="text/javascript">
+Module().then(function (m) {
+    window.__bridge_mod = m;
+    connect();                       /* broadway.js -> new BridgeSocket() */
+    var tick = function () {
+        m._bridge_frame();           /* one nonblocking main-loop pass */
+        pumpDaemon();                /* daemon -> broadway.js frames */
+        requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
+});
+</script>
+</body>
+</html>
