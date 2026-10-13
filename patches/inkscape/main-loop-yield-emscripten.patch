@@ -1,6 +1,6 @@
 --- a/src/inkscape-main.cpp
 +++ b/src/inkscape-main.cpp
-@@ -242,6 +242,26 @@
+@@ -242,6 +242,37 @@
      set_themes_env();
      set_extensions_env();
  
@@ -8,12 +8,23 @@
 +    /* Both wasm modes must return from main() without a blocking loop UNLESS
 +     * the run self-terminates. Heap-allocated + leaked either way: callbacks
 +     * deref the InkscapeApplication singleton long after main() returns
-+     * (same rationale as leg B's leaked gtkmm windows). */
++     * (same rationale as leg B's leaked gtkmm windows).
++     * NOTE: emscripten's ENV starts empty (process env is NOT forwarded), so
++     * GDK_BACKEND can't discriminate — argv must. */
 +    auto app = new InkscapeApplication();
-+    if (g_strcmp0(getenv("GDK_BACKEND"), "unsupported") == 0) {
-+        /* Headless batch (T5): --actions processing lives in the
-+         * ::command-line machinery that only g_application_run drives; batch
-+         * mode quits without ever entering the blocking loop. */
++    bool has_cmdline_work = false;
++    for (int i = 1; i < argc; ++i) {
++        if (strncmp(argv[i], "--actions", 9) == 0 ||
++            strncmp(argv[i], "--batch-process", 15) == 0 ||
++            strncmp(argv[i], "--shell", 7) == 0 ||
++            strncmp(argv[i], "--action-list", 13) == 0) {
++            has_cmdline_work = true;
++        }
++    }
++    if (has_cmdline_work) {
++        /* Batch: --actions processing lives in the ::command-line machinery
++         * that only g_application_run drives, and batch mode quits without
++         * ever entering the blocking loop. */
 +        return app->gio_app()->run(argc, argv);
 +    }
 +    /* GUI: never enter run()'s blocking loop — the single JS thread must
@@ -27,7 +38,7 @@
      auto ret = InkscapeApplication().gio_app()->run(argc, argv);
  
  #ifdef _WIN32
-@@ -250,6 +270,7 @@
+@@ -250,6 +281,7 @@
  #endif
  
      return ret;
