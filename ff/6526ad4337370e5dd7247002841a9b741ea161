@@ -1,0 +1,22 @@
+patches/inkscape/main-loop-yield-emscripten.patch
+  h_2ae8077fa5063a 3,8-24,30
+tests/fixtures/t7-rect.svg
+  h_2ae8077fa5063a 1
+tests/manifest.json
+  h_2ae8077fa5063a 6-7
+tests/t7/run.sh
+  h_2ae8077fa5063a 1-38
+tests/t7/t7.spec.ts
+  h_2ae8077fa5063a 1-71
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "ff6526ad4337370e5dd7247002841a9b741ea161",
+  "prompts": {},
+  "humans": {
+    "h_2ae8077fa5063a": {
+      "author": "Jacob Trock <jgh@geocrypt.me>"
+    }
+  }
+}
