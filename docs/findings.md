@@ -290,3 +290,62 @@ link-time catch-all:
 - gtkmm windows must be heap-allocated and leaked: a stack C++ wrapper
   destructs when main() returns and tears the window down with it.
 
+
+## Leg C — inkscape headless build (T4/T5 gates, 2026-10-13)
+
+Inkscape 1.4.4 (dcaf3e7) compiles 1019/1019 targets and links; the module
+boots in node and batch-exports SVG→PNG pixel-identical to native
+(`make check-5`: basic/gradients/transforms/clip-mask 0.000%, text 1.787%).
+
+### Link gotchas
+
+- **Link at `-O1`** (compile stays -O3): emcc runs fpcast-emu at -O1 but
+  skips `--post-emscripten`/-O3, dodging a binaryen `mixed_arena.h:188`
+  assert. fpcast-emu still needs `--pass-arg=max-func-params@64`
+  (KEY@VALUE form; inkscape needs 44 params; 32 re-fatal'd).
+- **Bridge/daemon objects belong in a static archive** (`-linkbridge` pulls
+  `libinkbridge.a`): loose .o files in global linker flags leak into every
+  cmake try_compile and break Iconv/LIBATOMIC checks.
+- **ninja cannot see `-l` libraries**: after rebuilding glib, an inkscape
+  relink must be forced by deleting `build/inkscape/bin/inkscape.{js,wasm}`;
+  a stale `inkscape.ok` stamp once survived a "successful" build this way.
+- cmake caches pkg-config results (`LIBXML_LDFLAGS:INTERNAL`): delete
+  CMakeCache.txt + CMakeFiles before reconfiguring after .pc edits
+  (libxml-2.0.pc must not carry meson's `-pthread -sPTHREAD_POOL_SIZE=4` —
+  it silently turns the link into an MT build; 2geom.pc needs
+  `-lgsl -lgslcblas -ldouble-conversion` appended).
+- Boost must be built `address-model=32` or the generated cmake variant
+  files carry the wrong `CMAKE_SIZEOF_VOID_P` polarity for wasm32.
+
+### Boot / single-threading (the hard-won part)
+
+- **gobject ctor race**: app objects' static ctors (GType registrations)
+  precede archives in link order, so gobject's own ctor lost the race →
+  `static_quark_type_flags` assert. `gobject-ctor-priority.patch` gives it
+  `constructor(101)` under `__EMSCRIPTEN__` (mirrors bridge.c's glib trick).
+- **`pthread_create` is suppressed, not failed** (pthread_supp.c): glib's
+  `g_system_thread_new` g_error's on failure. A fake handle + return 0 lets
+  GDBus workers and friends "exist" dead while boot proceeds.
+- **`g_thread_pool_push` runs jobs inline** (`gthreadpool-inline-push.patch`):
+  GTK loads its IM module through GTask → the global pool waits for a worker
+  that can never start → 100% CPU spin in `g_cond_wait`, forever. Inline
+  execution makes async GTask users complete synchronously.
+- **Headless switch**: `GDK_BACKEND=unsupported` (env respected by the
+  broadway-env patch) makes `gtk_init_check` fail → `_with_gui=false` →
+  batch actions run windowless. With broadway, `create_window` blocks
+  waiting for a client that headless tests never provide.
+- **Icon themes**: widget init aborts without `image-missing`. Adwaita ships
+  it SVG-only and wasm gdk-pixbuf has no SVG loader — seed 1x1 PNGs into
+  Adwaita/hicolor size dirs (they beat scalable/ in lookup order) and delete
+  the host `icon-theme.cache` files or GTK trusts the stale cache and never
+  rescans. `XDG_DATA_DIRS=/inkscape/share`.
+- **share/ layout**: inkscape looks under `<prefix>/share/inkscape/…` (it
+  appends its own name under share) — stage `$SRC/share/*` one level deeper.
+- **Deterministic profile**: a fresh profile defaults `showwelcome=1` and
+  `on_activate` blocks in the welcome-screen modal loop. Ship
+  `fixtures/inkscape-prefs.xml` (welcome/splash off) to BOTH the wasm FS and
+  the native golden run (INKSCAPE_PROFILE_DIR) so neither side can diverge.
+- Diagnostics that worked: node `--cpu-prof` writes nothing on SIGTERM —
+  use a CDP client (`--inspect-brk` + Profiler.start/stop over WebSocket)
+  to sample a spinning wasm stack, then resolve wasm-function[N] via
+  `wasm-objdump -x`.
