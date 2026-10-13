@@ -1,0 +1,2 @@
+# T4 allowlist: one test-binary name per line, reason as comment.
+# Only genuine platform-specific failures belong here.
