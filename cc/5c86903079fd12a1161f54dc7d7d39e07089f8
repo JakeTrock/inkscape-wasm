@@ -1,0 +1,28 @@
+bridge/bridge.c
+  h_2ae8077fa5063a 1-97
+bridge/bridge.h
+  h_2ae8077fa5063a 1-22
+bridge/bridge.js
+  h_2ae8077fa5063a 1-99
+packages/gtk3.sh
+  h_2ae8077fa5063a 20-26,30-31,55-62
+patches/gtk3/broadway-bridge-emscripten.patch
+  h_2ae8077fa5063a 3-5,7-11,13-14,19-21,23,25-26,28-30,32,35-38,44-45,47-51,56-58,61-64,67,69
+patches/gtk3/broadway-server-bridge-emscripten.patch
+  h_2ae8077fa5063a 1-112
+patches/gtk3/broadwayd-bridge-emscripten.patch
+  h_2ae8077fa5063a 1-87
+tests/lib/bridge_frame_test.mjs
+  h_2ae8077fa5063a 1-55
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "cc5c86903079fd12a1161f54dc7d7d39e07089f8",
+  "prompts": {},
+  "humans": {
+    "h_2ae8077fa5063a": {
+      "author": "Jacob Trock <jgh@geocrypt.me>"
+    }
+  }
+}
