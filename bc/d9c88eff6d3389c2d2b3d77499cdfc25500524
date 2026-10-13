@@ -1,0 +1,26 @@
+packages/glib.sh
+  h_2ae8077fa5063a 24-31
+packages/inkscape.sh
+  h_2ae8077fa5063a 31-33,35,37,40,42-54,57-58,69-70,72
+packages/pthread_supp.c
+  h_2ae8077fa5063a 11-25
+patches/glib/gobject-ctor-priority.patch
+  h_2ae8077fa5063a 1-19
+patches/glib/gthreadpool-inline-push.patch
+  h_2ae8077fa5063a 1-18
+patches/inkscape/broadway-env.patch
+  h_2ae8077fa5063a 1-3,9-13,16
+tests/lib/pthread_supp_test.c
+  h_2ae8077fa5063a 30-32
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "bcd9c88eff6d3389c2d2b3d77499cdfc25500524",
+  "prompts": {},
+  "humans": {
+    "h_2ae8077fa5063a": {
+      "author": "Jacob Trock <jgh@geocrypt.me>"
+    }
+  }
+}
