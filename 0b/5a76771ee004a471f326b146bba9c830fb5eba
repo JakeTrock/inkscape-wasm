@@ -1,0 +1,36 @@
+Makefile
+  h_2ae8077fa5063a 8,25-29
+docs/superpowers/plans/2026-10-13-leg-d-gui-harness.md
+  h_2ae8077fa5063a 20
+harness/index.html
+  h_2ae8077fa5063a 1-55
+harness/loader.js
+  h_2ae8077fa5063a 1-112
+packages/inkscape.sh
+  h_2ae8077fa5063a 14-15,75
+patches/inkscape/action-hook-emscripten.patch
+  h_2ae8077fa5063a 1-42
+patches/inkscape/main-loop-yield-emscripten.patch
+  h_2ae8077fa5063a 1-27
+tests/lib/harness_stage.sh
+  h_2ae8077fa5063a 1-18
+tests/playwright.config.ts
+  h_2ae8077fa5063a 5
+tests/t6/boot-smoke.mjs
+  h_2ae8077fa5063a 1-35
+tests/t6/run.sh
+  h_2ae8077fa5063a 1-23
+tests/t6/t6.spec.ts
+  h_2ae8077fa5063a 1-54
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "0b5a76771ee004a471f326b146bba9c830fb5eba",
+  "prompts": {},
+  "humans": {
+    "h_2ae8077fa5063a": {
+      "author": "Jacob Trock <jgh@geocrypt.me>"
+    }
+  }
+}
