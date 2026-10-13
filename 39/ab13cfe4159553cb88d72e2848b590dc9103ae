@@ -1,0 +1,28 @@
+AGENTS.md
+  h_2ae8077fa5063a 1-28
+opencode.json
+  h_2ae8077fa5063a 1-12
+tests/lib/wasm_harness.sh
+  h_2ae8077fa5063a 22,30-31
+tests/package-lock.json
+  h_2ae8077fa5063a 1-59
+tests/t2/debug.mjs
+  h_2ae8077fa5063a 1-63
+tests/t2/hello.c
+  h_2ae8077fa5063a 3-8
+tests/t2/index.html
+  h_2ae8077fa5063a 9
+tests/t2/t2.spec.ts
+  h_2ae8077fa5063a 27-36
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "39ab13cfe4159553cb88d72e2848b590dc9103ae",
+  "prompts": {},
+  "humans": {
+    "h_2ae8077fa5063a": {
+      "author": "Jacob Trock <jgh@geocrypt.me>"
+    }
+  }
+}
