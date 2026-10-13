@@ -1,0 +1,14 @@
+docs/superpowers/plans/2026-10-13-leg-c-inkscape-headless.md
+  h_2ae8077fa5063a 1-350
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "d8c0a449cdb821e9c2b49a34fadb2d0debe37d67",
+  "prompts": {},
+  "humans": {
+    "h_2ae8077fa5063a": {
+      "author": "Jacob Trock <jgh@geocrypt.me>"
+    }
+  }
+}
