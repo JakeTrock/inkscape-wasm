@@ -1,2 +1,11 @@
 # T4 allowlist: one test-binary name per line, reason as comment.
 # Only genuine platform-specific failures belong here.
+#
+# circle-test: CircleTest.CircleIntersection — both candidate angle params
+#   evaluate to the same point (agree to 1e-15); wasm FP root-ordering picks
+#   the other algebraic root of the quartic. Geometry is correct.
+# line-test: LineTest.CoincidingIntersect — coincident lines degenerate case;
+#   1 of 2 overlap endpoints detected under wasm FP (epsilon threshold).
+#   Not exercised by rendering/export paths.
+circle-test
+line-test

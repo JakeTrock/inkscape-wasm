@@ -13,10 +13,11 @@ TDIR="$BUILD/test/2geom-tests"
 # 1. googletest — test-only install outside the sysroot
 if [ ! -f "$GTEST_ROOT/lib/libgtest.a" ]; then
   fetch "https://github.com/google/googletest/archive/refs/tags/v$GTEST_VER.tar.gz"
-  extract_auto "googletest-$GTEST_VER.tar.gz" googletest
+  extract_auto "v$GTEST_VER.tar.gz" googletest
   cmake -S "$SRC/googletest" -B "$BUILD/test/gtest" -G Ninja \
     -DCMAKE_TOOLCHAIN_FILE="$EMSDK/upstream/emscripten/cmake/Modules/Platform/Emscripten.cmake" \
     -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX="$GTEST_ROOT" \
+    -DCMAKE_CXX_FLAGS="-fexceptions -frtti" \
     -Dgtest_build_tests=OFF -Dgmock_build_tests=OFF -DBUILD_GMOCK=OFF \
     -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
   cmake --build "$BUILD/test/gtest" -j 64
@@ -31,9 +32,12 @@ if [ ! -f "$TDIR/tests/point-test.js" ]; then
     -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=OFF \
     -D2GEOM_TESTING=ON -DWITH_PROFILING=OFF \
     -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
-    -DGTest_INCLUDE_DIR="$GTEST_ROOT/include" \
-    -DGTest_LIBRARY="$GTEST_ROOT/lib/libgtest.a" \
-    -DGTest_MAIN_LIBRARY="$GTEST_ROOT/lib/libgtest_main.a"
+    -DCMAKE_CXX_FLAGS="-fexceptions -frtti -sEMULATE_FUNCTION_POINTER_CASTS=1" \
+    -DCMAKE_C_FLAGS="-fexceptions -sEMULATE_FUNCTION_POINTER_CASTS=1" \
+    -DCMAKE_EXE_LINKER_FLAGS="-L$SYSROOT/lib -O0 -sSTACK_SIZE=8388608 -sALLOW_MEMORY_GROWTH=1 -sALLOW_TABLE_GROWTH=1 -sEMULATE_FUNCTION_POINTER_CASTS=1" \
+    -DGTEST_INCLUDE_DIR="$GTEST_ROOT/include" \
+    -DGTEST_LIBRARY="$GTEST_ROOT/lib/libgtest.a" \
+    -DGTEST_MAIN_LIBRARY="$GTEST_ROOT/lib/libgtest_main.a"
   cmake --build "$TDIR" -j 64
 fi
 
