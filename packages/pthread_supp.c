@@ -8,6 +8,21 @@
 #include <stdlib.h>
 #include <errno.h>
 #include <string.h>
+#ifdef __EMSCRIPTEN__
+#include <emscripten.h>
+/* glib's g_thread_new would abort the process (emscripten's non-mt
+ * pthread_create returns ENOTSUP). Single-threaded wasm: report success
+ * without running the thread body — GDBus worker & friends degrade
+ * instead of killing boot. The console.trace pinpoints the spawner. */
+int pthread_create(pthread_t *t, const pthread_attr_t *a,
+                   void *(*f)(void *), void *arg) {
+    (void)a; (void)f; (void)arg;
+    emscripten_run_script("console.warn('pthread_create suppressed; JS trace follows')");
+    emscripten_run_script("console.trace()");
+    *t = (pthread_t)0x1; /* fake handle: never joined in practice */
+    return 0;
+}
+#endif
 
 int pthread_getname_np(pthread_t t, char *name, size_t len) {
     (void)t;

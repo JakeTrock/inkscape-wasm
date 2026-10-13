@@ -1,0 +1,19 @@
+--- a/gobject/gtype.c
++++ b/gobject/gtype.c
+@@ -4425,7 +4425,16 @@
+ #pragma G_DEFINE_CONSTRUCTOR_PRAGMA_ARGS(gobject_init_ctor)
+ #endif
+ 
++#if defined(__EMSCRIPTEN__)
++/* wasm: static-lib ctor order follows link order, and the application's
++ * objects precede archives — their static ctors register GTypes before
++ * this unprioritized ctor runs. Prioritize it (the leg-B bridge's
++ * constructor(101) covers glib core init).
++ */
++static void gobject_init_ctor (void) __attribute__((constructor(101)));
++#else
+ G_DEFINE_CONSTRUCTOR (gobject_init_ctor)
++#endif
+ 
+ static void
+ gobject_init_ctor (void)

@@ -1,0 +1,18 @@
+--- a/glib/gthreadpool.c
++++ b/glib/gthreadpool.c
+@@ -713,6 +713,15 @@
+   g_return_val_if_fail (real, FALSE);
+   g_return_val_if_fail (real->running, FALSE);
+ 
++#ifdef __EMSCRIPTEN__
++  /* wasm single-thread: pool workers can never start (pthread_create is
++   * stubbed), so the normal path would wait forever for one. Run the
++   * pushed job inline on the caller's thread instead — GTask users then
++   * complete synchronously. */
++  real->pool.func (data, real->pool.user_data);
++  return TRUE;
++#endif
++
+   result = TRUE;
+ 
+   g_async_queue_lock (real->queue);

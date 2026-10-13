@@ -21,6 +21,14 @@ patch -d "$SRC/glib" -p1 -R --dry-run -f < "$PATCHES/glib/no-tool-install-emscri
 # (g_object_do_class_init is covered by iface-init-signatures.patch)
 patch -d "$SRC/glib" -p1 -R --dry-run -f < "$PATCHES/glib/gtype-h-wasm-signatures.patch" >/dev/null 2>&1 \
   || patch -d "$SRC/glib" -p1 < "$PATCHES/glib/gtype-h-wasm-signatures.patch"
+# wasm: app objects' static ctors (GType registrations) precede archives in
+# link order — gobject's unprioritized ctor loses the race; prioritize it
+patch -d "$SRC/glib" -p1 -R --dry-run -f < "$PATCHES/glib/gobject-ctor-priority.patch" >/dev/null 2>&1 \
+  || patch -d "$SRC/glib" -p1 < "$PATCHES/glib/gobject-ctor-priority.patch"
+# wasm: thread-pool workers can't exist; run pushed jobs inline (GTask async
+# module loading etc. would otherwise wait forever for a worker)
+patch -d "$SRC/glib" -p1 -R --dry-run -f < "$PATCHES/glib/gthreadpool-inline-push.patch" >/dev/null 2>&1 \
+  || patch -d "$SRC/glib" -p1 < "$PATCHES/glib/gthreadpool-inline-push.patch"
 # hand-written param spec registrations: 22 1-arg instance_init functions
 patch -d "$SRC/glib" -p1 -R --dry-run -f < "$PATCHES/glib/gparamspecs-instance-init-signatures.patch" >/dev/null 2>&1 \
   || patch -d "$SRC/glib" -p1 < "$PATCHES/glib/gparamspecs-instance-init-signatures.patch"

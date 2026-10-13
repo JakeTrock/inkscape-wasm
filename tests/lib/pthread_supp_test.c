@@ -27,7 +27,9 @@ int main() {
     assert(pthread_getspecific(key) == &val);
 
     assert(pthread_self() != 0);
-    assert(pthread_create(NULL, NULL, NULL, NULL) != 0); // no threads in wasm
+    // pthread_create is suppressed (returns 0, never runs the body) so glib's
+    // g_thread_new degrades instead of aborting boot — see pthread_supp.c.
+    assert(pthread_create(NULL, NULL, NULL, NULL) == 0);
 
     printf("pthread_supp ok (dtor check: exit code carries it)\n");
     // key_dtor runs at exit via destructor: val becomes 105; verify manually below

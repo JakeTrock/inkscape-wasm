@@ -28,17 +28,34 @@ emar cr "$TEST/libinkbridge.a" "$TEST/bytepipe.o" "$TEST/bridge.o" \
   "$TEST/daemon/broadway-buffer.o" "$TEST/daemon/broadway-output.o"
 
 # stage the runtime FS: trimmed share/ tree + fonts + writable profile dir,
-# mounted at / by the preload below
+# mounted at / by the preload below. install prefix is /inkscape and inkscape
+# looks for its data under <prefix>/share/inkscape/ — one level deeper than
+# the source share/ dir.
 FS="$BUILD/inkscape-fs"
-if [ ! -d "$FS/inkscape/share/ui" ]; then
+if [ ! -d "$FS/inkscape/share/inkscape/ui" ] || [ ! -d "$FS/inkscape/share/icons/Adwaita" ]; then
   rm -rf "$FS"
-  mkdir -p "$FS/inkscape/share" "$FS/fixtures" "$FS/home/web_user"
+  mkdir -p "$FS/inkscape/share/inkscape" "$FS/inkscape/share/icons" "$FS/fixtures" "$FS/home/web_user"
   for d in attributes filters fontcollections icons keys markers paint \
            palettes screens symbols templates themes ui; do
-    [ -d "$SRC/inkscape-1.4.4/share/$d" ] && cp -r "$SRC/inkscape-1.4.4/share/$d" "$FS/inkscape/share/"
+    [ -d "$SRC/inkscape-1.4.4/share/$d" ] && cp -r "$SRC/inkscape-1.4.4/share/$d" "$FS/inkscape/share/inkscape/"
   done
+  # GTK needs a base icon theme (image-missing etc.) or widget init aborts.
+  # shortcut: Adwaita ships image-missing as SVG only and wasm gdk-pixbuf has
+  # no SVG loader — seed 1x1 PNGs in its size dirs (they win lookup order over
+  # scalable) and drop the stale host caches so GTK rescans the dirs;
+  # upgrade to real rasterized icons if a GUI leg needs them
+  for d in Adwaita hicolor; do
+    [ -d "/usr/share/icons/$d" ] && cp -r "/usr/share/icons/$d" "$FS/inkscape/share/icons/"
+  done
+  for sub in Adwaita/16x16/status Adwaita/48x48/status hicolor/48x48/status; do
+    mkdir -p "$FS/inkscape/share/icons/$sub"
+    cp "$ROOT/tests/fixtures/tiny.png" "$FS/inkscape/share/icons/$sub/image-missing.png"
+  done
+  find "$FS/inkscape/share/icons" -name icon-theme.cache -delete
   cp "$ROOT/tests/fixtures/fonts.conf" "$FS/fixtures/"
   cp "$ROOT"/tests/fixtures/*.ttf "$FS/fixtures/"
+  cp "$ROOT"/tests/fixtures/*.svg "$FS/fixtures/"
+  cp "$ROOT/tests/fixtures/inkscape-prefs.xml" "$FS/home/web_user/preferences.xml"
 fi
 
 cmake -S "$SRC/inkscape-1.4.4" -B "$BUILD/inkscape" -G Ninja \
@@ -49,8 +66,10 @@ cmake -S "$SRC/inkscape-1.4.4" -B "$BUILD/inkscape" -G Ninja \
   -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
   -DCMAKE_C_FLAGS="-fexceptions -sEMULATE_FUNCTION_POINTER_CASTS=1" \
   -DCMAKE_CXX_FLAGS="-fexceptions -frtti -sEMULATE_FUNCTION_POINTER_CASTS=1" \
-  -DCMAKE_EXE_LINKER_FLAGS="-L$TEST -linkbridge -L$SYSROOT/lib -sSTACK_SIZE=8388608 \
+  -DCMAKE_CXX_STANDARD_LIBRARIES="$SYSROOT/lib/libpthread.a" \
+  -DCMAKE_EXE_LINKER_FLAGS="-L$TEST -linkbridge -L$SYSROOT/lib -O1 -sSTACK_SIZE=8388608 \
     -sALLOW_MEMORY_GROWTH=1 -sALLOW_TABLE_GROWTH=1 -sEMULATE_FUNCTION_POINTER_CASTS=1 \
+    -sBINARYEN_EXTRA_PASSES=--pass-arg=max-func-params@64 \
     -sMODULARIZE=1 -sEXPORT_NAME=Module \
     -sEXPORTED_RUNTIME_METHODS=HEAPU8,callMain,FS -sINITIAL_MEMORY=536870912 \
     --preload-file $FS@/" \
