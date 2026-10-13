@@ -1,0 +1,16 @@
+tests/t4/run.sh
+  h_2ae8077fa5063a 16,20,35-40
+tests/t4/xfail.txt
+  h_2ae8077fa5063a 3-11
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "7db6c978e8c3da691ee6900f665c0ab045352593",
+  "prompts": {},
+  "humans": {
+    "h_2ae8077fa5063a": {
+      "author": "Jacob Trock <jgh@geocrypt.me>"
+    }
+  }
+}
