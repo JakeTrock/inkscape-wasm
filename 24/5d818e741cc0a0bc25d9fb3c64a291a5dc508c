@@ -1,0 +1,74 @@
+docs/findings.md
+  h_2ae8077fa5063a 1-234
+packages/atk.sh
+  h_2ae8077fa5063a 7-8
+packages/common.sh
+  h_2ae8077fa5063a 22,44-49,107-110
+packages/gdk-pixbuf.sh
+  h_2ae8077fa5063a 9-13,16-17,25
+packages/glib.sh
+  h_2ae8077fa5063a 19-34
+packages/gtk3.sh
+  h_2ae8077fa5063a 6,14-22,37-47
+packages/lib2geom.sh
+  h_2ae8077fa5063a 1-11
+packages/libffi.sh
+  h_2ae8077fa5063a 15-24
+packages/libgc.sh
+  h_2ae8077fa5063a 1-21
+packages/pango.sh
+  h_2ae8077fa5063a 6,10-14
+packages/pthread_supp.c
+  h_2ae8077fa5063a 1-4,18
+patches/atk/iface-init-signatures.patch
+  h_2ae8077fa5063a 1-434
+patches/gdk-pixbuf/iface-init-signatures.patch
+  h_2ae8077fa5063a 1-43
+patches/gdk-pixbuf/pixops-line-func-params.patch
+  h_2ae8077fa5063a 1-94
+patches/glib/gmarshal-class-callbacks.patch
+  h_2ae8077fa5063a 1-1418
+patches/glib/gparam-h-instance-init-type.patch
+  h_2ae8077fa5063a 1-11
+patches/glib/gparamspecs-instance-init-signatures.patch
+  h_2ae8077fa5063a 1-508
+patches/glib/gtype-h-wasm-signatures.patch
+  h_2ae8077fa5063a 1-80
+patches/glib/iface-init-signatures.patch
+  h_2ae8077fa5063a 1-3566
+patches/gtk3/broadway-fake-server-emscripten.patch
+  h_2ae8077fa5063a 1-140
+patches/gtk3/filechooser-delegate-calls.patch
+  h_2ae8077fa5063a 1-22
+patches/gtk3/iface-init-signatures.patch
+  h_2ae8077fa5063a 1-5911
+patches/pango/fc-thread-inline.patch
+  h_2ae8077fa5063a 1-61
+patches/pango/iface-init-signatures.patch
+  h_2ae8077fa5063a 1-182
+tests/check-1.sh
+  h_2ae8077fa5063a 1-21
+tests/lib/atk_test.c
+  h_2ae8077fa5063a 11-12,19
+tests/lib/glibmm_test.cpp
+  h_2ae8077fa5063a 10
+tests/lib/lib2geom_test.cpp
+  h_2ae8077fa5063a 1-17
+tests/lib/libgc_test.c
+  h_2ae8077fa5063a 1-37
+tests/lib/pcre2_test.c
+  h_2ae8077fa5063a 8
+tests/lib/pthread_supp_test.c
+  h_2ae8077fa5063a 30
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "245d818e741cc0a0bc25d9fb3c64a291a5dc508c",
+  "prompts": {},
+  "humans": {
+    "h_2ae8077fa5063a": {
+      "author": "Jacob Trock <jgh@geocrypt.me>"
+    }
+  }
+}
