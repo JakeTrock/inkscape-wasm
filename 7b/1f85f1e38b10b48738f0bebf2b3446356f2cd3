@@ -1,0 +1,18 @@
+bridge/bytepipe.c
+  h_2ae8077fa5063a 1-309
+bridge/bytepipe.h
+  h_2ae8077fa5063a 1-21
+tests/lib/bytepipe_test.c
+  h_2ae8077fa5063a 1-89
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "7b1f85f1e38b10b48738f0bebf2b3446356f2cd3",
+  "prompts": {},
+  "humans": {
+    "h_2ae8077fa5063a": {
+      "author": "Jacob Trock <jgh@geocrypt.me>"
+    }
+  }
+}
