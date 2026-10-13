@@ -51,19 +51,34 @@ const tick = () => {
 requestAnimationFrame(tick);
 status('ready');
 
-/* ---- toolbar (v1: in-memory FS + blob downloads; no IDBFS persistence
- * across reloads — spec-05 deviation, see plan) ---- */
+/* ---- toolbar ----
+ * /home/web_user/documents is an IDBFS mount: opened/saved/exported files
+ * persist in IndexedDB across page reloads. flush() mirrors memory -> IDB
+ * after every write; fsLoaded restores the last session's document. */
 
 let docPath = null;        // last-opened file; Save writes back to it
 window.__doc_path = null;
+
+const DOCS = '/home/web_user/documents';
+m.FS.mkdirTree(DOCS);
+m.FS.mount(m.FS.filesystems.IDBFS, {}, DOCS);
+const fsLoaded = new Promise(res => m.FS.syncfs(true, res));
+const flush = () => { window.__fs_flushed = new Promise(res => m.FS.syncfs(false, res)); };
+fsLoaded.then(() => {
+  // exactly one persisted svg -> resume the last session's document
+  const svgs = m.FS.readdir(DOCS).filter(f => f.endsWith('.svg'));
+  if (svgs.length === 1) { docPath = DOCS + '/' + svgs[0]; window.__doc_path = docPath; }
+});
 
 $('file-input').addEventListener('change', async e => {
   const f = e.target.files[0];
   if (!f) return;
   const bytes = new Uint8Array(await f.arrayBuffer());
-  docPath = '/home/web_user/' + f.name;
+  await fsLoaded;
+  docPath = DOCS + '/' + f.name;
   m.FS.writeFile(docPath, bytes);
   window.__doc_path = docPath;
+  flush();
   runActions('file-open:' + docPath);
   status('opened ' + docPath);
   e.target.value = '';
@@ -80,12 +95,14 @@ $('btn-save').onclick = () => {
   }
   runActions('document-save');
   download(docPath.split('/').pop(), m.FS.readFile(docPath), 'image/svg+xml');
+  flush();
   status('saved ' + docPath);
 };
 
 $('btn-export').onclick = () => {
-  runActions('export-filename:/home/web_user/export.png;export-do');
-  download('export.png', m.FS.readFile('/home/web_user/export.png'), 'image/png');
+  runActions('export-filename:' + DOCS + '/export.png;export-do');
+  download('export.png', m.FS.readFile(DOCS + '/export.png'), 'image/png');
+  flush();
   status('exported export.png');
 };
 

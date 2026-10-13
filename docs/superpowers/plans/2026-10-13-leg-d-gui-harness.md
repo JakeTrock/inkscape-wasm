@@ -27,7 +27,7 @@
 1. **Rect tool selected via F4 accel, not toolbar pixel-click** — text-only model can't read goldens to pick button coords; F4 is a real GUI keypress, deterministic, and self-checking (no `<rect>` in the saved doc ⇒ the gate fails anyway).
 2. **T7 export "golden" is self-consistent**: native inkscape exports *the SVG this run saved* and pixelmatch compares the wasm export against it (threshold in `tests/manifest.json`). A committed golden of the drawn doc would also work but adds a regeneration step for zero extra coverage.
 3. **Boot stages are JS-observable facts** (factory resolved, runtime ready, broadway connected + first bytes, first canvas, first pumped frame) — no C-side `harness_log()` export; every stage the spec lists is still displayed.
-4. **IDBFS skipped in v1** — Open/Save/Export work against the in-memory FS with blob downloads to the host. Persistence across reloads is demo polish beyond the T7 exit condition. `shortcut: no persistence across reloads; add an IDBFS mount at /home/web_user/documents if the demo needs it.`
+4. **IDBFS skipped in v1** — Open/Save/Export work against the in-memory FS with blob downloads to the host. *(Added post-port, 2026-10-13: `/home/web_user/documents` is now an IDBFS mount — files persist across reloads; see findings "Post-port: IDBFS persistence".)*
 5. **Save on a never-opened document** opens Inkscape's own Save-As dialog (a broadway GTK dialog — it works, but is unscripted). The harness tracks the last-opened path; T7 always opens a fixture first, so `file-save` has a filename.
 
 ## Global Constraints (inherited)

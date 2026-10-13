@@ -416,3 +416,20 @@ Harness Save button no longer fires `document-save-as` with no doc open
 - `db.get(".svg")` returning null is *stock* behavior (dict is keyed by
   module id, not extension) — `Extension::save` autodetects the output
   module from the filename; not a wasm bug.
+
+## Post-port: IDBFS persistence (2026-10-13)
+
+- `-lidbfs.js` appended to the inkscape link flags (JS glue only, no wasm
+  change) — without it `FS.filesystems.IDBFS` is undefined. Relink needed
+  the usual binary-delete (ninja can't see `-l` flag changes).
+- `harness/loader.js` mounts `/home/web_user/documents` on IDBFS:
+  `syncfs(true)` on boot restores the last session, `syncfs(false)` after
+  every write (`window.__fs_flushed` promise; syncfs(false) snapshots the
+  whole mount, so awaiting the latest flush covers earlier writes).
+  docPath restore: exactly one persisted `.svg` resumes the session;
+  multiple leaves Save disabled until re-Open (v1 behavior).
+- Scratch paths (`t7`'s `/home/web_user/dbg.svg`) stay outside the mount —
+  session-only by design. prefs stay in the packaged FS (`/home/web_user`
+  root), unshadowed by the mount.
+- T7 now ends with a hard reload: saved doc + restored `__doc_path` must
+  survive a fresh boot (IndexedDB-backed).

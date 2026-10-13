@@ -97,9 +97,22 @@ test('T7: draw rect, save, export', async ({ page }) => {
   await page.click('#btn-export');
   await page.waitForTimeout(2000);
   const png = await page.evaluate(() =>
-    window.__bridge_mod.FS.readFile('/home/web_user/export.png'));
+    window.__bridge_mod.FS.readFile('/home/web_user/documents/export.png'));
   writeFileSync('../build/t7/t7-wasm.png', png);
   expect(png.length).toBeGreaterThan(1000);
 
   await page.screenshot({ path: '../build/t7/t7-shot.png' });
+
+  // IDBFS persistence: flush memory -> IndexedDB, hard-reload, and the
+  // saved document (plus docPath restore) must survive the fresh boot.
+  await page.evaluate(() => window.__fs_flushed);
+  await page.reload();
+  await page.waitForSelector('canvas', { timeout: 90000 });
+  await page.waitForSelector('#stage-frame[data-state=ok]', { timeout: 30000 });
+  await page.waitForFunction('window.__doc_path !== null', null, { timeout: 30000 });
+  const svg2 = await page.evaluate(() =>
+    new TextDecoder().decode(window.__bridge_mod.FS.readFile(window.__doc_path)));
+  expect(svg2).toContain('inkscape:version');
+  expect((svg2.match(/<rect/g) ?? []).length).toBeGreaterThanOrEqual(2);
+  console.log('T7 persistence: doc survived reload at', await page.evaluate('window.__doc_path'));
 });

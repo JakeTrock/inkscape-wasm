@@ -73,7 +73,7 @@ cmake -S "$SRC/inkscape-1.4.4" -B "$BUILD/inkscape" -G Ninja \
     -sBINARYEN_EXTRA_PASSES=--pass-arg=max-func-params@64 \
     -sMODULARIZE=1 -sEXPORT_NAME=Module \
     -sEXPORTED_FUNCTIONS=_main,_malloc,_free,_bridge_frame,_bridge_js_connect,_bridge_js_write,_bridge_js_poll,_bridge_js_poll_ptr \
-    -sEXPORTED_RUNTIME_METHODS=HEAPU8,callMain,FS -sINITIAL_MEMORY=536870912 \
+    -sEXPORTED_RUNTIME_METHODS=HEAPU8,callMain,FS -sINITIAL_MEMORY=536870912 -lidbfs.js \
     --preload-file $FS@/" \
   -DBUILD_TESTING=OFF -DENABLE_BINRELOC=OFF \
   -DENABLE_POPPLER=OFF -DENABLE_POPPLER_CAIRO=OFF \
