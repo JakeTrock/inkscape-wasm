@@ -8,14 +8,15 @@ static void on_children_changed(AtkObject* obj, gpointer change, gpointer data) 
 }
 
 int main() {
-    AtkObject* parent = atk_no_op_object_new(NULL);
+    GObject* owner = g_object_new(G_TYPE_OBJECT, NULL); /* atk_no_op_object_new requires non-NULL */
+    AtkObject* parent = atk_no_op_object_new(owner);
     assert(ATK_IS_OBJECT(parent));
     atk_object_set_name(parent, "test-parent");
     assert(g_strcmp0(atk_object_get_name(parent), "test-parent") == 0);
     atk_object_set_role(parent, ATK_ROLE_PANEL);
     assert(atk_object_get_role(parent) == ATK_ROLE_PANEL);
 
-    AtkObject* child = atk_no_op_object_new(NULL);
+    AtkObject* child = atk_no_op_object_new(owner);
     g_signal_connect(parent, "children-changed::add",
                      G_CALLBACK(on_children_changed), NULL);
     atk_object_set_parent(child, parent);

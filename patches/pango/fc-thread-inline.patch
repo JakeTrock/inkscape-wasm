@@ -1,0 +1,61 @@
+--- a/pango/pangofc-fontmap.c	2026-10-12 21:04:16.484859560 +0000
++++ b/pango/pangofc-fontmap.c	2026-10-12 21:04:12.120394028 +0000
+@@ -1047,7 +1047,12 @@
+   g_mutex_init (&pats->mutex);
+   g_cond_init (&pats->cond);
+ 
++#ifdef __EMSCRIPTEN__
++  /* wasm: no worker — run the match synchronously */
++  match_in_thread (thread_data_new (FC_MATCH, pats));
++#else
+   g_async_queue_push (fontmap->priv->queue, thread_data_new (FC_MATCH, pats));
++#endif
+ 
+   g_hash_table_insert (fontmap->priv->patterns_hash, pats->pattern, pats);
+ 
+@@ -1223,7 +1228,11 @@
+       before = PANGO_TRACE_CURRENT_TIME;
+ 
+       if (!pats->fontset)
++#ifdef __EMSCRIPTEN__
++        sort_in_thread (thread_data_new (FC_SORT, pats));
++#else
+         g_async_queue_push (pats->fontmap->priv->queue, thread_data_new (FC_SORT, pats));
++#endif
+ 
+       g_mutex_lock (&pats->mutex);
+ 
+@@ -1531,6 +1540,15 @@
+ 
+   g_mutex_lock (&fc_init_mutex);
+ 
++#ifdef __EMSCRIPTEN__
++  /* wasm: no worker threads — initialize fontconfig inline */
++  if (fc_initialized == DEFAULT_CONFIG_NOT_INITIALIZED)
++    {
++      fc_initialized = DEFAULT_CONFIG_INITIALIZING;
++
++      init_in_thread (thread_data_new (FC_INIT, NULL));
++    }
++#else
+   thread = g_thread_new ("[pango] fontconfig", fc_thread_func, g_async_queue_ref (fcfontmap->priv->queue));
+   g_thread_unref (thread);
+ 
+@@ -1540,6 +1558,7 @@
+ 
+       g_async_queue_push (fcfontmap->priv->queue, thread_data_new (FC_INIT, NULL));
+     }
++#endif
+ 
+   g_mutex_unlock (&fc_init_mutex);
+ }
+@@ -1632,7 +1651,9 @@
+   priv->n_families = -1;
+   priv->families = NULL;
+ 
++#ifndef __EMSCRIPTEN__
+   g_async_queue_push (fcfontmap->priv->queue, thread_data_new (FC_END, NULL));
++#endif
+ 
+   g_async_queue_unref (priv->queue);
+   priv->queue = NULL;

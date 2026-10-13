@@ -12,6 +12,15 @@ cp "$BUILD/libffi/.libs/libffi.a" "$SYSROOT/lib/"
 cp "$BUILD/libffi/libffi.pc" "$SYSROOT/lib/pkgconfig/"
 # upstream names the file libffi.pc but consumers look up module 'ffi'
 sed 's/^Name: libffi/Name: ffi/' "$BUILD/libffi/libffi.pc" > "$SYSROOT/lib/pkgconfig/ffi.pc"
-wasmtest libffi libffi_test.c $(pkg-config --static --cflags --libs ffi)
+# NOTE: link WITHOUT fpcast — emscripten's JS ffi_call_js calls table entries
+# directly, and fpcast thunks are not transparent to that. Constraint for the
+# final link: ffi_call must not run at runtime (gtk signal closures use direct
+# marshals, so the stack is unaffected; see findings.md).
+NOFPC="${CXXFLAGS/-sEMULATE_FUNCTION_POINTER_CASTS=1/}"
+emcc tests/lib/libffi_test.c -o "$TEST/libffi.js" $NOFPC \
+  -sALLOW_MEMORY_GROWTH -sEXIT_RUNTIME=1 -sEXPORTED_FUNCTIONS=_malloc,_free,_main \
+  -sALLOW_TABLE_GROWTH=1 -I"$SYSROOT/include" -L"$SYSROOT/lib" \
+  $(pkg-config --static --cflags --libs ffi) "$SYSROOT/lib/libpthread.a" \
+  && ( cd "$TEST" && node libffi.js )
 manifest libffi "$VER"
 touch "$STAMPS/libffi.ok"

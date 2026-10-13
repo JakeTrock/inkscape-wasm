@@ -1,0 +1,94 @@
+--- a/gdk-pixbuf/pixops/pixops.c
++++ b/gdk-pixbuf/pixops/pixops.c
+@@ -65,13 +65,17 @@
+   double overall_alpha;
+ }; 
+ 
++/* wasm: check_size/color1/color2 bundled into one pointer so the
++   table-resident line funcs stay under binaryen fpcast-emu's 16-param
++   limit (-sEMULATE_FUNCTION_POINTER_CASTS). */
++typedef struct { int check_size; guint32 color1; guint32 color2; } PixopsCheck;
+ typedef guchar *(*PixopsLineFunc) (int *weights, int n_x, int n_y,
+ 				   guchar *dest, int dest_x, guchar *dest_end,
+ 				   int dest_channels, int dest_has_alpha,
+ 				   guchar **src, int src_channels,
+ 				   gboolean src_has_alpha, int x_init,
+-				   int x_step, int src_width, int check_size,
+-				   guint32 color1, guint32 color2);
++				   int x_step, int src_width,
++				   const PixopsCheck *check);
+ typedef void (*PixopsPixelFunc)   (guchar *dest, int dest_x, int dest_channels,
+ 				   int dest_has_alpha, int src_has_alpha,
+ 				   int check_size, guint32 color1,
+@@ -697,7 +701,7 @@
+ 		guchar *dest, int dest_x, guchar *dest_end, int dest_channels, int dest_has_alpha,
+ 		guchar **src, int src_channels, gboolean src_has_alpha,
+ 		int x_init, int x_step, int src_width,
+-		int check_size, guint32 color1, guint32 color2)
++		const PixopsCheck *check)
+ {
+   int x = x_init;
+   int i, j;
+@@ -773,7 +777,7 @@
+ 		       guchar *dest, int dest_x, guchar *dest_end, int dest_channels, int dest_has_alpha,
+ 		       guchar **src, int src_channels, gboolean src_has_alpha,
+ 		       int x_init, int x_step, int src_width,
+-		       int check_size, guint32 color1, guint32 color2)
++		       const PixopsCheck *check)
+ {
+   int x = x_init;
+   guchar *src0 = src[0];
+@@ -873,11 +877,13 @@
+ 		      int dest_x, guchar *dest_end, int dest_channels,
+ 		      int dest_has_alpha, guchar **src, int src_channels,
+ 		      gboolean src_has_alpha, int x_init, int x_step,
+-		      int src_width, int check_size, guint32 color1,
+-		      guint32 color2)
++		      int src_width, const PixopsCheck *check)
+ {
+   int x = x_init;
+   int i, j;
++  int check_size = check->check_size;
++  guint32 color1 = check->color1;
++  guint32 color2 = check->color2;
+   int check_shift = get_check_shift (check_size);
+   int dest_r1, dest_g1, dest_b1;
+   int dest_r2, dest_g2, dest_b2;
+@@ -995,8 +1001,7 @@
+ scale_line (int *weights, int n_x, int n_y, guchar *dest, int dest_x,
+ 	    guchar *dest_end, int dest_channels, int dest_has_alpha,
+ 	    guchar **src, int src_channels, gboolean src_has_alpha, int x_init,
+-	    int x_step, int src_width, int check_size, guint32 color1,
+-	    guint32 color2)
++	    int x_step, int src_width, const PixopsCheck *check)
+ {
+   gint64 x = x_init;
+   int i, j;
+@@ -1098,7 +1103,7 @@
+ 		  guchar *dest_end, int dest_channels, int dest_has_alpha,
+ 		  guchar **src, int src_channels, gboolean src_has_alpha,
+ 		  int x_init, int x_step, int src_width,
+-		  int check_size, guint32 color1, guint32 color2)
++		  const PixopsCheck *check)
+ {
+   int x = x_init;
+   guchar *src0 = src[0];
+@@ -1364,6 +1369,8 @@
+ 	  tcolor2 = color2;
+ 	}
+ 
++      PixopsCheck check = { check_size, tcolor1, tcolor2 };
++
+       for (j=0; j<filter->y.n; j++)
+ 	{
+ 	  if (y_start <  0)
+@@ -1399,8 +1406,7 @@
+ 				 i + run_end_index * dest_channels,
+ 				 dest_channels, dest_has_alpha,
+ 				 line_bufs, src_channels, src_has_alpha,
+-				 x, x_step, src_width, check_size, tcolor1,
+-				 tcolor2);
++				 x, x_step, src_width, &check);
+ 
+       dest_x += (new_outbuf - outbuf) / dest_channels;
+ 

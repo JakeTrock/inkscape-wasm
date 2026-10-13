@@ -1,0 +1,1418 @@
+--- a/gobject/gmarshal.c
++++ b/gobject/gmarshal.c
+@@ -96,6 +96,7 @@
+ {
+   typedef void (*GMarshalFunc_VOID__VOID) (gpointer     data1,
+                                            gpointer     data2);
++typedef void (*GMarshalFunc_VOID__VOID_CLASS) (gpointer     data1);
+   GMarshalFunc_VOID__VOID callback;
+   GCClosure *cc = (GCClosure*) closure;
+   gpointer data1, data2;
+@@ -112,10 +113,17 @@
+       data1 = g_value_peek_pointer (param_values + 0);
+       data2 = closure->data;
+     }
+-  callback = (GMarshalFunc_VOID__VOID) (marshal_data ? marshal_data : cc->callback);
+-
+-  callback (data1,
+-            data2);
++  if (marshal_data)
++    {
++      /* wasm: class-closure members are declared without the trailing user_data */
++      GMarshalFunc_VOID__VOID_CLASS g_marshal_class_cb = (GMarshalFunc_VOID__VOID_CLASS) (void (*)(void)) marshal_data;
++      g_marshal_class_cb (data1);
++    }
++  else
++    {
++      callback = (GMarshalFunc_VOID__VOID) cc->callback;
++      callback (data1, data2);
++    }
+ }
+ 
+ /**
+@@ -146,6 +154,7 @@
+ {
+   typedef void (*GMarshalFunc_VOID__VOID) (gpointer     instance,
+                                            gpointer     data);
++typedef void (*GMarshalFunc_VOID__VOID_CLASS) (gpointer     instance);
+   GCClosure *cc = (GCClosure*) closure;
+   gpointer data1, data2;
+   GMarshalFunc_VOID__VOID callback;
+@@ -160,10 +169,17 @@
+       data1 = instance;
+       data2 = closure->data;
+     }
+-  callback = (GMarshalFunc_VOID__VOID) (marshal_data ? marshal_data : cc->callback);
+-
+-  callback (data1,
+-            data2);
++  if (marshal_data)
++    {
++      /* wasm: class-closure members are declared without the trailing user_data */
++      GMarshalFunc_VOID__VOID_CLASS g_marshal_class_cb = (GMarshalFunc_VOID__VOID_CLASS) (void (*)(void)) marshal_data;
++      g_marshal_class_cb (data1);
++    }
++  else
++    {
++      callback = (GMarshalFunc_VOID__VOID) cc->callback;
++      callback (data1, data2);
++    }
+ }
+ 
+ /**
+@@ -195,6 +211,8 @@
+   typedef void (*GMarshalFunc_VOID__BOOLEAN) (gpointer     data1,
+                                               gboolean     arg_1,
+                                               gpointer     data2);
++typedef void (*GMarshalFunc_VOID__BOOLEAN_CLASS) (gpointer     data1,
++                                              gboolean     arg_1);
+   GMarshalFunc_VOID__BOOLEAN callback;
+   GCClosure *cc = (GCClosure*) closure;
+   gpointer data1, data2;
+@@ -211,11 +229,17 @@
+       data1 = g_value_peek_pointer (param_values + 0);
+       data2 = closure->data;
+     }
+-  callback = (GMarshalFunc_VOID__BOOLEAN) (marshal_data ? marshal_data : cc->callback);
+-
+-  callback (data1,
+-            g_marshal_value_peek_boolean (param_values + 1),
+-            data2);
++  if (marshal_data)
++    {
++      /* wasm: class-closure members are declared without the trailing user_data */
++      GMarshalFunc_VOID__BOOLEAN_CLASS g_marshal_class_cb = (GMarshalFunc_VOID__BOOLEAN_CLASS) (void (*)(void)) marshal_data;
++      g_marshal_class_cb (data1, g_marshal_value_peek_boolean (param_values + 1));
++    }
++  else
++    {
++      callback = (GMarshalFunc_VOID__BOOLEAN) cc->callback;
++      callback (data1, g_marshal_value_peek_boolean (param_values + 1), data2);
++    }
+ }
+ 
+ /**
+@@ -247,6 +271,8 @@
+   typedef void (*GMarshalFunc_VOID__BOOLEAN) (gpointer     instance,
+                                               gboolean     arg_0,
+                                               gpointer     data);
++typedef void (*GMarshalFunc_VOID__BOOLEAN_CLASS) (gpointer     instance,
++                                              gboolean     arg_0);
+   GCClosure *cc = (GCClosure*) closure;
+   gpointer data1, data2;
+   GMarshalFunc_VOID__BOOLEAN callback;
+@@ -267,11 +293,17 @@
+       data1 = instance;
+       data2 = closure->data;
+     }
+-  callback = (GMarshalFunc_VOID__BOOLEAN) (marshal_data ? marshal_data : cc->callback);
+-
+-  callback (data1,
+-            arg0,
+-            data2);
++  if (marshal_data)
++    {
++      /* wasm: class-closure members are declared without the trailing user_data */
++      GMarshalFunc_VOID__BOOLEAN_CLASS g_marshal_class_cb = (GMarshalFunc_VOID__BOOLEAN_CLASS) (void (*)(void)) marshal_data;
++      g_marshal_class_cb (data1, arg0);
++    }
++  else
++    {
++      callback = (GMarshalFunc_VOID__BOOLEAN) cc->callback;
++      callback (data1, arg0, data2);
++    }
+ }
+ 
+ /**
+@@ -303,6 +335,8 @@
+   typedef void (*GMarshalFunc_VOID__CHAR) (gpointer     data1,
+                                            gchar        arg_1,
+                                            gpointer     data2);
++typedef void (*GMarshalFunc_VOID__CHAR_CLASS) (gpointer     data1,
++                                           gchar        arg_1);
+   GMarshalFunc_VOID__CHAR callback;
+   GCClosure *cc = (GCClosure*) closure;
+   gpointer data1, data2;
+@@ -319,11 +353,17 @@
+       data1 = g_value_peek_pointer (param_values + 0);
+       data2 = closure->data;
+     }
+-  callback = (GMarshalFunc_VOID__CHAR) (marshal_data ? marshal_data : cc->callback);
+-
+-  callback (data1,
+-            g_marshal_value_peek_char (param_values + 1),
+-            data2);
++  if (marshal_data)
++    {
++      /* wasm: class-closure members are declared without the trailing user_data */
++      GMarshalFunc_VOID__CHAR_CLASS g_marshal_class_cb = (GMarshalFunc_VOID__CHAR_CLASS) (void (*)(void)) marshal_data;
++      g_marshal_class_cb (data1, g_marshal_value_peek_char (param_values + 1));
++    }
++  else
++    {
++      callback = (GMarshalFunc_VOID__CHAR) cc->callback;
++      callback (data1, g_marshal_value_peek_char (param_values + 1), data2);
++    }
+ }
+ 
+ /**
+@@ -355,6 +395,8 @@
+   typedef void (*GMarshalFunc_VOID__CHAR) (gpointer     instance,
+                                            gchar        arg_0,
+                                            gpointer     data);
++typedef void (*GMarshalFunc_VOID__CHAR_CLASS) (gpointer     instance,
++                                           gchar        arg_0);
+   GCClosure *cc = (GCClosure*) closure;
+   gpointer data1, data2;
+   GMarshalFunc_VOID__CHAR callback;
+@@ -375,11 +417,17 @@
+       data1 = instance;
+       data2 = closure->data;
+     }
+-  callback = (GMarshalFunc_VOID__CHAR) (marshal_data ? marshal_data : cc->callback);
+-
+-  callback (data1,
+-            arg0,
+-            data2);
++  if (marshal_data)
++    {
++      /* wasm: class-closure members are declared without the trailing user_data */
++      GMarshalFunc_VOID__CHAR_CLASS g_marshal_class_cb = (GMarshalFunc_VOID__CHAR_CLASS) (void (*)(void)) marshal_data;
++      g_marshal_class_cb (data1, arg0);
++    }
++  else
++    {
++      callback = (GMarshalFunc_VOID__CHAR) cc->callback;
++      callback (data1, arg0, data2);
++    }
+ }
+ 
+ /**
+@@ -411,6 +459,8 @@
+   typedef void (*GMarshalFunc_VOID__UCHAR) (gpointer     data1,
+                                             guchar       arg_1,
+                                             gpointer     data2);
++typedef void (*GMarshalFunc_VOID__UCHAR_CLASS) (gpointer     data1,
++                                            guchar       arg_1);
+   GMarshalFunc_VOID__UCHAR callback;
+   GCClosure *cc = (GCClosure*) closure;
+   gpointer data1, data2;
+@@ -427,11 +477,17 @@
+       data1 = g_value_peek_pointer (param_values + 0);
+       data2 = closure->data;
+     }
+-  callback = (GMarshalFunc_VOID__UCHAR) (marshal_data ? marshal_data : cc->callback);
+-
+-  callback (data1,
+-            g_marshal_value_peek_uchar (param_values + 1),
+-            data2);
++  if (marshal_data)
++    {
++      /* wasm: class-closure members are declared without the trailing user_data */
++      GMarshalFunc_VOID__UCHAR_CLASS g_marshal_class_cb = (GMarshalFunc_VOID__UCHAR_CLASS) (void (*)(void)) marshal_data;
++      g_marshal_class_cb (data1, g_marshal_value_peek_uchar (param_values + 1));
++    }
++  else
++    {
++      callback = (GMarshalFunc_VOID__UCHAR) cc->callback;
++      callback (data1, g_marshal_value_peek_uchar (param_values + 1), data2);
++    }
+ }
+ 
+ /**
+@@ -463,6 +519,8 @@
+   typedef void (*GMarshalFunc_VOID__UCHAR) (gpointer     instance,
+                                             guchar       arg_0,
+                                             gpointer     data);
++typedef void (*GMarshalFunc_VOID__UCHAR_CLASS) (gpointer     instance,
++                                            guchar       arg_0);
+   GCClosure *cc = (GCClosure*) closure;
+   gpointer data1, data2;
+   GMarshalFunc_VOID__UCHAR callback;
+@@ -483,11 +541,17 @@
+       data1 = instance;
+       data2 = closure->data;
+     }
+-  callback = (GMarshalFunc_VOID__UCHAR) (marshal_data ? marshal_data : cc->callback);
+-
+-  callback (data1,
+-            arg0,
+-            data2);
++  if (marshal_data)
++    {
++      /* wasm: class-closure members are declared without the trailing user_data */
++      GMarshalFunc_VOID__UCHAR_CLASS g_marshal_class_cb = (GMarshalFunc_VOID__UCHAR_CLASS) (void (*)(void)) marshal_data;
++      g_marshal_class_cb (data1, arg0);
++    }
++  else
++    {
++      callback = (GMarshalFunc_VOID__UCHAR) cc->callback;
++      callback (data1, arg0, data2);
++    }
+ }
+ 
+ /**
+@@ -519,6 +583,8 @@
+   typedef void (*GMarshalFunc_VOID__INT) (gpointer     data1,
+                                           gint         arg_1,
+                                           gpointer     data2);
++typedef void (*GMarshalFunc_VOID__INT_CLASS) (gpointer     data1,
++                                          gint         arg_1);
+   GMarshalFunc_VOID__INT callback;
+   GCClosure *cc = (GCClosure*) closure;
+   gpointer data1, data2;
+@@ -535,11 +601,17 @@
+       data1 = g_value_peek_pointer (param_values + 0);
+       data2 = closure->data;
+     }
+-  callback = (GMarshalFunc_VOID__INT) (marshal_data ? marshal_data : cc->callback);
+-
+-  callback (data1,
+-            g_marshal_value_peek_int (param_values + 1),
+-            data2);
++  if (marshal_data)
++    {
++      /* wasm: class-closure members are declared without the trailing user_data */
++      GMarshalFunc_VOID__INT_CLASS g_marshal_class_cb = (GMarshalFunc_VOID__INT_CLASS) (void (*)(void)) marshal_data;
++      g_marshal_class_cb (data1, g_marshal_value_peek_int (param_values + 1));
++    }
++  else
++    {
++      callback = (GMarshalFunc_VOID__INT) cc->callback;
++      callback (data1, g_marshal_value_peek_int (param_values + 1), data2);
++    }
+ }
+ 
+ /**
+@@ -571,6 +643,8 @@
+   typedef void (*GMarshalFunc_VOID__INT) (gpointer     instance,
+                                           gint         arg_0,
+                                           gpointer     data);
++typedef void (*GMarshalFunc_VOID__INT_CLASS) (gpointer     instance,
++                                          gint         arg_0);
+   GCClosure *cc = (GCClosure*) closure;
+   gpointer data1, data2;
+   GMarshalFunc_VOID__INT callback;
+@@ -591,11 +665,17 @@
+       data1 = instance;
+       data2 = closure->data;
+     }
+-  callback = (GMarshalFunc_VOID__INT) (marshal_data ? marshal_data : cc->callback);
+-
+-  callback (data1,
+-            arg0,
+-            data2);
++  if (marshal_data)
++    {
++      /* wasm: class-closure members are declared without the trailing user_data */
++      GMarshalFunc_VOID__INT_CLASS g_marshal_class_cb = (GMarshalFunc_VOID__INT_CLASS) (void (*)(void)) marshal_data;
++      g_marshal_class_cb (data1, arg0);
++    }
++  else
++    {
++      callback = (GMarshalFunc_VOID__INT) cc->callback;
++      callback (data1, arg0, data2);
++    }
+ }
+ 
+ /**
+@@ -627,6 +707,8 @@
+   typedef void (*GMarshalFunc_VOID__UINT) (gpointer     data1,
+                                            guint        arg_1,
+                                            gpointer     data2);
++typedef void (*GMarshalFunc_VOID__UINT_CLASS) (gpointer     data1,
++                                           guint        arg_1);
+   GMarshalFunc_VOID__UINT callback;
+   GCClosure *cc = (GCClosure*) closure;
+   gpointer data1, data2;
+@@ -643,11 +725,17 @@
+       data1 = g_value_peek_pointer (param_values + 0);
+       data2 = closure->data;
+     }
+-  callback = (GMarshalFunc_VOID__UINT) (marshal_data ? marshal_data : cc->callback);
+-
+-  callback (data1,
+-            g_marshal_value_peek_uint (param_values + 1),
+-            data2);
++  if (marshal_data)
++    {
++      /* wasm: class-closure members are declared without the trailing user_data */
++      GMarshalFunc_VOID__UINT_CLASS g_marshal_class_cb = (GMarshalFunc_VOID__UINT_CLASS) (void (*)(void)) marshal_data;
++      g_marshal_class_cb (data1, g_marshal_value_peek_uint (param_values + 1));
++    }
++  else
++    {
++      callback = (GMarshalFunc_VOID__UINT) cc->callback;
++      callback (data1, g_marshal_value_peek_uint (param_values + 1), data2);
++    }
+ }
+ 
+ /**
+@@ -679,6 +767,8 @@
+   typedef void (*GMarshalFunc_VOID__UINT) (gpointer     instance,
+                                            guint        arg_0,
+                                            gpointer     data);
++typedef void (*GMarshalFunc_VOID__UINT_CLASS) (gpointer     instance,
++                                           guint        arg_0);
+   GCClosure *cc = (GCClosure*) closure;
+   gpointer data1, data2;
+   GMarshalFunc_VOID__UINT callback;
+@@ -699,11 +789,17 @@
+       data1 = instance;
+       data2 = closure->data;
+     }
+-  callback = (GMarshalFunc_VOID__UINT) (marshal_data ? marshal_data : cc->callback);
+-
+-  callback (data1,
+-            arg0,
+-            data2);
++  if (marshal_data)
++    {
++      /* wasm: class-closure members are declared without the trailing user_data */
++      GMarshalFunc_VOID__UINT_CLASS g_marshal_class_cb = (GMarshalFunc_VOID__UINT_CLASS) (void (*)(void)) marshal_data;
++      g_marshal_class_cb (data1, arg0);
++    }
++  else
++    {
++      callback = (GMarshalFunc_VOID__UINT) cc->callback;
++      callback (data1, arg0, data2);
++    }
+ }
+ 
+ /**
+@@ -735,6 +831,8 @@
+   typedef void (*GMarshalFunc_VOID__LONG) (gpointer     data1,
+                                            glong        arg_1,
+                                            gpointer     data2);
++typedef void (*GMarshalFunc_VOID__LONG_CLASS) (gpointer     data1,
++                                           glong        arg_1);
+   GMarshalFunc_VOID__LONG callback;
+   GCClosure *cc = (GCClosure*) closure;
+   gpointer data1, data2;
+@@ -751,11 +849,17 @@
+       data1 = g_value_peek_pointer (param_values + 0);
+       data2 = closure->data;
+     }
+-  callback = (GMarshalFunc_VOID__LONG) (marshal_data ? marshal_data : cc->callback);
+-
+-  callback (data1,
+-            g_marshal_value_peek_long (param_values + 1),
+-            data2);
++  if (marshal_data)
++    {
++      /* wasm: class-closure members are declared without the trailing user_data */
++      GMarshalFunc_VOID__LONG_CLASS g_marshal_class_cb = (GMarshalFunc_VOID__LONG_CLASS) (void (*)(void)) marshal_data;
++      g_marshal_class_cb (data1, g_marshal_value_peek_long (param_values + 1));
++    }
++  else
++    {
++      callback = (GMarshalFunc_VOID__LONG) cc->callback;
++      callback (data1, g_marshal_value_peek_long (param_values + 1), data2);
++    }
+ }
+ 
+ /**
+@@ -787,6 +891,8 @@
+   typedef void (*GMarshalFunc_VOID__LONG) (gpointer     instance,
+                                            glong        arg_0,
+                                            gpointer     data);
++typedef void (*GMarshalFunc_VOID__LONG_CLASS) (gpointer     instance,
++                                           glong        arg_0);
+   GCClosure *cc = (GCClosure*) closure;
+   gpointer data1, data2;
+   GMarshalFunc_VOID__LONG callback;
+@@ -807,11 +913,17 @@
+       data1 = instance;
+       data2 = closure->data;
+     }
+-  callback = (GMarshalFunc_VOID__LONG) (marshal_data ? marshal_data : cc->callback);
+-
+-  callback (data1,
+-            arg0,
+-            data2);
++  if (marshal_data)
++    {
++      /* wasm: class-closure members are declared without the trailing user_data */
++      GMarshalFunc_VOID__LONG_CLASS g_marshal_class_cb = (GMarshalFunc_VOID__LONG_CLASS) (void (*)(void)) marshal_data;
++      g_marshal_class_cb (data1, arg0);
++    }
++  else
++    {
++      callback = (GMarshalFunc_VOID__LONG) cc->callback;
++      callback (data1, arg0, data2);
++    }
+ }
+ 
+ /**
+@@ -843,6 +955,8 @@
+   typedef void (*GMarshalFunc_VOID__ULONG) (gpointer     data1,
+                                             gulong       arg_1,
+                                             gpointer     data2);
++typedef void (*GMarshalFunc_VOID__ULONG_CLASS) (gpointer     data1,
++                                            gulong       arg_1);
+   GMarshalFunc_VOID__ULONG callback;
+   GCClosure *cc = (GCClosure*) closure;
+   gpointer data1, data2;
+@@ -859,11 +973,17 @@
+       data1 = g_value_peek_pointer (param_values + 0);
+       data2 = closure->data;
+     }
+-  callback = (GMarshalFunc_VOID__ULONG) (marshal_data ? marshal_data : cc->callback);
+-
+-  callback (data1,
+-            g_marshal_value_peek_ulong (param_values + 1),
+-            data2);
++  if (marshal_data)
++    {
++      /* wasm: class-closure members are declared without the trailing user_data */
++      GMarshalFunc_VOID__ULONG_CLASS g_marshal_class_cb = (GMarshalFunc_VOID__ULONG_CLASS) (void (*)(void)) marshal_data;
++      g_marshal_class_cb (data1, g_marshal_value_peek_ulong (param_values + 1));
++    }
++  else
++    {
++      callback = (GMarshalFunc_VOID__ULONG) cc->callback;
++      callback (data1, g_marshal_value_peek_ulong (param_values + 1), data2);
++    }
+ }
+ 
+ /**
+@@ -895,6 +1015,8 @@
+   typedef void (*GMarshalFunc_VOID__ULONG) (gpointer     instance,
+                                             gulong       arg_0,
+                                             gpointer     data);
++typedef void (*GMarshalFunc_VOID__ULONG_CLASS) (gpointer     instance,
++                                            gulong       arg_0);
+   GCClosure *cc = (GCClosure*) closure;
+   gpointer data1, data2;
+   GMarshalFunc_VOID__ULONG callback;
+@@ -915,11 +1037,17 @@
+       data1 = instance;
+       data2 = closure->data;
+     }
+-  callback = (GMarshalFunc_VOID__ULONG) (marshal_data ? marshal_data : cc->callback);
+-
+-  callback (data1,
+-            arg0,
+-            data2);
++  if (marshal_data)
++    {
++      /* wasm: class-closure members are declared without the trailing user_data */
++      GMarshalFunc_VOID__ULONG_CLASS g_marshal_class_cb = (GMarshalFunc_VOID__ULONG_CLASS) (void (*)(void)) marshal_data;
++      g_marshal_class_cb (data1, arg0);
++    }
++  else
++    {
++      callback = (GMarshalFunc_VOID__ULONG) cc->callback;
++      callback (data1, arg0, data2);
++    }
+ }
+ 
+ /**
+@@ -951,6 +1079,8 @@
+   typedef void (*GMarshalFunc_VOID__ENUM) (gpointer     data1,
+                                            gint         arg_1,
+                                            gpointer     data2);
++typedef void (*GMarshalFunc_VOID__ENUM_CLASS) (gpointer     data1,
++                                           gint         arg_1);
+   GMarshalFunc_VOID__ENUM callback;
+   GCClosure *cc = (GCClosure*) closure;
+   gpointer data1, data2;
+@@ -967,11 +1097,17 @@
+       data1 = g_value_peek_pointer (param_values + 0);
+       data2 = closure->data;
+     }
+-  callback = (GMarshalFunc_VOID__ENUM) (marshal_data ? marshal_data : cc->callback);
+-
+-  callback (data1,
+-            g_marshal_value_peek_enum (param_values + 1),
+-            data2);
++  if (marshal_data)
++    {
++      /* wasm: class-closure members are declared without the trailing user_data */
++      GMarshalFunc_VOID__ENUM_CLASS g_marshal_class_cb = (GMarshalFunc_VOID__ENUM_CLASS) (void (*)(void)) marshal_data;
++      g_marshal_class_cb (data1, g_marshal_value_peek_enum (param_values + 1));
++    }
++  else
++    {
++      callback = (GMarshalFunc_VOID__ENUM) cc->callback;
++      callback (data1, g_marshal_value_peek_enum (param_values + 1), data2);
++    }
+ }
+ 
+ /**
+@@ -1003,6 +1139,8 @@
+   typedef void (*GMarshalFunc_VOID__ENUM) (gpointer     instance,
+                                            gint         arg_0,
+                                            gpointer     data);
++typedef void (*GMarshalFunc_VOID__ENUM_CLASS) (gpointer     instance,
++                                           gint         arg_0);
+   GCClosure *cc = (GCClosure*) closure;
+   gpointer data1, data2;
+   GMarshalFunc_VOID__ENUM callback;
+@@ -1023,11 +1161,17 @@
+       data1 = instance;
+       data2 = closure->data;
+     }
+-  callback = (GMarshalFunc_VOID__ENUM) (marshal_data ? marshal_data : cc->callback);
+-
+-  callback (data1,
+-            arg0,
+-            data2);
++  if (marshal_data)
++    {
++      /* wasm: class-closure members are declared without the trailing user_data */
++      GMarshalFunc_VOID__ENUM_CLASS g_marshal_class_cb = (GMarshalFunc_VOID__ENUM_CLASS) (void (*)(void)) marshal_data;
++      g_marshal_class_cb (data1, arg0);
++    }
++  else
++    {
++      callback = (GMarshalFunc_VOID__ENUM) cc->callback;
++      callback (data1, arg0, data2);
++    }
+ }
+ 
+ /**
+@@ -1059,6 +1203,8 @@
+   typedef void (*GMarshalFunc_VOID__FLAGS) (gpointer     data1,
+                                             guint        arg_1,
+                                             gpointer     data2);
++typedef void (*GMarshalFunc_VOID__FLAGS_CLASS) (gpointer     data1,
++                                            guint        arg_1);
+   GMarshalFunc_VOID__FLAGS callback;
+   GCClosure *cc = (GCClosure*) closure;
+   gpointer data1, data2;
+@@ -1075,11 +1221,17 @@
+       data1 = g_value_peek_pointer (param_values + 0);
+       data2 = closure->data;
+     }
+-  callback = (GMarshalFunc_VOID__FLAGS) (marshal_data ? marshal_data : cc->callback);
+-
+-  callback (data1,
+-            g_marshal_value_peek_flags (param_values + 1),
+-            data2);
++  if (marshal_data)
++    {
++      /* wasm: class-closure members are declared without the trailing user_data */
++      GMarshalFunc_VOID__FLAGS_CLASS g_marshal_class_cb = (GMarshalFunc_VOID__FLAGS_CLASS) (void (*)(void)) marshal_data;
++      g_marshal_class_cb (data1, g_marshal_value_peek_flags (param_values + 1));
++    }
++  else
++    {
++      callback = (GMarshalFunc_VOID__FLAGS) cc->callback;
++      callback (data1, g_marshal_value_peek_flags (param_values + 1), data2);
++    }
+ }
+ 
+ /**
+@@ -1111,6 +1263,8 @@
+   typedef void (*GMarshalFunc_VOID__FLAGS) (gpointer     instance,
+                                             guint        arg_0,
+                                             gpointer     data);
++typedef void (*GMarshalFunc_VOID__FLAGS_CLASS) (gpointer     instance,
++                                            guint        arg_0);
+   GCClosure *cc = (GCClosure*) closure;
+   gpointer data1, data2;
+   GMarshalFunc_VOID__FLAGS callback;
+@@ -1131,11 +1285,17 @@
+       data1 = instance;
+       data2 = closure->data;
+     }
+-  callback = (GMarshalFunc_VOID__FLAGS) (marshal_data ? marshal_data : cc->callback);
+-
+-  callback (data1,
+-            arg0,
+-            data2);
++  if (marshal_data)
++    {
++      /* wasm: class-closure members are declared without the trailing user_data */
++      GMarshalFunc_VOID__FLAGS_CLASS g_marshal_class_cb = (GMarshalFunc_VOID__FLAGS_CLASS) (void (*)(void)) marshal_data;
++      g_marshal_class_cb (data1, arg0);
++    }
++  else
++    {
++      callback = (GMarshalFunc_VOID__FLAGS) cc->callback;
++      callback (data1, arg0, data2);
++    }
+ }
+ 
+ /**
+@@ -1167,6 +1327,8 @@
+   typedef void (*GMarshalFunc_VOID__FLOAT) (gpointer     data1,
+                                             gfloat       arg_1,
+                                             gpointer     data2);
++typedef void (*GMarshalFunc_VOID__FLOAT_CLASS) (gpointer     data1,
++                                            gfloat       arg_1);
+   GMarshalFunc_VOID__FLOAT callback;
+   GCClosure *cc = (GCClosure*) closure;
+   gpointer data1, data2;
+@@ -1183,11 +1345,17 @@
+       data1 = g_value_peek_pointer (param_values + 0);
+       data2 = closure->data;
+     }
+-  callback = (GMarshalFunc_VOID__FLOAT) (marshal_data ? marshal_data : cc->callback);
+-
+-  callback (data1,
+-            g_marshal_value_peek_float (param_values + 1),
+-            data2);
++  if (marshal_data)
++    {
++      /* wasm: class-closure members are declared without the trailing user_data */
++      GMarshalFunc_VOID__FLOAT_CLASS g_marshal_class_cb = (GMarshalFunc_VOID__FLOAT_CLASS) (void (*)(void)) marshal_data;
++      g_marshal_class_cb (data1, g_marshal_value_peek_float (param_values + 1));
++    }
++  else
++    {
++      callback = (GMarshalFunc_VOID__FLOAT) cc->callback;
++      callback (data1, g_marshal_value_peek_float (param_values + 1), data2);
++    }
+ }
+ 
+ /**
+@@ -1219,6 +1387,8 @@
+   typedef void (*GMarshalFunc_VOID__FLOAT) (gpointer     instance,
+                                             gfloat       arg_0,
+                                             gpointer     data);
++typedef void (*GMarshalFunc_VOID__FLOAT_CLASS) (gpointer     instance,
++                                            gfloat       arg_0);
+   GCClosure *cc = (GCClosure*) closure;
+   gpointer data1, data2;
+   GMarshalFunc_VOID__FLOAT callback;
+@@ -1239,11 +1409,17 @@
+       data1 = instance;
+       data2 = closure->data;
+     }
+-  callback = (GMarshalFunc_VOID__FLOAT) (marshal_data ? marshal_data : cc->callback);
+-
+-  callback (data1,
+-            arg0,
+-            data2);
++  if (marshal_data)
++    {
++      /* wasm: class-closure members are declared without the trailing user_data */
++      GMarshalFunc_VOID__FLOAT_CLASS g_marshal_class_cb = (GMarshalFunc_VOID__FLOAT_CLASS) (void (*)(void)) marshal_data;
++      g_marshal_class_cb (data1, arg0);
++    }
++  else
++    {
++      callback = (GMarshalFunc_VOID__FLOAT) cc->callback;
++      callback (data1, arg0, data2);
++    }
+ }
+ 
+ /**
+@@ -1275,6 +1451,8 @@
+   typedef void (*GMarshalFunc_VOID__DOUBLE) (gpointer     data1,
+                                              gdouble      arg_1,
+                                              gpointer     data2);
++typedef void (*GMarshalFunc_VOID__DOUBLE_CLASS) (gpointer     data1,
++                                             gdouble      arg_1);
+   GMarshalFunc_VOID__DOUBLE callback;
+   GCClosure *cc = (GCClosure*) closure;
+   gpointer data1, data2;
+@@ -1291,11 +1469,17 @@
+       data1 = g_value_peek_pointer (param_values + 0);
+       data2 = closure->data;
+     }
+-  callback = (GMarshalFunc_VOID__DOUBLE) (marshal_data ? marshal_data : cc->callback);
+-
+-  callback (data1,
+-            g_marshal_value_peek_double (param_values + 1),
+-            data2);
++  if (marshal_data)
++    {
++      /* wasm: class-closure members are declared without the trailing user_data */
++      GMarshalFunc_VOID__DOUBLE_CLASS g_marshal_class_cb = (GMarshalFunc_VOID__DOUBLE_CLASS) (void (*)(void)) marshal_data;
++      g_marshal_class_cb (data1, g_marshal_value_peek_double (param_values + 1));
++    }
++  else
++    {
++      callback = (GMarshalFunc_VOID__DOUBLE) cc->callback;
++      callback (data1, g_marshal_value_peek_double (param_values + 1), data2);
++    }
+ }
+ 
+ /**
+@@ -1327,6 +1511,8 @@
+   typedef void (*GMarshalFunc_VOID__DOUBLE) (gpointer     instance,
+                                              gdouble      arg_0,
+                                              gpointer     data);
++typedef void (*GMarshalFunc_VOID__DOUBLE_CLASS) (gpointer     instance,
++                                             gdouble      arg_0);
+   GCClosure *cc = (GCClosure*) closure;
+   gpointer data1, data2;
+   GMarshalFunc_VOID__DOUBLE callback;
+@@ -1347,11 +1533,17 @@
+       data1 = instance;
+       data2 = closure->data;
+     }
+-  callback = (GMarshalFunc_VOID__DOUBLE) (marshal_data ? marshal_data : cc->callback);
+-
+-  callback (data1,
+-            arg0,
+-            data2);
++  if (marshal_data)
++    {
++      /* wasm: class-closure members are declared without the trailing user_data */
++      GMarshalFunc_VOID__DOUBLE_CLASS g_marshal_class_cb = (GMarshalFunc_VOID__DOUBLE_CLASS) (void (*)(void)) marshal_data;
++      g_marshal_class_cb (data1, arg0);
++    }
++  else
++    {
++      callback = (GMarshalFunc_VOID__DOUBLE) cc->callback;
++      callback (data1, arg0, data2);
++    }
+ }
+ 
+ /**
+@@ -1383,6 +1575,8 @@
+   typedef void (*GMarshalFunc_VOID__STRING) (gpointer     data1,
+                                              gpointer     arg_1,
+                                              gpointer     data2);
++typedef void (*GMarshalFunc_VOID__STRING_CLASS) (gpointer     data1,
++                                             gpointer     arg_1);
+   GMarshalFunc_VOID__STRING callback;
+   GCClosure *cc = (GCClosure*) closure;
+   gpointer data1, data2;
+@@ -1399,11 +1593,17 @@
+       data1 = g_value_peek_pointer (param_values + 0);
+       data2 = closure->data;
+     }
+-  callback = (GMarshalFunc_VOID__STRING) (marshal_data ? marshal_data : cc->callback);
+-
+-  callback (data1,
+-            g_marshal_value_peek_string (param_values + 1),
+-            data2);
++  if (marshal_data)
++    {
++      /* wasm: class-closure members are declared without the trailing user_data */
++      GMarshalFunc_VOID__STRING_CLASS g_marshal_class_cb = (GMarshalFunc_VOID__STRING_CLASS) (void (*)(void)) marshal_data;
++      g_marshal_class_cb (data1, g_marshal_value_peek_string (param_values + 1));
++    }
++  else
++    {
++      callback = (GMarshalFunc_VOID__STRING) cc->callback;
++      callback (data1, g_marshal_value_peek_string (param_values + 1), data2);
++    }
+ }
+ 
+ /**
+@@ -1435,6 +1635,8 @@
+   typedef void (*GMarshalFunc_VOID__STRING) (gpointer     instance,
+                                              gpointer     arg_0,
+                                              gpointer     data);
++typedef void (*GMarshalFunc_VOID__STRING_CLASS) (gpointer     instance,
++                                             gpointer     arg_0);
+   GCClosure *cc = (GCClosure*) closure;
+   gpointer data1, data2;
+   GMarshalFunc_VOID__STRING callback;
+@@ -1457,11 +1659,17 @@
+       data1 = instance;
+       data2 = closure->data;
+     }
+-  callback = (GMarshalFunc_VOID__STRING) (marshal_data ? marshal_data : cc->callback);
+-
+-  callback (data1,
+-            arg0,
+-            data2);
++  if (marshal_data)
++    {
++      /* wasm: class-closure members are declared without the trailing user_data */
++      GMarshalFunc_VOID__STRING_CLASS g_marshal_class_cb = (GMarshalFunc_VOID__STRING_CLASS) (void (*)(void)) marshal_data;
++      g_marshal_class_cb (data1, arg0);
++    }
++  else
++    {
++      callback = (GMarshalFunc_VOID__STRING) cc->callback;
++      callback (data1, arg0, data2);
++    }
+   if ((param_types[0] & G_SIGNAL_TYPE_STATIC_SCOPE) == 0 && arg0 != NULL)
+     g_free (arg0);
+ }
+@@ -1495,6 +1703,8 @@
+   typedef void (*GMarshalFunc_VOID__PARAM) (gpointer     data1,
+                                             gpointer     arg_1,
+                                             gpointer     data2);
++typedef void (*GMarshalFunc_VOID__PARAM_CLASS) (gpointer     data1,
++                                            gpointer     arg_1);
+   GMarshalFunc_VOID__PARAM callback;
+   GCClosure *cc = (GCClosure*) closure;
+   gpointer data1, data2;
+@@ -1511,11 +1721,17 @@
+       data1 = g_value_peek_pointer (param_values + 0);
+       data2 = closure->data;
+     }
+-  callback = (GMarshalFunc_VOID__PARAM) (marshal_data ? marshal_data : cc->callback);
+-
+-  callback (data1,
+-            g_marshal_value_peek_param (param_values + 1),
+-            data2);
++  if (marshal_data)
++    {
++      /* wasm: class-closure members are declared without the trailing user_data */
++      GMarshalFunc_VOID__PARAM_CLASS g_marshal_class_cb = (GMarshalFunc_VOID__PARAM_CLASS) (void (*)(void)) marshal_data;
++      g_marshal_class_cb (data1, g_marshal_value_peek_param (param_values + 1));
++    }
++  else
++    {
++      callback = (GMarshalFunc_VOID__PARAM) cc->callback;
++      callback (data1, g_marshal_value_peek_param (param_values + 1), data2);
++    }
+ }
+ 
+ /**
+@@ -1547,6 +1763,8 @@
+   typedef void (*GMarshalFunc_VOID__PARAM) (gpointer     instance,
+                                             gpointer     arg_0,
+                                             gpointer     data);
++typedef void (*GMarshalFunc_VOID__PARAM_CLASS) (gpointer     instance,
++                                            gpointer     arg_0);
+   GCClosure *cc = (GCClosure*) closure;
+   gpointer data1, data2;
+   GMarshalFunc_VOID__PARAM callback;
+@@ -1569,11 +1787,17 @@
+       data1 = instance;
+       data2 = closure->data;
+     }
+-  callback = (GMarshalFunc_VOID__PARAM) (marshal_data ? marshal_data : cc->callback);
+-
+-  callback (data1,
+-            arg0,
+-            data2);
++  if (marshal_data)
++    {
++      /* wasm: class-closure members are declared without the trailing user_data */
++      GMarshalFunc_VOID__PARAM_CLASS g_marshal_class_cb = (GMarshalFunc_VOID__PARAM_CLASS) (void (*)(void)) marshal_data;
++      g_marshal_class_cb (data1, arg0);
++    }
++  else
++    {
++      callback = (GMarshalFunc_VOID__PARAM) cc->callback;
++      callback (data1, arg0, data2);
++    }
+   if ((param_types[0] & G_SIGNAL_TYPE_STATIC_SCOPE) == 0 && arg0 != NULL)
+     g_param_spec_unref (arg0);
+ }
+@@ -1607,6 +1831,8 @@
+   typedef void (*GMarshalFunc_VOID__BOXED) (gpointer     data1,
+                                             gpointer     arg_1,
+                                             gpointer     data2);
++typedef void (*GMarshalFunc_VOID__BOXED_CLASS) (gpointer     data1,
++                                            gpointer     arg_1);
+   GMarshalFunc_VOID__BOXED callback;
+   GCClosure *cc = (GCClosure*) closure;
+   gpointer data1, data2;
+@@ -1623,11 +1849,17 @@
+       data1 = g_value_peek_pointer (param_values + 0);
+       data2 = closure->data;
+     }
+-  callback = (GMarshalFunc_VOID__BOXED) (marshal_data ? marshal_data : cc->callback);
+-
+-  callback (data1,
+-            g_marshal_value_peek_boxed (param_values + 1),
+-            data2);
++  if (marshal_data)
++    {
++      /* wasm: class-closure members are declared without the trailing user_data */
++      GMarshalFunc_VOID__BOXED_CLASS g_marshal_class_cb = (GMarshalFunc_VOID__BOXED_CLASS) (void (*)(void)) marshal_data;
++      g_marshal_class_cb (data1, g_marshal_value_peek_boxed (param_values + 1));
++    }
++  else
++    {
++      callback = (GMarshalFunc_VOID__BOXED) cc->callback;
++      callback (data1, g_marshal_value_peek_boxed (param_values + 1), data2);
++    }
+ }
+ 
+ /**
+@@ -1659,6 +1891,8 @@
+   typedef void (*GMarshalFunc_VOID__BOXED) (gpointer     instance,
+                                             gpointer     arg_0,
+                                             gpointer     data);
++typedef void (*GMarshalFunc_VOID__BOXED_CLASS) (gpointer     instance,
++                                            gpointer     arg_0);
+   GCClosure *cc = (GCClosure*) closure;
+   gpointer data1, data2;
+   GMarshalFunc_VOID__BOXED callback;
+@@ -1681,11 +1915,17 @@
+       data1 = instance;
+       data2 = closure->data;
+     }
+-  callback = (GMarshalFunc_VOID__BOXED) (marshal_data ? marshal_data : cc->callback);
+-
+-  callback (data1,
+-            arg0,
+-            data2);
++  if (marshal_data)
++    {
++      /* wasm: class-closure members are declared without the trailing user_data */
++      GMarshalFunc_VOID__BOXED_CLASS g_marshal_class_cb = (GMarshalFunc_VOID__BOXED_CLASS) (void (*)(void)) marshal_data;
++      g_marshal_class_cb (data1, arg0);
++    }
++  else
++    {
++      callback = (GMarshalFunc_VOID__BOXED) cc->callback;
++      callback (data1, arg0, data2);
++    }
+   if ((param_types[0] & G_SIGNAL_TYPE_STATIC_SCOPE) == 0 && arg0 != NULL)
+     g_boxed_free (param_types[0] & ~G_SIGNAL_TYPE_STATIC_SCOPE, arg0);
+ }
+@@ -1723,6 +1963,8 @@
+   typedef void (*GMarshalFunc_VOID__POINTER) (gpointer     data1,
+                                               gpointer     arg_1,
+                                               gpointer     data2);
++typedef void (*GMarshalFunc_VOID__POINTER_CLASS) (gpointer     data1,
++                                              gpointer     arg_1);
+   GMarshalFunc_VOID__POINTER callback;
+   GCClosure *cc = (GCClosure*) closure;
+   gpointer data1, data2;
+@@ -1739,11 +1981,17 @@
+       data1 = g_value_peek_pointer (param_values + 0);
+       data2 = closure->data;
+     }
+-  callback = (GMarshalFunc_VOID__POINTER) (marshal_data ? marshal_data : cc->callback);
+-
+-  callback (data1,
+-            g_marshal_value_peek_pointer (param_values + 1),
+-            data2);
++  if (marshal_data)
++    {
++      /* wasm: class-closure members are declared without the trailing user_data */
++      GMarshalFunc_VOID__POINTER_CLASS g_marshal_class_cb = (GMarshalFunc_VOID__POINTER_CLASS) (void (*)(void)) marshal_data;
++      g_marshal_class_cb (data1, g_marshal_value_peek_pointer (param_values + 1));
++    }
++  else
++    {
++      callback = (GMarshalFunc_VOID__POINTER) cc->callback;
++      callback (data1, g_marshal_value_peek_pointer (param_values + 1), data2);
++    }
+ }
+ 
+ /**
+@@ -1775,6 +2023,8 @@
+   typedef void (*GMarshalFunc_VOID__POINTER) (gpointer     instance,
+                                               gpointer     arg_0,
+                                               gpointer     data);
++typedef void (*GMarshalFunc_VOID__POINTER_CLASS) (gpointer     instance,
++                                              gpointer     arg_0);
+   GCClosure *cc = (GCClosure*) closure;
+   gpointer data1, data2;
+   GMarshalFunc_VOID__POINTER callback;
+@@ -1795,11 +2045,17 @@
+       data1 = instance;
+       data2 = closure->data;
+     }
+-  callback = (GMarshalFunc_VOID__POINTER) (marshal_data ? marshal_data : cc->callback);
+-
+-  callback (data1,
+-            arg0,
+-            data2);
++  if (marshal_data)
++    {
++      /* wasm: class-closure members are declared without the trailing user_data */
++      GMarshalFunc_VOID__POINTER_CLASS g_marshal_class_cb = (GMarshalFunc_VOID__POINTER_CLASS) (void (*)(void)) marshal_data;
++      g_marshal_class_cb (data1, arg0);
++    }
++  else
++    {
++      callback = (GMarshalFunc_VOID__POINTER) cc->callback;
++      callback (data1, arg0, data2);
++    }
+ }
+ 
+ /**
+@@ -1831,6 +2087,8 @@
+   typedef void (*GMarshalFunc_VOID__OBJECT) (gpointer     data1,
+                                              gpointer     arg_1,
+                                              gpointer     data2);
++typedef void (*GMarshalFunc_VOID__OBJECT_CLASS) (gpointer     data1,
++                                             gpointer     arg_1);
+   GMarshalFunc_VOID__OBJECT callback;
+   GCClosure *cc = (GCClosure*) closure;
+   gpointer data1, data2;
+@@ -1847,11 +2105,17 @@
+       data1 = g_value_peek_pointer (param_values + 0);
+       data2 = closure->data;
+     }
+-  callback = (GMarshalFunc_VOID__OBJECT) (marshal_data ? marshal_data : cc->callback);
+-
+-  callback (data1,
+-            g_marshal_value_peek_object (param_values + 1),
+-            data2);
++  if (marshal_data)
++    {
++      /* wasm: class-closure members are declared without the trailing user_data */
++      GMarshalFunc_VOID__OBJECT_CLASS g_marshal_class_cb = (GMarshalFunc_VOID__OBJECT_CLASS) (void (*)(void)) marshal_data;
++      g_marshal_class_cb (data1, g_marshal_value_peek_object (param_values + 1));
++    }
++  else
++    {
++      callback = (GMarshalFunc_VOID__OBJECT) cc->callback;
++      callback (data1, g_marshal_value_peek_object (param_values + 1), data2);
++    }
+ }
+ 
+ /**
+@@ -1883,6 +2147,8 @@
+   typedef void (*GMarshalFunc_VOID__OBJECT) (gpointer     instance,
+                                              gpointer     arg_0,
+                                              gpointer     data);
++typedef void (*GMarshalFunc_VOID__OBJECT_CLASS) (gpointer     instance,
++                                             gpointer     arg_0);
+   GCClosure *cc = (GCClosure*) closure;
+   gpointer data1, data2;
+   GMarshalFunc_VOID__OBJECT callback;
+@@ -1905,11 +2171,17 @@
+       data1 = instance;
+       data2 = closure->data;
+     }
+-  callback = (GMarshalFunc_VOID__OBJECT) (marshal_data ? marshal_data : cc->callback);
+-
+-  callback (data1,
+-            arg0,
+-            data2);
++  if (marshal_data)
++    {
++      /* wasm: class-closure members are declared without the trailing user_data */
++      GMarshalFunc_VOID__OBJECT_CLASS g_marshal_class_cb = (GMarshalFunc_VOID__OBJECT_CLASS) (void (*)(void)) marshal_data;
++      g_marshal_class_cb (data1, arg0);
++    }
++  else
++    {
++      callback = (GMarshalFunc_VOID__OBJECT) cc->callback;
++      callback (data1, arg0, data2);
++    }
+   if (arg0 != NULL)
+     g_object_unref (arg0);
+ }
+@@ -1943,6 +2215,8 @@
+   typedef void (*GMarshalFunc_VOID__VARIANT) (gpointer     data1,
+                                               gpointer     arg_1,
+                                               gpointer     data2);
++typedef void (*GMarshalFunc_VOID__VARIANT_CLASS) (gpointer     data1,
++                                              gpointer     arg_1);
+   GMarshalFunc_VOID__VARIANT callback;
+   GCClosure *cc = (GCClosure*) closure;
+   gpointer data1, data2;
+@@ -1959,11 +2233,17 @@
+       data1 = g_value_peek_pointer (param_values + 0);
+       data2 = closure->data;
+     }
+-  callback = (GMarshalFunc_VOID__VARIANT) (marshal_data ? marshal_data : cc->callback);
+-
+-  callback (data1,
+-            g_marshal_value_peek_variant (param_values + 1),
+-            data2);
++  if (marshal_data)
++    {
++      /* wasm: class-closure members are declared without the trailing user_data */
++      GMarshalFunc_VOID__VARIANT_CLASS g_marshal_class_cb = (GMarshalFunc_VOID__VARIANT_CLASS) (void (*)(void)) marshal_data;
++      g_marshal_class_cb (data1, g_marshal_value_peek_variant (param_values + 1));
++    }
++  else
++    {
++      callback = (GMarshalFunc_VOID__VARIANT) cc->callback;
++      callback (data1, g_marshal_value_peek_variant (param_values + 1), data2);
++    }
+ }
+ 
+ /**
+@@ -1995,6 +2275,8 @@
+   typedef void (*GMarshalFunc_VOID__VARIANT) (gpointer     instance,
+                                               gpointer     arg_0,
+                                               gpointer     data);
++typedef void (*GMarshalFunc_VOID__VARIANT_CLASS) (gpointer     instance,
++                                              gpointer     arg_0);
+   GCClosure *cc = (GCClosure*) closure;
+   gpointer data1, data2;
+   GMarshalFunc_VOID__VARIANT callback;
+@@ -2017,11 +2299,17 @@
+       data1 = instance;
+       data2 = closure->data;
+     }
+-  callback = (GMarshalFunc_VOID__VARIANT) (marshal_data ? marshal_data : cc->callback);
+-
+-  callback (data1,
+-            arg0,
+-            data2);
++  if (marshal_data)
++    {
++      /* wasm: class-closure members are declared without the trailing user_data */
++      GMarshalFunc_VOID__VARIANT_CLASS g_marshal_class_cb = (GMarshalFunc_VOID__VARIANT_CLASS) (void (*)(void)) marshal_data;
++      g_marshal_class_cb (data1, arg0);
++    }
++  else
++    {
++      callback = (GMarshalFunc_VOID__VARIANT) cc->callback;
++      callback (data1, arg0, data2);
++    }
+   if ((param_types[0] & G_SIGNAL_TYPE_STATIC_SCOPE) == 0 && arg0 != NULL)
+     g_variant_unref (arg0);
+ }
+@@ -2056,6 +2344,9 @@
+                                                    guint        arg_1,
+                                                    gpointer     arg_2,
+                                                    gpointer     data2);
++typedef void (*GMarshalFunc_VOID__UINT_POINTER_CLASS) (gpointer     data1,
++                                                   guint        arg_1,
++                                                   gpointer     arg_2);
+   GMarshalFunc_VOID__UINT_POINTER callback;
+   GCClosure *cc = (GCClosure*) closure;
+   gpointer data1, data2;
+@@ -2072,12 +2363,17 @@
+       data1 = g_value_peek_pointer (param_values + 0);
+       data2 = closure->data;
+     }
+-  callback = (GMarshalFunc_VOID__UINT_POINTER) (marshal_data ? marshal_data : cc->callback);
+-
+-  callback (data1,
+-            g_marshal_value_peek_uint (param_values + 1),
+-            g_marshal_value_peek_pointer (param_values + 2),
+-            data2);
++  if (marshal_data)
++    {
++      /* wasm: class-closure members are declared without the trailing user_data */
++      GMarshalFunc_VOID__UINT_POINTER_CLASS g_marshal_class_cb = (GMarshalFunc_VOID__UINT_POINTER_CLASS) (void (*)(void)) marshal_data;
++      g_marshal_class_cb (data1, g_marshal_value_peek_uint (param_values + 1), g_marshal_value_peek_pointer (param_values + 2));
++    }
++  else
++    {
++      callback = (GMarshalFunc_VOID__UINT_POINTER) cc->callback;
++      callback (data1, g_marshal_value_peek_uint (param_values + 1), g_marshal_value_peek_pointer (param_values + 2), data2);
++    }
+ }
+ 
+ /**
+@@ -2110,6 +2406,9 @@
+                                                    guint        arg_0,
+                                                    gpointer     arg_1,
+                                                    gpointer     data);
++typedef void (*GMarshalFunc_VOID__UINT_POINTER_CLASS) (gpointer     instance,
++                                                   guint        arg_0,
++                                                   gpointer     arg_1);
+   GCClosure *cc = (GCClosure*) closure;
+   gpointer data1, data2;
+   GMarshalFunc_VOID__UINT_POINTER callback;
+@@ -2132,12 +2431,17 @@
+       data1 = instance;
+       data2 = closure->data;
+     }
+-  callback = (GMarshalFunc_VOID__UINT_POINTER) (marshal_data ? marshal_data : cc->callback);
+-
+-  callback (data1,
+-            arg0,
+-            arg1,
+-            data2);
++  if (marshal_data)
++    {
++      /* wasm: class-closure members are declared without the trailing user_data */
++      GMarshalFunc_VOID__UINT_POINTER_CLASS g_marshal_class_cb = (GMarshalFunc_VOID__UINT_POINTER_CLASS) (void (*)(void)) marshal_data;
++      g_marshal_class_cb (data1, arg0, arg1);
++    }
++  else
++    {
++      callback = (GMarshalFunc_VOID__UINT_POINTER) cc->callback;
++      callback (data1, arg0, arg1, data2);
++    }
+ }
+ 
+ /**
+@@ -2171,6 +2475,8 @@
+   typedef gboolean (*GMarshalFunc_BOOLEAN__FLAGS) (gpointer     data1,
+                                                    guint        arg_1,
+                                                    gpointer     data2);
++typedef gboolean (*GMarshalFunc_BOOLEAN__FLAGS_CLASS) (gpointer     data1,
++                                                   guint        arg_1);
+   GMarshalFunc_BOOLEAN__FLAGS callback;
+   GCClosure *cc = (GCClosure*) closure;
+   gpointer data1, data2;
+@@ -2189,11 +2495,17 @@
+       data1 = g_value_peek_pointer (param_values + 0);
+       data2 = closure->data;
+     }
+-  callback = (GMarshalFunc_BOOLEAN__FLAGS) (marshal_data ? marshal_data : cc->callback);
+-
+-  v_return = callback (data1,
+-                       g_marshal_value_peek_flags (param_values + 1),
+-                       data2);
++  if (marshal_data)
++    {
++      /* wasm: class-closure members are declared without the trailing user_data */
++      GMarshalFunc_BOOLEAN__FLAGS_CLASS g_marshal_class_cb = (GMarshalFunc_BOOLEAN__FLAGS_CLASS) (void (*)(void)) marshal_data;
++      v_return = g_marshal_class_cb (data1, g_marshal_value_peek_flags (param_values + 1));
++    }
++  else
++    {
++      callback = (GMarshalFunc_BOOLEAN__FLAGS) cc->callback;
++      v_return = callback (data1, g_marshal_value_peek_flags (param_values + 1), data2);
++    }
+ 
+   g_value_set_boolean (return_value, v_return);
+ }
+@@ -2227,6 +2539,8 @@
+   typedef gboolean (*GMarshalFunc_BOOLEAN__FLAGS) (gpointer     instance,
+                                                    guint        arg_0,
+                                                    gpointer     data);
++typedef gboolean (*GMarshalFunc_BOOLEAN__FLAGS_CLASS) (gpointer     instance,
++                                                   guint        arg_0);
+   GCClosure *cc = (GCClosure*) closure;
+   gpointer data1, data2;
+   GMarshalFunc_BOOLEAN__FLAGS callback;
+@@ -2250,11 +2564,17 @@
+       data1 = instance;
+       data2 = closure->data;
+     }
+-  callback = (GMarshalFunc_BOOLEAN__FLAGS) (marshal_data ? marshal_data : cc->callback);
+-
+-  v_return = callback (data1,
+-                       arg0,
+-                       data2);
++  if (marshal_data)
++    {
++      /* wasm: class-closure members are declared without the trailing user_data */
++      GMarshalFunc_BOOLEAN__FLAGS_CLASS g_marshal_class_cb = (GMarshalFunc_BOOLEAN__FLAGS_CLASS) (void (*)(void)) marshal_data;
++      v_return = g_marshal_class_cb (data1, arg0);
++    }
++  else
++    {
++      callback = (GMarshalFunc_BOOLEAN__FLAGS) cc->callback;
++      v_return = callback (data1, arg0, data2);
++    }
+ 
+   g_value_set_boolean (return_value, v_return);
+ }
+@@ -2290,6 +2610,9 @@
+                                                          gpointer     arg_1,
+                                                          gpointer     arg_2,
+                                                          gpointer     data2);
++typedef gchar* (*GMarshalFunc_STRING__OBJECT_POINTER_CLASS) (gpointer     data1,
++                                                         gpointer     arg_1,
++                                                         gpointer     arg_2);
+   GMarshalFunc_STRING__OBJECT_POINTER callback;
+   GCClosure *cc = (GCClosure*) closure;
+   gpointer data1, data2;
+@@ -2308,12 +2631,17 @@
+       data1 = g_value_peek_pointer (param_values + 0);
+       data2 = closure->data;
+     }
+-  callback = (GMarshalFunc_STRING__OBJECT_POINTER) (marshal_data ? marshal_data : cc->callback);
+-
+-  v_return = callback (data1,
+-                       g_marshal_value_peek_object (param_values + 1),
+-                       g_marshal_value_peek_pointer (param_values + 2),
+-                       data2);
++  if (marshal_data)
++    {
++      /* wasm: class-closure members are declared without the trailing user_data */
++      GMarshalFunc_STRING__OBJECT_POINTER_CLASS g_marshal_class_cb = (GMarshalFunc_STRING__OBJECT_POINTER_CLASS) (void (*)(void)) marshal_data;
++      v_return = g_marshal_class_cb (data1, g_marshal_value_peek_object (param_values + 1), g_marshal_value_peek_pointer (param_values + 2));
++    }
++  else
++    {
++      callback = (GMarshalFunc_STRING__OBJECT_POINTER) cc->callback;
++      v_return = callback (data1, g_marshal_value_peek_object (param_values + 1), g_marshal_value_peek_pointer (param_values + 2), data2);
++    }
+ 
+   g_value_take_string (return_value, v_return);
+ }
+@@ -2348,6 +2676,9 @@
+                                                          gpointer     arg_0,
+                                                          gpointer     arg_1,
+                                                          gpointer     data);
++typedef gchar* (*GMarshalFunc_STRING__OBJECT_POINTER_CLASS) (gpointer     instance,
++                                                         gpointer     arg_0,
++                                                         gpointer     arg_1);
+   GCClosure *cc = (GCClosure*) closure;
+   gpointer data1, data2;
+   GMarshalFunc_STRING__OBJECT_POINTER callback;
+@@ -2375,12 +2706,17 @@
+       data1 = instance;
+       data2 = closure->data;
+     }
+-  callback = (GMarshalFunc_STRING__OBJECT_POINTER) (marshal_data ? marshal_data : cc->callback);
+-
+-  v_return = callback (data1,
+-                       arg0,
+-                       arg1,
+-                       data2);
++  if (marshal_data)
++    {
++      /* wasm: class-closure members are declared without the trailing user_data */
++      GMarshalFunc_STRING__OBJECT_POINTER_CLASS g_marshal_class_cb = (GMarshalFunc_STRING__OBJECT_POINTER_CLASS) (void (*)(void)) marshal_data;
++      v_return = g_marshal_class_cb (data1, arg0, arg1);
++    }
++  else
++    {
++      callback = (GMarshalFunc_STRING__OBJECT_POINTER) cc->callback;
++      v_return = callback (data1, arg0, arg1, data2);
++    }
+   if (arg0 != NULL)
+     g_object_unref (arg0);
+ 
+@@ -2419,6 +2755,9 @@
+                                                          gpointer     arg_1,
+                                                          gpointer     arg_2,
+                                                          gpointer     data2);
++typedef gboolean (*GMarshalFunc_BOOLEAN__BOXED_BOXED_CLASS) (gpointer     data1,
++                                                         gpointer     arg_1,
++                                                         gpointer     arg_2);
+   GMarshalFunc_BOOLEAN__BOXED_BOXED callback;
+   GCClosure *cc = (GCClosure*) closure;
+   gpointer data1, data2;
+@@ -2437,12 +2776,17 @@
+       data1 = g_value_peek_pointer (param_values + 0);
+       data2 = closure->data;
+     }
+-  callback = (GMarshalFunc_BOOLEAN__BOXED_BOXED) (marshal_data ? marshal_data : cc->callback);
+-
+-  v_return = callback (data1,
+-                       g_marshal_value_peek_boxed (param_values + 1),
+-                       g_marshal_value_peek_boxed (param_values + 2),
+-                       data2);
++  if (marshal_data)
++    {
++      /* wasm: class-closure members are declared without the trailing user_data */
++      GMarshalFunc_BOOLEAN__BOXED_BOXED_CLASS g_marshal_class_cb = (GMarshalFunc_BOOLEAN__BOXED_BOXED_CLASS) (void (*)(void)) marshal_data;
++      v_return = g_marshal_class_cb (data1, g_marshal_value_peek_boxed (param_values + 1), g_marshal_value_peek_boxed (param_values + 2));
++    }
++  else
++    {
++      callback = (GMarshalFunc_BOOLEAN__BOXED_BOXED) cc->callback;
++      v_return = callback (data1, g_marshal_value_peek_boxed (param_values + 1), g_marshal_value_peek_boxed (param_values + 2), data2);
++    }
+ 
+   g_value_set_boolean (return_value, v_return);
+ }
+@@ -2477,6 +2821,9 @@
+                                                          gpointer     arg_0,
+                                                          gpointer     arg_1,
+                                                          gpointer     data);
++typedef gboolean (*GMarshalFunc_BOOLEAN__BOXED_BOXED_CLASS) (gpointer     instance,
++                                                         gpointer     arg_0,
++                                                         gpointer     arg_1);
+   GCClosure *cc = (GCClosure*) closure;
+   gpointer data1, data2;
+   GMarshalFunc_BOOLEAN__BOXED_BOXED callback;
+@@ -2506,12 +2853,17 @@
+       data1 = instance;
+       data2 = closure->data;
+     }
+-  callback = (GMarshalFunc_BOOLEAN__BOXED_BOXED) (marshal_data ? marshal_data : cc->callback);
+-
+-  v_return = callback (data1,
+-                       arg0,
+-                       arg1,
+-                       data2);
++  if (marshal_data)
++    {
++      /* wasm: class-closure members are declared without the trailing user_data */
++      GMarshalFunc_BOOLEAN__BOXED_BOXED_CLASS g_marshal_class_cb = (GMarshalFunc_BOOLEAN__BOXED_BOXED_CLASS) (void (*)(void)) marshal_data;
++      v_return = g_marshal_class_cb (data1, arg0, arg1);
++    }
++  else
++    {
++      callback = (GMarshalFunc_BOOLEAN__BOXED_BOXED) cc->callback;
++      v_return = callback (data1, arg0, arg1, data2);
++    }
+   if ((param_types[0] & G_SIGNAL_TYPE_STATIC_SCOPE) == 0 && arg0 != NULL)
+     g_boxed_free (param_types[0] & ~G_SIGNAL_TYPE_STATIC_SCOPE, arg0);
+   if ((param_types[1] & G_SIGNAL_TYPE_STATIC_SCOPE) == 0 && arg1 != NULL)

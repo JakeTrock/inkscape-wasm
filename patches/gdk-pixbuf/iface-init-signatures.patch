@@ -1,0 +1,43 @@
+--- a/gdk-pixbuf/gdk-pixbuf.c
++++ b/gdk-pixbuf/gdk-pixbuf.c
+@@ -201,8 +201,10 @@
+   PROP_PIXEL_BYTES
+ };
+ 
+-static void gdk_pixbuf_icon_iface_init (GIconIface *iface);
+-static void gdk_pixbuf_loadable_icon_iface_init (GLoadableIconIface *iface);
++static void gdk_pixbuf_icon_iface_init (GIconIface *iface,
++		  gpointer      iface_data);
++static void gdk_pixbuf_loadable_icon_iface_init (GLoadableIconIface *iface,
++		  gpointer      iface_data);
+ 
+ G_DEFINE_TYPE_WITH_CODE (GdkPixbuf, gdk_pixbuf, G_TYPE_OBJECT,
+                          G_IMPLEMENT_INTERFACE (G_TYPE_ICON, gdk_pixbuf_icon_iface_init)
+@@ -527,8 +529,11 @@
+ }
+ 
+ static void
+-gdk_pixbuf_loadable_icon_iface_init (GLoadableIconIface *iface)
+-{
++gdk_pixbuf_loadable_icon_iface_init (GLoadableIconIface *iface,
++		  gpointer      iface_data)
++{
++  /* wasm: match GInterfaceInitFunc 2-arg type */
++  (void) iface_data;
+   iface->load = gdk_pixbuf_load;
+ 
+   /* In theory encoding a png could be time-consuming but we're talking
+@@ -541,8 +546,11 @@
+ }
+ 
+ static void
+-gdk_pixbuf_icon_iface_init (GIconIface *iface)
+-{
++gdk_pixbuf_icon_iface_init (GIconIface *iface,
++		  gpointer      iface_data)
++{
++  /* wasm: match GInterfaceInitFunc 2-arg type */
++  (void) iface_data;
+         iface->hash = (guint (*) (GIcon *)) g_direct_hash;
+         iface->equal = (gboolean (*) (GIcon *, GIcon *)) g_direct_equal;
+         iface->serialize = gdk_pixbuf_serialize;

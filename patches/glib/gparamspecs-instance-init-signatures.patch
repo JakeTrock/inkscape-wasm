@@ -1,0 +1,508 @@
+--- a/gobject/gparamspecs.c
++++ b/gobject/gparamspecs.c
+@@ -43,8 +43,11 @@
+ 
+ /* --- param spec functions --- */
+ static void
+-param_char_init (GParamSpec *pspec)
+-{
++param_char_init (GParamSpec *pspec,
++		  gpointer      pclass)
++{
++  /* wasm: match GInstanceInitFunc's 2-arg type */
++  (void) pclass;
+   GParamSpecChar *cspec = G_PARAM_SPEC_CHAR (pspec);
+   
+   cspec->minimum = CHAR_MIN;
+@@ -82,8 +85,11 @@
+ }
+ 
+ static void
+-param_uchar_init (GParamSpec *pspec)
+-{
++param_uchar_init (GParamSpec *pspec,
++		  gpointer      pclass)
++{
++  /* wasm: match GInstanceInitFunc's 2-arg type */
++  (void) pclass;
+   GParamSpecUChar *uspec = G_PARAM_SPEC_UCHAR (pspec);
+   
+   uspec->minimum = 0;
+@@ -148,8 +154,11 @@
+ }
+ 
+ static void
+-param_int_init (GParamSpec *pspec)
+-{
++param_int_init (GParamSpec *pspec,
++		  gpointer      pclass)
++{
++  /* wasm: match GInstanceInitFunc's 2-arg type */
++  (void) pclass;
+   GParamSpecInt *ispec = G_PARAM_SPEC_INT (pspec);
+   
+   ispec->minimum = INT_MIN;
+@@ -198,8 +207,11 @@
+ }
+ 
+ static void
+-param_uint_init (GParamSpec *pspec)
+-{
++param_uint_init (GParamSpec *pspec,
++		  gpointer      pclass)
++{
++  /* wasm: match GInstanceInitFunc's 2-arg type */
++  (void) pclass;
+   GParamSpecUInt *uspec = G_PARAM_SPEC_UINT (pspec);
+   
+   uspec->minimum = 0;
+@@ -248,8 +260,11 @@
+ }
+ 
+ static void
+-param_long_init (GParamSpec *pspec)
+-{
++param_long_init (GParamSpec *pspec,
++		  gpointer      pclass)
++{
++  /* wasm: match GInstanceInitFunc's 2-arg type */
++  (void) pclass;
+   GParamSpecLong *lspec = G_PARAM_SPEC_LONG (pspec);
+   
+   lspec->minimum = LONG_MIN;
+@@ -298,8 +313,11 @@
+ }
+ 
+ static void
+-param_ulong_init (GParamSpec *pspec)
+-{
++param_ulong_init (GParamSpec *pspec,
++		  gpointer      pclass)
++{
++  /* wasm: match GInstanceInitFunc's 2-arg type */
++  (void) pclass;
+   GParamSpecULong *uspec = G_PARAM_SPEC_ULONG (pspec);
+   
+   uspec->minimum = 0;
+@@ -348,8 +366,11 @@
+ }
+ 
+ static void
+-param_int64_init (GParamSpec *pspec)
+-{
++param_int64_init (GParamSpec *pspec,
++		  gpointer      pclass)
++{
++  /* wasm: match GInstanceInitFunc's 2-arg type */
++  (void) pclass;
+   GParamSpecInt64 *lspec = G_PARAM_SPEC_INT64 (pspec);
+   
+   lspec->minimum = G_MININT64;
+@@ -398,8 +419,11 @@
+ }
+ 
+ static void
+-param_uint64_init (GParamSpec *pspec)
+-{
++param_uint64_init (GParamSpec *pspec,
++		  gpointer      pclass)
++{
++  /* wasm: match GInstanceInitFunc's 2-arg type */
++  (void) pclass;
+   GParamSpecUInt64 *uspec = G_PARAM_SPEC_UINT64 (pspec);
+   
+   uspec->minimum = 0;
+@@ -448,8 +472,11 @@
+ }
+ 
+ static void
+-param_unichar_init (GParamSpec *pspec)
+-{
++param_unichar_init (GParamSpec *pspec,
++		  gpointer      pclass)
++{
++  /* wasm: match GInstanceInitFunc's 2-arg type */
++  (void) pclass;
+   GParamSpecUnichar *uspec = G_PARAM_SPEC_UNICHAR (pspec);
+   
+   uspec->default_value = 0;
+@@ -497,8 +524,11 @@
+ }
+ 
+ static void
+-param_enum_init (GParamSpec *pspec)
+-{
++param_enum_init (GParamSpec *pspec,
++		  gpointer      pclass)
++{
++  /* wasm: match GInstanceInitFunc's 2-arg type */
++  (void) pclass;
+   GParamSpecEnum *espec = G_PARAM_SPEC_ENUM (pspec);
+   
+   espec->enum_class = NULL;
+@@ -552,8 +582,11 @@
+ }
+ 
+ static void
+-param_flags_init (GParamSpec *pspec)
+-{
++param_flags_init (GParamSpec *pspec,
++		  gpointer      pclass)
++{
++  /* wasm: match GInstanceInitFunc's 2-arg type */
++  (void) pclass;
+   GParamSpecFlags *fspec = G_PARAM_SPEC_FLAGS (pspec);
+   
+   fspec->flags_class = NULL;
+@@ -607,8 +640,11 @@
+ }
+ 
+ static void
+-param_float_init (GParamSpec *pspec)
+-{
++param_float_init (GParamSpec *pspec,
++		  gpointer      pclass)
++{
++  /* wasm: match GInstanceInitFunc's 2-arg type */
++  (void) pclass;
+   GParamSpecFloat *fspec = G_PARAM_SPEC_FLOAT (pspec);
+   
+   fspec->minimum = -G_MAXFLOAT;
+@@ -660,8 +696,11 @@
+ }
+ 
+ static void
+-param_double_init (GParamSpec *pspec)
+-{
++param_double_init (GParamSpec *pspec,
++		  gpointer      pclass)
++{
++  /* wasm: match GInstanceInitFunc's 2-arg type */
++  (void) pclass;
+   GParamSpecDouble *dspec = G_PARAM_SPEC_DOUBLE (pspec);
+   
+   dspec->minimum = -G_MAXDOUBLE;
+@@ -713,8 +752,11 @@
+ }
+ 
+ static void
+-param_string_init (GParamSpec *pspec)
+-{
++param_string_init (GParamSpec *pspec,
++		  gpointer      pclass)
++{
++  /* wasm: match GInstanceInitFunc's 2-arg type */
++  (void) pclass;
+   GParamSpecString *sspec = G_PARAM_SPEC_STRING (pspec);
+   
+   sspec->default_value = NULL;
+@@ -844,8 +886,11 @@
+ }
+ 
+ static void
+-param_param_init (GParamSpec *pspec)
+-{
++param_param_init (GParamSpec *pspec,
++		  gpointer      pclass)
++{
++  /* wasm: match GInstanceInitFunc's 2-arg type */
++  (void) pclass;
+   /* GParamSpecParam *spec = G_PARAM_SPEC_PARAM (pspec); */
+ }
+ 
+@@ -887,8 +932,11 @@
+ }
+ 
+ static void
+-param_boxed_init (GParamSpec *pspec)
+-{
++param_boxed_init (GParamSpec *pspec,
++		  gpointer      pclass)
++{
++  /* wasm: match GInstanceInitFunc's 2-arg type */
++  (void) pclass;
+   /* GParamSpecBoxed *bspec = G_PARAM_SPEC_BOXED (pspec); */
+ }
+ 
+@@ -913,8 +961,11 @@
+ }
+ 
+ static void
+-param_pointer_init (GParamSpec *pspec)
+-{
++param_pointer_init (GParamSpec *pspec,
++		  gpointer      pclass)
++{
++  /* wasm: match GInstanceInitFunc's 2-arg type */
++  (void) pclass;
+   /* GParamSpecPointer *spec = G_PARAM_SPEC_POINTER (pspec); */
+ }
+ 
+@@ -939,8 +990,11 @@
+ }
+ 
+ static void
+-param_value_array_init (GParamSpec *pspec)
+-{
++param_value_array_init (GParamSpec *pspec,
++		  gpointer      pclass)
++{
++  /* wasm: match GInstanceInitFunc's 2-arg type */
++  (void) pclass;
+   GParamSpecValueArray *aspec = G_PARAM_SPEC_VALUE_ARRAY (pspec);
+ 
+   aspec->element_spec = NULL;
+@@ -1090,8 +1144,11 @@
+ }
+ 
+ static void
+-param_object_init (GParamSpec *pspec)
+-{
++param_object_init (GParamSpec *pspec,
++		  gpointer      pclass)
++{
++  /* wasm: match GInstanceInitFunc's 2-arg type */
++  (void) pclass;
+   /* GParamSpecObject *ospec = G_PARAM_SPEC_OBJECT (pspec); */
+ }
+ 
+@@ -1145,8 +1202,11 @@
+ }
+ 
+ static void
+-param_override_init (GParamSpec *pspec)
+-{
++param_override_init (GParamSpec *pspec,
++		  gpointer      pclass)
++{
++  /* wasm: match GInstanceInitFunc's 2-arg type */
++  (void) pclass;
+   /* GParamSpecOverride *ospec = G_PARAM_SPEC_OVERRIDE (pspec); */
+ }
+ 
+@@ -1203,8 +1263,11 @@
+ }
+ 
+ static void
+-param_gtype_init (GParamSpec *pspec)
+-{
++param_gtype_init (GParamSpec *pspec,
++		  gpointer      pclass)
++{
++  /* wasm: match GInstanceInitFunc's 2-arg type */
++  (void) pclass;
+ }
+ 
+ static void
+@@ -1258,8 +1321,11 @@
+ }
+ 
+ static void
+-param_variant_init (GParamSpec *pspec)
+-{
++param_variant_init (GParamSpec *pspec,
++		  gpointer      pclass)
++{
++  /* wasm: match GInstanceInitFunc's 2-arg type */
++  (void) pclass;
+   GParamSpecVariant *vspec = G_PARAM_SPEC_VARIANT (pspec);
+ 
+   vspec->type = NULL;
+@@ -1385,7 +1451,7 @@
+     const GParamSpecTypeInfo pspec_info = {
+       sizeof (GParamSpecChar),	/* instance_size */
+       16,			/* n_preallocs */
+-      param_char_init,		/* instance_init */
++      (GInstanceInitFunc)(void (*)(void)) param_char_init,		/* instance_init */
+       G_TYPE_CHAR,		/* value_type */
+       NULL,			/* finalize */
+       param_char_set_default,	/* value_set_default */
+@@ -1404,7 +1470,7 @@
+     const GParamSpecTypeInfo pspec_info = {
+       sizeof (GParamSpecUChar), /* instance_size */
+       16,                       /* n_preallocs */
+-      param_uchar_init,         /* instance_init */
++      (GInstanceInitFunc)(void (*)(void)) param_uchar_init,         /* instance_init */
+       G_TYPE_UCHAR,		/* value_type */
+       NULL,			/* finalize */
+       param_uchar_set_default,	/* value_set_default */
+@@ -1442,7 +1508,7 @@
+     const GParamSpecTypeInfo pspec_info = {
+       sizeof (GParamSpecInt),   /* instance_size */
+       16,                       /* n_preallocs */
+-      param_int_init,           /* instance_init */
++      (GInstanceInitFunc)(void (*)(void)) param_int_init,           /* instance_init */
+       G_TYPE_INT,		/* value_type */
+       NULL,			/* finalize */
+       param_int_set_default,	/* value_set_default */
+@@ -1461,7 +1527,7 @@
+     const GParamSpecTypeInfo pspec_info = {
+       sizeof (GParamSpecUInt),  /* instance_size */
+       16,                       /* n_preallocs */
+-      param_uint_init,          /* instance_init */
++      (GInstanceInitFunc)(void (*)(void)) param_uint_init,          /* instance_init */
+       G_TYPE_UINT,		/* value_type */
+       NULL,			/* finalize */
+       param_uint_set_default,	/* value_set_default */
+@@ -1480,7 +1546,7 @@
+     const GParamSpecTypeInfo pspec_info = {
+       sizeof (GParamSpecLong),  /* instance_size */
+       16,                       /* n_preallocs */
+-      param_long_init,          /* instance_init */
++      (GInstanceInitFunc)(void (*)(void)) param_long_init,          /* instance_init */
+       G_TYPE_LONG,		/* value_type */
+       NULL,			/* finalize */
+       param_long_set_default,	/* value_set_default */
+@@ -1499,7 +1565,7 @@
+     const GParamSpecTypeInfo pspec_info = {
+       sizeof (GParamSpecULong), /* instance_size */
+       16,                       /* n_preallocs */
+-      param_ulong_init,         /* instance_init */
++      (GInstanceInitFunc)(void (*)(void)) param_ulong_init,         /* instance_init */
+       G_TYPE_ULONG,		/* value_type */
+       NULL,			/* finalize */
+       param_ulong_set_default,	/* value_set_default */
+@@ -1518,7 +1584,7 @@
+     const GParamSpecTypeInfo pspec_info = {
+       sizeof (GParamSpecInt64),  /* instance_size */
+       16,                       /* n_preallocs */
+-      param_int64_init,         /* instance_init */
++      (GInstanceInitFunc)(void (*)(void)) param_int64_init,         /* instance_init */
+       G_TYPE_INT64,		/* value_type */
+       NULL,			/* finalize */
+       param_int64_set_default,	/* value_set_default */
+@@ -1537,7 +1603,7 @@
+     const GParamSpecTypeInfo pspec_info = {
+       sizeof (GParamSpecUInt64), /* instance_size */
+       16,                       /* n_preallocs */
+-      param_uint64_init,        /* instance_init */
++      (GInstanceInitFunc)(void (*)(void)) param_uint64_init,        /* instance_init */
+       G_TYPE_UINT64,		/* value_type */
+       NULL,			/* finalize */
+       param_uint64_set_default,	/* value_set_default */
+@@ -1556,7 +1622,7 @@
+     const GParamSpecTypeInfo pspec_info = {
+       sizeof (GParamSpecUnichar), /* instance_size */
+       16,                        /* n_preallocs */
+-      param_unichar_init,	 /* instance_init */
++      (GInstanceInitFunc)(void (*)(void)) param_unichar_init,	 /* instance_init */
+       G_TYPE_UINT,		 /* value_type */
+       NULL,			 /* finalize */
+       param_unichar_set_default, /* value_set_default */
+@@ -1575,7 +1641,7 @@
+     const GParamSpecTypeInfo pspec_info = {
+       sizeof (GParamSpecEnum),  /* instance_size */
+       16,                       /* n_preallocs */
+-      param_enum_init,          /* instance_init */
++      (GInstanceInitFunc)(void (*)(void)) param_enum_init,          /* instance_init */
+       G_TYPE_ENUM,		/* value_type */
+       param_enum_finalize,	/* finalize */
+       param_enum_set_default,	/* value_set_default */
+@@ -1594,7 +1660,7 @@
+     const GParamSpecTypeInfo pspec_info = {
+       sizeof (GParamSpecFlags),	/* instance_size */
+       16,			/* n_preallocs */
+-      param_flags_init,		/* instance_init */
++      (GInstanceInitFunc)(void (*)(void)) param_flags_init,		/* instance_init */
+       G_TYPE_FLAGS,		/* value_type */
+       param_flags_finalize,	/* finalize */
+       param_flags_set_default,	/* value_set_default */
+@@ -1613,7 +1679,7 @@
+     const GParamSpecTypeInfo pspec_info = {
+       sizeof (GParamSpecFloat), /* instance_size */
+       16,                       /* n_preallocs */
+-      param_float_init,         /* instance_init */
++      (GInstanceInitFunc)(void (*)(void)) param_float_init,         /* instance_init */
+       G_TYPE_FLOAT,		/* value_type */
+       NULL,			/* finalize */
+       param_float_set_default,	/* value_set_default */
+@@ -1632,7 +1698,7 @@
+     const GParamSpecTypeInfo pspec_info = {
+       sizeof (GParamSpecDouble),	/* instance_size */
+       16,				/* n_preallocs */
+-      param_double_init,		/* instance_init */
++      (GInstanceInitFunc)(void (*)(void)) param_double_init,		/* instance_init */
+       G_TYPE_DOUBLE,			/* value_type */
+       NULL,				/* finalize */
+       param_double_set_default,		/* value_set_default */
+@@ -1651,7 +1717,7 @@
+     const GParamSpecTypeInfo pspec_info = {
+       sizeof (GParamSpecString),	/* instance_size */
+       16,				/* n_preallocs */
+-      param_string_init,		/* instance_init */
++      (GInstanceInitFunc)(void (*)(void)) param_string_init,		/* instance_init */
+       G_TYPE_STRING,			/* value_type */
+       param_string_finalize,		/* finalize */
+       param_string_set_default,		/* value_set_default */
+@@ -1670,7 +1736,7 @@
+     const GParamSpecTypeInfo pspec_info = {
+       sizeof (GParamSpecParam),	/* instance_size */
+       16,			/* n_preallocs */
+-      param_param_init,		/* instance_init */
++      (GInstanceInitFunc)(void (*)(void)) param_param_init,		/* instance_init */
+       G_TYPE_PARAM,		/* value_type */
+       NULL,			/* finalize */
+       param_param_set_default,	/* value_set_default */
+@@ -1689,7 +1755,7 @@
+     const GParamSpecTypeInfo pspec_info = {
+       sizeof (GParamSpecBoxed),	/* instance_size */
+       4,			/* n_preallocs */
+-      param_boxed_init,		/* instance_init */
++      (GInstanceInitFunc)(void (*)(void)) param_boxed_init,		/* instance_init */
+       G_TYPE_BOXED,		/* value_type */
+       NULL,			/* finalize */
+       param_boxed_set_default,	/* value_set_default */
+@@ -1707,7 +1773,7 @@
+     const GParamSpecTypeInfo pspec_info = {
+       sizeof (GParamSpecPointer),  /* instance_size */
+       0,                           /* n_preallocs */
+-      param_pointer_init,	   /* instance_init */
++      (GInstanceInitFunc)(void (*)(void)) param_pointer_init,	   /* instance_init */
+       G_TYPE_POINTER,  		   /* value_type */
+       NULL,			   /* finalize */
+       param_pointer_set_default,   /* value_set_default */
+@@ -1725,7 +1791,7 @@
+     /* const */ GParamSpecTypeInfo pspec_info = {
+       sizeof (GParamSpecValueArray),	/* instance_size */
+       0,				/* n_preallocs */
+-      param_value_array_init,		/* instance_init */
++      (GInstanceInitFunc)(void (*)(void)) param_value_array_init,		/* instance_init */
+       0xdeadbeef,			/* value_type, assigned further down */
+       param_value_array_finalize,	/* finalize */
+       param_value_array_set_default,	/* value_set_default */
+@@ -1744,7 +1810,7 @@
+     const GParamSpecTypeInfo pspec_info = {
+       sizeof (GParamSpecObject), /* instance_size */
+       16,                        /* n_preallocs */
+-      param_object_init,	 /* instance_init */
++      (GInstanceInitFunc)(void (*)(void)) param_object_init,	 /* instance_init */
+       G_TYPE_OBJECT,		 /* value_type */
+       NULL,			 /* finalize */
+       param_object_set_default,	 /* value_set_default */
+@@ -1763,7 +1829,7 @@
+     const GParamSpecTypeInfo pspec_info = {
+       sizeof (GParamSpecOverride), /* instance_size */
+       16,                        /* n_preallocs */
+-      param_override_init,	 /* instance_init */
++      (GInstanceInitFunc)(void (*)(void)) param_override_init,	 /* instance_init */
+       G_TYPE_NONE,		 /* value_type */
+       param_override_finalize,	 /* finalize */
+       param_override_set_default, /* value_set_default */
+@@ -1782,7 +1848,7 @@
+     GParamSpecTypeInfo pspec_info = {
+       sizeof (GParamSpecGType),	/* instance_size */
+       0,			/* n_preallocs */
+-      param_gtype_init,		/* instance_init */
++      (GInstanceInitFunc)(void (*)(void)) param_gtype_init,		/* instance_init */
+       0xdeadbeef,		/* value_type, assigned further down */
+       NULL,			/* finalize */
+       param_gtype_set_default,	/* value_set_default */
+@@ -1802,7 +1868,7 @@
+     const GParamSpecTypeInfo pspec_info = {
+       sizeof (GParamSpecVariant), /* instance_size */
+       0,                          /* n_preallocs */
+-      param_variant_init,         /* instance_init */
++      (GInstanceInitFunc)(void (*)(void)) param_variant_init,         /* instance_init */
+       G_TYPE_VARIANT,             /* value_type */
+       param_variant_finalize,     /* finalize */
+       param_variant_set_default,  /* value_set_default */

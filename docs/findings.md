@@ -1,0 +1,234 @@
+# Findings — Inkscape WASM port (Leg A)
+
+Running log of deviations from plan, toolchain quirks, and hard-won facts.
+
+## Toolchain (emcc 6.0.6, shared emsdk at /data/jake/reversing/toki/emsdk)
+
+- **`-sEXPORTED_FUNCTIONS` REPLACES the default export list** — `_main` must be
+  listed explicitly or main silently never runs (tests pass vacuously with
+  exit 0 and no output). wasmtest now exports `_malloc,_free,_main`.
+- **emcc drops `-lpthread` from link lines** — pass
+  `$SYSROOT/lib/libpthread.a` by absolute path instead (wasmtest appends it
+  to every link; the generated cross file uses the same trick).
+- **Wasm strict function types**: function-pointer casts that native ABIs
+  tolerate (1-arg function called through a 2-arg typedef) crash at runtime
+  with `null function or function signature mismatch`. This hit glib in
+  THREE places, each fixed once in shared code:
+  1. `G_DEFINE_TYPE`/`G_DEFINE_INTERFACE` macros generate 1-arg
+     `class_intern_init`/`_init`/`_default_init` registered as 2-arg
+     callbacks — `patches/glib/gtype-h-wasm-signatures.patch` adds 2-arg
+     wrappers in gtype.h (every GObject consumer compiles against it).
+  2. `GParamSpecTypeInfo.instance_init` is declared 1-arg but invoked 2-arg
+     by gtype.c — `gparam-h-instance-init-type.patch` (field →
+     GInstanceInitFunc) + `gparamspecs-instance-init-signatures.patch`
+     (22 param_*_init fns made 2-arg, initializer sites cast).
+  3. `G_IMPLEMENT_INTERFACE(X, f)` registers 1-arg `f` as 2-arg
+     GInterfaceInitFunc; the macro can't wrap (no type name in scope), so
+     `iface-init-signatures.patch` per package mechanically adds the 2nd
+     param: glib (125 fns), gtk3 (162), pango (7), gdk-pixbuf (2),
+     atk (3). Generator: /tmp/opencode/fix_iface_init.py (regenerate if a
+     package update changes the set).
+  Also `g_object_do_class_init` lost its unused 2nd param upstream —
+  `class-init-signature.patch`.
+  The *mm bindings' generated `iface_init_function(void*, void*)` glue is
+  already 2-arg — no changes needed there.
+  Expect more strict-signature bugs in hand-written casts — fix at the call
+  site when they surface.
+- **`-sALLOW_TABLE_GROWTH=1` is required for libffi closures** (GObject
+  signal marshalling grows the wasm table at runtime). wasmtest adds it
+  globally; the final Inkscape link will need it too.
+- libc's non-mt pthread stubs (library_pthread_stub.c) now cover mutexes,
+  cond (incl. timedwait), once, **a complete TLS set with destructors**
+  (key_create/key_delete/getspecific/setspecific), rwlocks, barriers.
+  `packages/pthread_supp.c` is slimmed to only: pthread_getname_np,
+  pthread_getaffinity_np, __sched_cpucount, res_query (HOST_NOT_FOUND),
+  ftw (returns -1). Do NOT define pthread_setspecific/getspecific
+  yourself — duplicate-symbol errors against libc's strong definitions,
+  and mixing your key table with libc's returns EINVAL.
+- meson injects `-pthread` + PTHREAD_POOL_SIZE into *executables* only —
+  hence the "libraries only + `meson install --no-rebuild`" pattern for
+  packages whose test tools can't link (glib, glibmm, cairomm, pangomm,
+  atkmm, gtkmm).
+- meson `cc.links`/`has_function` probes pass for functions emscripten
+  headers declare but non-mt libc lacks (posix_spawnp, pthread_getname_np,
+  pthread_getaffinity_np, ftw) — undefined symbols only appear at real
+  links. Stubs live in pthread_supp.c.
+- cmake ≥4 dropped compatibility with `cmake_minimum_required < 3.5` —
+  pcre2 10.42 and double-conversion 3.3.0 need
+  `-DCMAKE_POLICY_VERSION_MINIMUM=3.5`.
+- GNU tarballs with old `config.sub` (gsl 2.8) don't know emscripten —
+  copy /usr/share/misc/config.{sub,guess} over them.
+- ccache sits in front of emcc/em++ via common.sh (CC="ccache emcc").
+
+## Package notes
+
+- **glib 2.88.0** (bumped from 2.82 to match the host's glib dev tools
+  exactly — host gdbus-codegen 2.88 emits symbols older target glib lacks;
+  host tools via `libglib2.0-dev-bin` apt package). Six patches in
+  patches/glib/ plus the two signature patches above. Post-install:
+  gio-2.0.pc tool variables rewritten to /usr/bin. thread_dep patched to
+  `[]` on emscripten — without -pthread, clang lowers __atomic/__sync
+  builtins to plain wasm ops (verified empirically).
+- **pango 1.56.4** — 1.58 rejected (needs glib ≥2.84 subproject);
+  2-arg pango_layout_new is gone, use pango_layout_set_font_description.
+- **gdk-pixbuf 2.44.4** — jpeg via its libjpeg-turbo subproject;
+  `-Dthumbnailer=disabled` (feature option, not boolean).
+- **gtk3 3.24.43** — broadway only; `-Dbuiltin_immodules=all` (NOT "none" —
+  that builds everything as shared modules, which need -fPIC and fail);
+  print backends patched out on emscripten (they're hardwired
+  shared_module; printing cut for v1). broadwayd.js links on wasm — the
+  Leg-B donor artifact. `gdkbroadway.h` must be included explicitly for
+  GDK_IS_BROADWAY_DISPLAY.
+- **sigc++ 2.12.1** — GNOME URL-encodes `libsigc%2B%2B`; tarballs ship
+  meson (no generated configure). Pass pkg-config output UNQUOTED to
+  wasmtest (quoted becomes one arg).
+- **glibmm 2.66.7** — installs libglibmm_generate_extra_defs-2.4.a with no
+  .pc; we write one (meson's find_library can't see our sysroot). Other
+  *mm packages' extra-defs generator tools are maintainer-only — patched
+  out on emscripten (pangomm/atkmm/gtkmm).
+- **cairomm 1.14.4** — GNOME pruned the 1.14 dir; canonical tarball is on
+  cairographics.org.
+- **pangomm 2.46.3 provides the pangomm-1.4 ABI** (not pangomm-2.48);
+  gtkmm 3.24.9 requires pangomm-1.4 — consistent.
+- **atkmm 2.28.4** required by gtkmm (the plan missed it).
+- **libxml2 2.13.6** — `-Dlegacy=true` (libxslt 1.1.42 uses the
+  __xml*-prefixed globals); threads stay enabled (same reason); post-fix
+  the .pc Cflags (`-I${includedir}/libxml2`, strip meson's injected
+  -pthread); meson installs no xml2-config so we generate a sysroot one
+  and PATH-prepend it — libxslt's configure otherwise picks the host's
+  (2.15.2) and version-skews.
+- **libxml2 .pc option types are booleans** (history/http/ftp/readline),
+  not feature strings.
+- **libgc 8.2.8** — real collector passed rung 1 (finalizer ran, cyclic
+  garbage bounded). `GC_INIT;` is wrong — GC_INIT is a function-like
+  macro; call `GC_init()`. bdw-gc installs bdw-gc.pc; aliased to gc.pc
+  (Inkscape looks up module 'gc').
+- **double-conversion** (cmake) installs no .pc — we hand-write
+  double-conversion.pc.
+- **harfbuzz 14.6.0** rebuilt with `-DHB_NO_MT` (via c_args/cpp_args):
+  without pthreads it falls back to std::mutex, poisoning every C-link
+  that pulls it. Single-threaded no-op mutex is correct for us.
+- **gsl 2.8 / boost 1.86 headers / dconv 3.3.0** — uneventful.
+
+## Test infrastructure
+
+- wasmtest: `|| return 1` guards on compile and node run (a set +e context
+  previously let failures print PASS); `-sEXPORTED_FUNCTIONS=_malloc,_free,_main`
+  (see above); appends `$SYSROOT/lib/libpthread.a`; `-sALLOW_TABLE_GROWTH=1`.
+- **Never trust a PASS without the test's own printf output** in the log —
+  the main-export bug made months of PASSes vacuous if module output is absent.
+- tests run in Node via `cd build/test && node X.js`; fixtures preloaded at
+  /fixtures from tests/fixtures.
+- retest helper: /tmp/opencode/retest.sh evals every packages/*.sh wasmtest
+  line against the installed sysroot (libs already built).
+
+- **potrace CUT** (Task 19 optional rule): 1.16 builds and links cleanly,
+  but potrace_trace returns status OK with a NULL path list even for a
+  fully-black bitmap (3 iterations — cut per "skip on any friction").
+  Inkscape bitmap-tracing degrades; revisit in Leg C+ if needed.
+
+## Deferred / shortcuts
+
+- `res_query` stub: no DNS in wasm — gio resolver fails clean. When to
+  upgrade: never, unless we want network in the browser build.
+- `ftw` stub: returns -1; only exists so gtk's host-side tools link.
+- Leak-by-design: libc's TLS destructors never run at exit (no thread exit
+  in non-mt); acceptable for single-document demo sessions.
+
+## The wasm strict-signature endgame (glib stack, 9-package chain)
+
+The systemic class: C code casts function pointers across arities (native
+ABI tolerates the mismatch, wasm traps). Four sub-classes fixed, then one
+link-time catch-all:
+
+1. **G_DEFINE_* registrations** (gtype.h macro wrappers) — patched in
+   glib's header; every consumer compiles against it. Consumers'
+   `_class_init`/`_init`/`_default_init` targets invoked 1-arg by the
+   macro wrapper must STAY 1-arg.
+2. **iface/class/instance init hand-registrations** — generator
+   (/tmp/opencode/fix_iface_init.py) patches prototypes+defs to 2-arg.
+   Final counts: glib 160/101 files, pango 11/10, gdk-pixbuf 2/1,
+   atk 17/16, gtk3 268/167. Generator traps found the hard way:
+   - a global `re.sub(count=1)` can match an earlier site with identical
+     param text and silently shift every remaining match offset (the
+     gdummytlsbackend enum garble) → build replacements positionally from
+     `m.start(2)`/`m.end(0)`;
+   - typedefs in gmarshal.c are function-local (each marshal fn redefines
+     its own) → insert `_CLASS` variants after EVERY occurrence;
+   - pointer return types (`gchar*`) break `\w+` typedef regexes;
+   - defs in files WITHOUT references (public fns like
+     _gtk_file_chooser_delegate_iface_init) need a phase-2 alternation
+     sweep over all files — but skip G_DEFINE_*-macro-protected names in
+     that file (gtk_clipboard_class_init is registered via a hand-written
+     cast in gtkclipboard-quartz.c but called 1-arg by the macro wrapper
+     in the built gtkclipboard.c);
+   - direct 1-arg callers of newly-2-arg functions: only the two
+     filechooser delegate call sites (patches/gtk3/filechooser-delegate-
+     calls.patch, based on post-iface state).
+3. **gmarshal class-closure callbacks**: signals registered via
+   G_STRUCT_OFFSET(Class, member) have members without trailing
+   user_data, but g_cclosure_marshal_* called them WITH data2.
+   Fixed centrally in gmarshal.c (44 invocations + 44 function-local
+   `GMarshalFunc_*_CLASS` typedefs; marshal_data non-NULL ⇒ class member
+   ⇒ call sans data2). Fixed the atk notify crash.
+4. **pango fontconfig worker thread**: g_system_thread_new → pthread_create
+   ENOTSUP. patches/pango/fc-thread-inline.patch runs the 4 worker ops
+   inline on emscripten.
+5. **glib comparator casts (g_list_insert_sorted & co)**: 2-arg
+   GCompareFuncs called through 3-arg GCompareDataFunc types all over
+   glist/gslist/garray/gtree — NOT patched. Instead:
+6. **`-sEMULATE_FUNCTION_POINTER_CASTS=1`** (LINK-only setting — as a
+   compile arg it trips meson's -Werror=unused-command-line-argument;
+   link-only application to .o files is sufficient, verified) — binaryen
+   wasm-opt --fpcast-emu generates thunks for all table entries. This
+   catches the whole tail (list sorts, qsort comparators, ...).
+   Constraints found:
+   - **fpcast-emu 16-param limit**: table-resident functions with ≥17
+     params abort the link ("max-func-params needs to be at least 17").
+     Fixed in gdk-pixbuf: check_size/color1/color2 were unused in the
+     4 pixops line funcs; bundled into a `PixopsCheck*` pointer
+     (patches/gdk-pixbuf/pixops-line-func-params.patch, 17→15 params).
+     The 4 g_spawn/fork_exec 17+-param fns are NOT table-resident — no
+     fix needed. Expect more of these in the Inkscape link; fix by
+     param-bundling or de-tabling.
+   - **fpcast breaks libffi's JS ffi_call_js** (it .apply()s table
+     entries directly; thunks aren't transparent). libffi's own test
+     links without fpcast. Runtime constraint for the final link:
+     ffi_call must not execute — gtk/gtkmm signal closures all use
+     direct-specific marshals, so the stack is unaffected today.
+     Revisit if anything needs g_cclosure_marshal_generic at runtime.
+   - gtk's tool executables (gtk-update-icon-cache etc.) exceed the
+     fpcast limit → gtk3.sh builds only the libs + broadwayd.js + locale
+     gresources + libgail-util (targeted ninja targets), not `ninja all`.
+
+## Broadway without a daemon (T5 gate)
+
+- `Unable to read from broadway server` → exit(1): display_open needs a
+  server handshake. patches/gtk3/broadway-fake-server-emscripten.patch
+  fakes it under __EMSCRIPTEN__: no connection (messages dropped),
+  synthesized replies for the 5 round-trip request types, unique fake
+  window ids, synthesized CONFIGURE_NOTIFYs on new_window and
+  move_resize (GTK freezes toplevel updates after every resize request
+  and only thaws on the configure notify — without it nothing ever
+  paints), and map_named_shm → plain g_malloc0 (emscripten mmap returns
+  MAP_FAILED; the window surface wrapped address -1).
+- **wasm stack**: 64KB default is far too small — GTK's realize path
+  overflows into "memory access out of bounds" deep in gettext/strlen.
+  -sSTACK_SIZE=8388608 added to wasmtest + cross-file link args.
+- Fontconfig with no config file: label heights come out nondeterministic
+  garbage (12800px-class) across builds. Harmless for the T5 test; ship a
+  minimal fonts.conf in Leg B.
+- Result: `gtk-broadway ok (display GdkBroadwayDisplay, drew 1 frames)` —
+  window + label realize, map, and one full draw pass in node.
+
+## T1 gate result (2026-10-13)
+
+- 9-package chain green: glib pango gdk-pixbuf atk gtk3 glibmm pangomm
+  atkmm gtkmm (chain32). Full retest of all 28 wasmtest lines: PASS
+  (libffi re-verified without fpcast; libgc rung 1: finalizer runs, heap
+  bounded). check-1 PASS: 65 manifest entries, all stamps + pkg-config
+  modules (incl. 2geom, gc) resolve. potrace stays cut.
+- Donor artifacts: build/donor/broadwayd.{js,wasm} preserved for Leg B.
+- Patch hygiene: overlapping patches (iface-init + calls/fc-thread, both
+  based on post-iface state) break each other's reverse-dry-run guards —
+  gtk3.sh and pango.sh now wipe their source dir before extract.

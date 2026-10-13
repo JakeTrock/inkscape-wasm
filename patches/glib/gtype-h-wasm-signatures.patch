@@ -1,0 +1,80 @@
+--- a/gobject/gtype.h
++++ b/gobject/gtype.h
+@@ -2256,8 +2256,10 @@
+  */
+ #if GLIB_VERSION_MAX_ALLOWED >= GLIB_VERSION_2_38
+ #define _G_DEFINE_TYPE_EXTENDED_CLASS_INIT(TypeName, type_name) \
+-static void     type_name##_class_intern_init (gpointer klass) \
++static void     type_name##_class_intern_init (gpointer klass, gpointer class_data) \
+ { \
++  /* wasm: match GClassInitFunc's 2-arg type exactly */ \
++  (void) class_data; \
+   type_name##_parent_class = g_type_class_peek_parent (klass); \
+   if (TypeName##_private_offset != 0) \
+     g_type_class_adjust_private_offset (klass, &TypeName##_private_offset); \
+@@ -2266,8 +2268,10 @@
+ 
+ #else
+ #define _G_DEFINE_TYPE_EXTENDED_CLASS_INIT(TypeName, type_name) \
+-static void     type_name##_class_intern_init (gpointer klass) \
++static void     type_name##_class_intern_init (gpointer klass, gpointer class_data) \
+ { \
++  /* wasm: match GClassInitFunc's 2-arg type exactly */ \
++  (void) class_data; \
+   type_name##_parent_class = g_type_class_peek_parent (klass); \
+   type_name##_class_init ((TypeName##Class*) klass); \
+ }
+@@ -2288,6 +2292,8 @@
+ \
+ static void     type_name##_init              (TypeName        *self); \
+ static void     type_name##_class_init        (TypeName##Class *klass); \
++/* wasm: GInstanceInitFunc is 2-arg; user _init is 1-arg */ \
++static void     type_name##_init_2arg         (gpointer self, gpointer klass); \
+ static GType    type_name##_get_type_once     (void); \
+ static gpointer type_name##_parent_class = NULL; \
+ static gint     TypeName##_private_offset; \
+@@ -2317,6 +2323,13 @@
+   return static_g_define_type_id; \
+ } /* closes type_name##_get_type() */ \
+ \
++static void \
++type_name##_init_2arg (gpointer self, gpointer klass) \
++{ \
++  (void) klass; \
++  type_name##_init ((TypeName*) self); \
++} \
++\
+ G_NO_INLINE \
+ static GType \
+ type_name##_get_type_once (void) \
+@@ -2327,7 +2340,7 @@
+                                        sizeof (TypeName##Class), \
+                                        (GClassInitFunc)(void (*)(void)) type_name##_class_intern_init, \
+                                        sizeof (TypeName), \
+-                                       (GInstanceInitFunc)(void (*)(void)) type_name##_init, \
++                                       (GInstanceInitFunc)(void (*)(void)) type_name##_init_2arg, \
+                                        (GTypeFlags) flags); \
+     { /* custom code follows */
+ #define _G_DEFINE_TYPE_EXTENDED_END()	\
+@@ -2348,6 +2361,12 @@
+ #define _G_DEFINE_INTERFACE_EXTENDED_BEGIN(TypeName, type_name, TYPE_PREREQ) \
+ \
+ static void     type_name##_default_init        (TypeName##Interface *klass); \
++/* wasm: interfaces call default_init as a 2-arg GClassInitFunc */ \
++static void     type_name##_default_init_2arg   (gpointer klass, gpointer data) \
++{ \
++  (void) data; \
++  type_name##_default_init ((TypeName##Interface*) klass); \
++} \
+ \
+ GType \
+ type_name##_get_type (void) \
+@@ -2359,7 +2378,7 @@
+         g_type_register_static_simple (G_TYPE_INTERFACE, \
+                                        g_intern_static_string (#TypeName), \
+                                        sizeof (TypeName##Interface), \
+-                                       (GClassInitFunc)(void (*)(void)) type_name##_default_init, \
++                                       (GClassInitFunc)(void (*)(void)) type_name##_default_init_2arg, \
+                                        0, \
+                                        (GInstanceInitFunc)NULL, \
+                                        (GTypeFlags) 0); \

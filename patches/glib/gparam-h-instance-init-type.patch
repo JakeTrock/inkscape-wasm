@@ -1,0 +1,11 @@
+--- a/gobject/gparam.h
++++ b/gobject/gparam.h
+@@ -391,7 +391,7 @@
+   /* type system portion */
+   guint16         instance_size;                               /* obligatory */
+   guint16         n_preallocs;                                 /* optional */
+-  void		(*instance_init)	(GParamSpec   *pspec); /* optional */
++  GInstanceInitFunc instance_init; /* wasm: gtype.c invokes this with (pspec, class) */
+ 
+   /* class portion */
+   GType           value_type;				       /* obligatory */

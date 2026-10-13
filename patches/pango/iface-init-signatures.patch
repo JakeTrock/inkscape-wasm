@@ -1,0 +1,182 @@
+--- a/pango/fonts.c
++++ b/pango/fonts.c
+@@ -2656,8 +2656,11 @@
+ }
+ 
+ static void
+-pango_font_family_list_model_init (GListModelInterface *iface)
+-{
++pango_font_family_list_model_init (GListModelInterface *iface,
++		  gpointer      iface_data)
++{
++  /* wasm: match GInterfaceInitFunc 2-arg type */
++  (void) iface_data;
+   iface->get_item_type = pango_font_family_get_item_type;
+   iface->get_n_items = pango_font_family_get_n_items;
+   iface->get_item = pango_font_family_get_item;
+--- a/pango/pango-fontmap.c
++++ b/pango/pango-fontmap.c
+@@ -52,7 +52,8 @@
+ 
+ static guint pango_font_map_get_n_items (GListModel *list);
+ 
+-static void pango_font_map_list_model_init (GListModelInterface *iface);
++static void pango_font_map_list_model_init (GListModelInterface *iface,
++		  gpointer      iface_data);
+ 
+ typedef struct {
+   guint n_families;
+@@ -667,8 +668,11 @@
+ }
+ 
+ static void
+-pango_font_map_list_model_init (GListModelInterface *iface)
+-{
++pango_font_map_list_model_init (GListModelInterface *iface,
++		  gpointer      iface_data)
++{
++  /* wasm: match GInterfaceInitFunc 2-arg type */
++  (void) iface_data;
+   iface->get_item_type = pango_font_map_get_item_type;
+   iface->get_n_items = pango_font_map_get_n_items;
+   iface->get_item = pango_font_map_get_item;
+--- a/pango/pangocairo-coretextfont.c
++++ b/pango/pangocairo-coretextfont.c
+@@ -51,8 +51,11 @@
+                                                                                       PangoContext    *context);
+ 
+ static void
+-cairo_font_iface_init (PangoCairoFontIface *iface)
+-{
++cairo_font_iface_init (PangoCairoFontIface *iface,
++		  gpointer      iface_data)
++{
++  /* wasm: match GInterfaceInitFunc 2-arg type */
++  (void) iface_data;
+   iface->create_font_face = pango_cairo_core_text_font_create_font_face;
+   iface->create_base_metrics_for_context = pango_cairo_core_text_font_create_base_metrics_for_context;
+   iface->cf_priv_offset = G_STRUCT_OFFSET (PangoCairoCoreTextFont, cf_priv);
+--- a/pango/pangocairo-coretextfontmap.c
++++ b/pango/pangocairo-coretextfontmap.c
+@@ -79,8 +79,11 @@
+ }
+ 
+ static void
+-cairo_font_map_iface_init (PangoCairoFontMapIface *iface)
++cairo_font_map_iface_init (PangoCairoFontMapIface *iface,
++		  gpointer      iface_data)
+ {
++  /* wasm: match GInterfaceInitFunc 2-arg type */
++  (void) iface_data;
+   iface->set_resolution = pango_cairo_core_text_font_map_set_resolution;
+   iface->get_resolution = pango_cairo_core_text_font_map_get_resolution_cairo;
+   iface->get_font_type  = pango_cairo_core_text_font_map_get_font_type;
+--- a/pango/pangocairo-fcfont.c
++++ b/pango/pangocairo-fcfont.c
+@@ -96,8 +96,11 @@
+ }
+ 
+ static void
+-cairo_font_iface_init (PangoCairoFontIface *iface)
+-{
++cairo_font_iface_init (PangoCairoFontIface *iface,
++		  gpointer      iface_data)
++{
++  /* wasm: match GInterfaceInitFunc 2-arg type */
++  (void) iface_data;
+   iface->create_font_face = pango_cairo_fc_font_create_font_face;
+   iface->create_base_metrics_for_context = pango_cairo_fc_font_create_base_metrics_for_context;
+   iface->cf_priv_offset = G_STRUCT_OFFSET (PangoCairoFcFont, cf_priv);
+--- a/pango/pangocairo-fcfontmap.c
++++ b/pango/pangocairo-fcfontmap.c
+@@ -88,8 +88,11 @@
+ }
+ 
+ static void
+-cairo_font_map_iface_init (PangoCairoFontMapIface *iface)
+-{
++cairo_font_map_iface_init (PangoCairoFontMapIface *iface,
++		  gpointer      iface_data)
++{
++  /* wasm: match GInterfaceInitFunc 2-arg type */
++  (void) iface_data;
+   iface->set_resolution = pango_cairo_fc_font_map_set_resolution;
+   iface->get_resolution = pango_cairo_fc_font_map_get_resolution_cairo;
+   iface->get_font_type  = pango_cairo_fc_font_map_get_font_type;
+--- a/pango/pangocairo-win32font.c
++++ b/pango/pangocairo-win32font.c
+@@ -73,8 +73,11 @@
+ 
+ 
+ static void
+-cairo_font_iface_init (PangoCairoFontIface *iface)
+-{
++cairo_font_iface_init (PangoCairoFontIface *iface,
++		  gpointer      iface_data)
++{
++  /* wasm: match GInterfaceInitFunc 2-arg type */
++  (void) iface_data;
+   iface->create_font_face = pango_cairo_win32_font_create_font_face;
+   iface->create_base_metrics_for_context = pango_cairo_win32_font_create_base_metrics_for_context;
+   iface->cf_priv_offset = G_STRUCT_OFFSET (PangoCairoWin32Font, cf_priv);
+--- a/pango/pangocairo-win32fontmap.c
++++ b/pango/pangocairo-win32fontmap.c
+@@ -60,8 +60,11 @@
+ }
+ 
+ static void
+-cairo_font_map_iface_init (PangoCairoFontMapIface *iface)
++cairo_font_map_iface_init (PangoCairoFontMapIface *iface,
++		  gpointer      iface_data)
+ {
++  /* wasm: match GInterfaceInitFunc 2-arg type */
++  (void) iface_data;
+   iface->set_resolution = pango_cairo_win32_font_map_set_resolution;
+   iface->get_resolution = pango_cairo_win32_font_map_get_resolution;
+   iface->get_font_type  = pango_cairo_win32_font_map_get_font_type;
+--- a/pango/pangofc-fontmap.c
++++ b/pango/pangofc-fontmap.c
+@@ -1510,8 +1510,11 @@
+ }
+ 
+ static void
+-pango_fc_font_map_list_model_init (GListModelInterface *iface)
+-{
++pango_fc_font_map_list_model_init (GListModelInterface *iface,
++		  gpointer      iface_data)
++{
++  /* wasm: match GInterfaceInitFunc 2-arg type */
++  (void) iface_data;
+   iface->get_item_type = pango_fc_font_map_get_item_type;
+   iface->get_n_items = pango_fc_font_map_get_n_items;
+   iface->get_item = pango_fc_font_map_get_item;
+@@ -3531,8 +3534,11 @@
+ }
+ 
+ static void
+-pango_fc_family_list_model_init (GListModelInterface *iface)
+-{
++pango_fc_family_list_model_init (GListModelInterface *iface,
++		  gpointer      iface_data)
++{
++  /* wasm: match GInterfaceInitFunc 2-arg type */
++  (void) iface_data;
+   iface->get_item_type = pango_fc_family_get_item_type;
+   iface->get_n_items = pango_fc_family_get_n_items;
+   iface->get_item = pango_fc_family_get_item;
+--- a/pango/pangowin32-fontmap.c
++++ b/pango/pangowin32-fontmap.c
+@@ -140,8 +140,11 @@
+ }
+ 
+ static void
+-pango_win32_font_map_list_model_init (GListModelInterface *iface)
+-{
++pango_win32_font_map_list_model_init (GListModelInterface *iface,
++		  gpointer      iface_data)
++{
++  /* wasm: match GInterfaceInitFunc 2-arg type */
++  (void) iface_data;
+   iface->get_item_type = pango_win32_font_map_get_item_type;
+   iface->get_n_items = pango_win32_font_map_get_n_items;
+   iface->get_item = pango_win32_font_map_get_item;

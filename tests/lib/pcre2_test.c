@@ -5,7 +5,7 @@
 
 int main() {
     int errcode; PCRE2_SIZE erroffset;
-    pcre2_code* re = pcre2_compile((PCRE2_SPTR)"h(l+)o", PCRE2_ZERO_TERMINATED,
+    pcre2_code* re = pcre2_compile((PCRE2_SPTR)"he(l+)o", PCRE2_ZERO_TERMINATED,
                                    0, &errcode, &erroffset, NULL);
     assert(re);
     pcre2_match_data* md = pcre2_match_data_create_from_pattern(re, NULL);

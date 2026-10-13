@@ -1,0 +1,434 @@
+--- a/atk/atkgobjectaccessible.c
++++ b/atk/atkgobjectaccessible.c
+@@ -34,7 +34,8 @@
+  * not derived from GtkWidget. One example of its use is in providing
+  * an accessible object for GnomeCanvasItem in the GAIL library.
+  */
+-static void       atk_gobject_accessible_class_init       (AtkGObjectAccessibleClass   *klass);
++static void       atk_gobject_accessible_class_init       (AtkGObjectAccessibleClass   *klass,
++		  gpointer      iface_data);
+ static void       atk_real_gobject_accessible_initialize  (AtkObject         *atk_obj,
+                                                            gpointer          data);
+ static void       atk_gobject_accessible_object_gone_cb   (gpointer          data);
+@@ -186,8 +187,11 @@
+ }
+ 
+ static void
+-atk_gobject_accessible_class_init (AtkGObjectAccessibleClass *klass)
+-{ 
++atk_gobject_accessible_class_init (AtkGObjectAccessibleClass *klass,
++		  gpointer      iface_data)
++{
++  /* wasm: match GInterfaceInitFunc 2-arg type */
++  (void) iface_data; 
+   AtkObjectClass *class;
+   GObjectClass *object_class;
+ 
+--- a/atk/atkhyperlink.c
++++ b/atk/atkhyperlink.c
+@@ -53,7 +53,8 @@
+   PROP_LAST
+ };
+ 
+-static void atk_hyperlink_class_init (AtkHyperlinkClass *klass);
++static void atk_hyperlink_class_init (AtkHyperlinkClass *klass,
++		  gpointer      iface_data);
+ static void atk_hyperlink_init       (AtkHyperlink      *link,
+                                       AtkHyperlinkClass *klass);
+ 
+@@ -62,7 +63,8 @@
+                                              GValue             *value,
+                                              GParamSpec         *pspec);
+ 
+-static void atk_hyperlink_action_iface_init (AtkActionIface *iface);
++static void atk_hyperlink_action_iface_init (AtkActionIface *iface,
++		  gpointer      iface_data);
+ 
+ static guint atk_hyperlink_signals[LAST_SIGNAL] = { 0, };
+ 
+@@ -102,8 +104,11 @@
+ }
+ 
+ static void
+-atk_hyperlink_class_init (AtkHyperlinkClass *klass)
+-{
++atk_hyperlink_class_init (AtkHyperlinkClass *klass,
++		  gpointer      iface_data)
++{
++  /* wasm: match GInterfaceInitFunc 2-arg type */
++  (void) iface_data;
+   GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
+ 
+   parent_class = g_type_class_peek_parent (klass);
+@@ -409,8 +414,11 @@
+     return FALSE;
+ }
+ 
+-static void atk_hyperlink_action_iface_init (AtkActionIface *iface)
+-{
++static void atk_hyperlink_action_iface_init (AtkActionIface *iface,
++		  gpointer      iface_data)
++{
++  /* wasm: match GInterfaceInitFunc 2-arg type */
++  (void) iface_data;
+   /*
+    * We do nothing here
+    *
+--- a/atk/atkmisc.c
++++ b/atk/atkmisc.c
+@@ -30,7 +30,8 @@
+  * all his related methods are deprecated since 2.12.
+  */
+ 
+-static void atk_misc_class_init (AtkMiscClass *klass);
++static void atk_misc_class_init (AtkMiscClass *klass,
++		  gpointer      iface_data);
+ 
+ GType
+ atk_misc_get_type (void)
+@@ -57,8 +58,11 @@
+ }
+ 
+ static void
+-atk_misc_class_init (AtkMiscClass *klass)
++atk_misc_class_init (AtkMiscClass *klass,
++		  gpointer      iface_data)
+ {
++  /* wasm: match GInterfaceInitFunc 2-arg type */
++  (void) iface_data;
+   klass->threads_enter = NULL;
+   klass->threads_leave = NULL;
+ }
+--- a/atk/atknoopobject.c
++++ b/atk/atknoopobject.c
+@@ -35,7 +35,8 @@
+  */
+ 
+ 
+-static void atk_no_op_object_class_init (AtkNoOpObjectClass *klass);
++static void atk_no_op_object_class_init (AtkNoOpObjectClass *klass,
++		  gpointer      iface_data);
+ 
+ static gpointer parent_class = NULL;
+ 
+@@ -176,8 +177,11 @@
+ }
+ 
+ static void
+-atk_no_op_object_class_init (AtkNoOpObjectClass *klass)
++atk_no_op_object_class_init (AtkNoOpObjectClass *klass,
++		  gpointer      iface_data)
+ {
++  /* wasm: match GInterfaceInitFunc 2-arg type */
++  (void) iface_data;
+   parent_class = g_type_class_peek_parent (klass);
+ }
+ 
+--- a/atk/atknoopobjectfactory.c
++++ b/atk/atknoopobjectfactory.c
+@@ -33,7 +33,8 @@
+  * specified to create an accessible object of a particular type.
+  */
+ static void atk_no_op_object_factory_class_init (
+-                              AtkNoOpObjectFactoryClass        *klass);
++                              AtkNoOpObjectFactoryClass        *klass,
++		  gpointer      iface_data);
+ 
+ static AtkObject* atk_no_op_object_factory_create_accessible (
+                               GObject                          *obj);
+@@ -70,8 +71,11 @@
+ }
+ 
+ static void 
+-atk_no_op_object_factory_class_init (AtkNoOpObjectFactoryClass *klass)
++atk_no_op_object_factory_class_init (AtkNoOpObjectFactoryClass *klass,
++		  gpointer      iface_data)
+ {
++  /* wasm: match GInterfaceInitFunc 2-arg type */
++  (void) iface_data;
+   AtkObjectFactoryClass *class = ATK_OBJECT_FACTORY_CLASS (klass);
+ 
+   parent_class = g_type_class_peek_parent (klass);
+--- a/atk/atkobject.c
++++ b/atk/atkobject.c
+@@ -221,7 +221,8 @@
+ 
+ static gint AtkObject_private_offset;
+ 
+-static void            atk_object_class_init        (AtkObjectClass  *klass);
++static void            atk_object_class_init        (AtkObjectClass  *klass,
++		  gpointer      iface_data);
+ static void            atk_object_init              (AtkObject       *accessible,
+                                                      AtkObjectClass  *klass);
+ static AtkRelationSet* atk_object_real_ref_relation_set 
+@@ -342,8 +343,11 @@
+ }
+ 
+ static void
+-atk_object_class_init (AtkObjectClass *klass)
+-{
++atk_object_class_init (AtkObjectClass *klass,
++		  gpointer      iface_data)
++{
++  /* wasm: match GInterfaceInitFunc 2-arg type */
++  (void) iface_data;
+   GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
+ 
+   parent_class = g_type_class_peek_parent (klass);
+--- a/atk/atkobjectfactory.c
++++ b/atk/atkobjectfactory.c
+@@ -35,7 +35,8 @@
+  * particular GType.
+  */
+ 
+-static void atk_object_factory_class_init   (AtkObjectFactoryClass        *klass);
++static void atk_object_factory_class_init   (AtkObjectFactoryClass        *klass,
++		  gpointer      iface_data);
+ 
+ static gpointer    parent_class = NULL;
+ 
+@@ -65,8 +66,11 @@
+ }
+ 
+ static void 
+-atk_object_factory_class_init (AtkObjectFactoryClass *klass)
++atk_object_factory_class_init (AtkObjectFactoryClass *klass,
++		  gpointer      iface_data)
+ {
++  /* wasm: match GInterfaceInitFunc 2-arg type */
++  (void) iface_data;
+   parent_class = g_type_class_peek_parent (klass);
+ 
+ }
+--- a/atk/atkplug.c
++++ b/atk/atkplug.c
+@@ -32,7 +32,8 @@
+  *
+  */
+ 
+-static void atk_component_interface_init (AtkComponentIface *iface);
++static void atk_component_interface_init (AtkComponentIface *iface,
++		  gpointer      iface_data);
+ 
+ typedef struct {
+   AtkObject *child;
+@@ -111,8 +112,11 @@
+ }
+ 
+ static void
+-atk_component_interface_init (AtkComponentIface *iface)
++atk_component_interface_init (AtkComponentIface *iface,
++		  gpointer      iface_data)
+ {
++  /* wasm: match GInterfaceInitFunc 2-arg type */
++  (void) iface_data;
+ }
+ 
+ /**
+--- a/atk/atkregistry.c
++++ b/atk/atkregistry.c
+@@ -42,7 +42,8 @@
+ static void              atk_registry_init           (AtkRegistry      *instance,
+                                                       AtkRegistryClass *klass);
+ static void              atk_registry_finalize       (GObject          *instance);
+-static void              atk_registry_class_init     (AtkRegistryClass *klass);
++static void              atk_registry_class_init     (AtkRegistryClass *klass,
++		  gpointer      iface_data);
+ static AtkRegistry*      atk_registry_new            (void);
+ 
+ static gpointer parent_class = NULL;
+@@ -75,8 +76,11 @@
+ }
+ 
+ static void
+-atk_registry_class_init (AtkRegistryClass *klass)
+-{
++atk_registry_class_init (AtkRegistryClass *klass,
++		  gpointer      iface_data)
++{
++  /* wasm: match GInterfaceInitFunc 2-arg type */
++  (void) iface_data;
+   GObjectClass *object_class = (GObjectClass *) klass;
+ 
+   parent_class = g_type_class_peek_parent (klass);
+--- a/atk/atkrelation.c
++++ b/atk/atkrelation.c
+@@ -46,7 +46,8 @@
+ 
+ static gpointer parent_class = NULL;
+   
+-static void atk_relation_class_init   (AtkRelationClass *klass);
++static void atk_relation_class_init   (AtkRelationClass *klass,
++		  gpointer      iface_data);
+ static void atk_relation_finalize     (GObject          *object);
+ static void atk_relation_set_property (GObject          *object,
+                                        guint            prop_id,
+@@ -85,8 +86,11 @@
+ }
+ 
+ static void
+-atk_relation_class_init (AtkRelationClass *klass)
+-{
++atk_relation_class_init (AtkRelationClass *klass,
++		  gpointer      iface_data)
++{
++  /* wasm: match GInterfaceInitFunc 2-arg type */
++  (void) iface_data;
+   GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
+ 
+   parent_class = g_type_class_peek_parent (klass);
+--- a/atk/atkrelationset.c
++++ b/atk/atkrelationset.c
+@@ -41,7 +41,8 @@
+ 
+ static gpointer parent_class = NULL;
+ 
+-static void atk_relation_set_class_init (AtkRelationSetClass  *klass);
++static void atk_relation_set_class_init (AtkRelationSetClass  *klass,
++		  gpointer      iface_data);
+ static void atk_relation_set_finalize   (GObject              *object);
+ 
+ GType
+@@ -69,8 +70,11 @@
+ }
+ 
+ static void
+-atk_relation_set_class_init (AtkRelationSetClass *klass)
+-{
++atk_relation_set_class_init (AtkRelationSetClass *klass,
++		  gpointer      iface_data)
++{
++  /* wasm: match GInterfaceInitFunc 2-arg type */
++  (void) iface_data;
+   GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
+ 
+   parent_class = g_type_class_peek_parent (klass);
+--- a/atk/atksocket.c
++++ b/atk/atksocket.c
+@@ -54,7 +54,8 @@
+ 
+ static void atk_socket_finalize   (GObject *obj);
+ 
+-static void atk_component_interface_init (AtkComponentIface *iface);
++static void atk_component_interface_init (AtkComponentIface *iface,
++		  gpointer      iface_data);
+ 
+ static void atk_socket_component_real_get_extents (AtkComponent *component,
+                                                    gint         *x,
+@@ -99,8 +100,11 @@
+ }
+ 
+ static void
+-atk_component_interface_init (AtkComponentIface *iface)
+-{
++atk_component_interface_init (AtkComponentIface *iface,
++		  gpointer      iface_data)
++{
++  /* wasm: match GInterfaceInitFunc 2-arg type */
++  (void) iface_data;
+   iface->get_extents = atk_socket_component_real_get_extents;
+ }
+ 
+--- a/atk/atkstateset.c
++++ b/atk/atkstateset.c
+@@ -45,7 +45,8 @@
+ 
+ typedef struct _AtkRealStateSet      AtkRealStateSet;
+ 
+-static void            atk_state_set_class_init       (AtkStateSetClass  *klass);
++static void            atk_state_set_class_init       (AtkStateSetClass  *klass,
++		  gpointer      iface_data);
+ 
+ GType
+ atk_state_set_get_type (void)
+@@ -72,8 +73,11 @@
+ }
+ 
+ static void
+-atk_state_set_class_init (AtkStateSetClass *klass)
+-{
++atk_state_set_class_init (AtkStateSetClass *klass,
++		  gpointer      iface_data)
++{
++  /* wasm: match GInterfaceInitFunc 2-arg type */
++  (void) iface_data;
+ }
+ 
+ /**
+--- a/atk/atkutil.c
++++ b/atk/atkutil.c
+@@ -33,7 +33,8 @@
+  * and toolkit version.
+  */
+ 
+-static void atk_util_class_init (AtkUtilClass *klass);
++static void atk_util_class_init (AtkUtilClass *klass,
++		  gpointer      iface_data);
+ 
+ static AtkObject *previous_focus_object = NULL;
+ 
+@@ -585,8 +586,11 @@
+ }
+ 
+ static void
+-atk_util_class_init (AtkUtilClass *klass)
+-{
++atk_util_class_init (AtkUtilClass *klass,
++		  gpointer      iface_data)
++{
++  /* wasm: match GInterfaceInitFunc 2-arg type */
++  (void) iface_data;
+   klass->add_global_event_listener = atk_util_real_add_global_event_listener;
+   klass->remove_global_event_listener = atk_util_real_remove_global_event_listener;
+   klass->get_root = NULL;
+--- a/tests/testdocument.c
++++ b/tests/testdocument.c
+@@ -46,7 +46,8 @@
+ };
+ 
+ GType       test_document_get_type (void) G_GNUC_CONST;
+-static void test_document_interface_init (AtkDocumentIface *iface);
++static void test_document_interface_init (AtkDocumentIface *iface,
++		  gpointer      iface_data);
+ 
+ G_DEFINE_TYPE_WITH_CODE (TestDocument,
+                          test_document,
+@@ -65,8 +66,11 @@
+ }
+ 
+ static void
+-test_document_interface_init (AtkDocumentIface *iface)
++test_document_interface_init (AtkDocumentIface *iface,
++		  gpointer      iface_data)
+ {
++  /* wasm: match GInterfaceInitFunc 2-arg type */
++  (void) iface_data;
+ }
+ 
+ static void
+--- a/tests/testvalue.c
++++ b/tests/testvalue.c
+@@ -79,7 +79,8 @@
+ };
+ 
+ GType       test_value_get_type (void) G_GNUC_CONST;
+-static void test_value_interface_init (AtkValueIface *iface);
++static void test_value_interface_init (AtkValueIface *iface,
++		  gpointer      iface_data);
+ 
+ G_DEFINE_TYPE_WITH_CODE (TestValue,
+                          test_value,
+@@ -211,8 +212,11 @@
+ }
+ 
+ static void
+-test_value_interface_init (AtkValueIface *iface)
+-{
++test_value_interface_init (AtkValueIface *iface,
++		  gpointer      iface_data)
++{
++  /* wasm: match GInterfaceInitFunc 2-arg type */
++  (void) iface_data;
+   iface->get_value_and_text = test_value_get_value_and_text;
+   iface->get_range = test_value_get_range;
+   iface->get_increment = test_value_get_increment;

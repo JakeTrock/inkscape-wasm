@@ -1,0 +1,22 @@
+--- a/gtk/gtkfilechoosernative.c
++++ b/gtk/gtkfilechoosernative.c
+@@ -852,7 +852,7 @@
+ {
+   /* wasm: match GInterfaceInitFunc 2-arg type */
+   (void) iface_data;
+-  _gtk_file_chooser_delegate_iface_init (iface);
++  _gtk_file_chooser_delegate_iface_init (iface, NULL); /* wasm: 2-arg */
+   iface->select_file = gtk_file_chooser_native_select_file;
+   iface->set_current_name = gtk_file_chooser_native_set_current_name;
+   iface->set_current_folder = gtk_file_chooser_native_set_current_folder;
+--- a/gtk/gtkfilechooserbutton.c
++++ b/gtk/gtkfilechooserbutton.c
+@@ -522,7 +522,7 @@
+ {
+   /* wasm: match GInterfaceInitFunc 2-arg type */
+   (void) iface_data;
+-  _gtk_file_chooser_delegate_iface_init (iface);
++  _gtk_file_chooser_delegate_iface_init (iface, NULL); /* wasm: 2-arg */
+ 
+   iface->set_current_folder = gtk_file_chooser_button_set_current_folder;
+   iface->get_current_folder = gtk_file_chooser_button_get_current_folder;

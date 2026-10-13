@@ -16,6 +16,22 @@ grep -q "__EMSCRIPTEN__" "$SRC/glib/glib/glib-unix.c" \
   || patch -d "$SRC/glib" -p1 < "$PATCHES/glib/unix-fd-query-path-emscripten.patch"
 patch -d "$SRC/glib" -p1 -R --dry-run -f < "$PATCHES/glib/no-tool-install-emscripten.patch" >/dev/null 2>&1 \
   || patch -d "$SRC/glib" -p1 < "$PATCHES/glib/no-tool-install-emscripten.patch"
+# wasm strict function types: G_DEFINE_* macros register 1-arg functions as
+# 2-arg callbacks. Every GObject consumer compiles against this header.
+# (g_object_do_class_init is covered by iface-init-signatures.patch)
+patch -d "$SRC/glib" -p1 -R --dry-run -f < "$PATCHES/glib/gtype-h-wasm-signatures.patch" >/dev/null 2>&1 \
+  || patch -d "$SRC/glib" -p1 < "$PATCHES/glib/gtype-h-wasm-signatures.patch"
+# hand-written param spec registrations: 22 1-arg instance_init functions
+patch -d "$SRC/glib" -p1 -R --dry-run -f < "$PATCHES/glib/gparamspecs-instance-init-signatures.patch" >/dev/null 2>&1 \
+  || patch -d "$SRC/glib" -p1 < "$PATCHES/glib/gparamspecs-instance-init-signatures.patch"
+# ...and the GParamSpecTypeInfo field that lies about being 1-arg
+patch -d "$SRC/glib" -p1 -R --dry-run -f < "$PATCHES/glib/gparam-h-instance-init-type.patch" >/dev/null 2>&1 \
+  || patch -d "$SRC/glib" -p1 < "$PATCHES/glib/gparam-h-instance-init-type.patch"
+# wasm: marshals must call class-closure members without the trailing user_data
+patch -d "$SRC/glib" -p1 -R --dry-run -f < "$PATCHES/glib/gmarshal-class-callbacks.patch" >/dev/null 2>&1 \
+  || patch -d "$SRC/glib" -p1 < "$PATCHES/glib/gmarshal-class-callbacks.patch"
+patch -d "$SRC/glib" -p1 -R --dry-run -f < "patches/glib/iface-init-signatures.patch" >/dev/null 2>&1 \
+  || patch -d "$SRC/glib" -p1 < "patches/glib/iface-init-signatures.patch"
 # Libraries only: glib's internal executables (gtester, gio-querymodules...)
 # fail to link on emscripten (meson injects -pthread; posix_spawn missing).
 meson setup "$BUILD/glib" "$SRC/glib" --prefix="$SYSROOT" \

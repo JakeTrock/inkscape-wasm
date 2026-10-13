@@ -19,7 +19,7 @@ fi
 export AR="emar" RANLIB="emranlib"
 # Flags are used by wasmtest() only — NOT exported, so build systems use
 # their own flag logic (harfbuzz etc. deliberately build C++ w/o exceptions).
-CFLAGS="-O1 -g1 -ffunction-sections -fdata-sections"
+CFLAGS="-O1 -g1 -ffunction-sections -fdata-sections -sEMULATE_FUNCTION_POINTER_CASTS=1"
 CXXFLAGS="$CFLAGS -fexceptions -frtti"
 export PKG_CONFIG_PATH="$SYSROOT/lib/pkgconfig:$SYSROOT/share/pkgconfig"
 export PKG_CONFIG_LIBDIR="$SYSROOT/lib/pkgconfig:$SYSROOT/share/pkgconfig"
@@ -41,8 +41,12 @@ pkg-config = 'pkg-config'
 
 [properties]
 needs_exe_wrapper = true
-c_link_args = ['$SYSROOT/lib/libpthread.a']
-cpp_link_args = ['$SYSROOT/lib/libpthread.a']
+# wasm strict function types: glib/gtk cast function pointers across arities
+# everywhere (g_list_insert_sorted's 2-arg GCompareFunc → 3-arg GFunc etc.);
+# emulation thunks are the systemic fix. LINK-ONLY setting — as a compile arg
+# it trips -Werror=unused-command-line-argument in meson's sanity checks.
+c_link_args = ['$SYSROOT/lib/libpthread.a', '-sEMULATE_FUNCTION_POINTER_CASTS=1', '-sSTACK_SIZE=8388608']
+cpp_link_args = ['$SYSROOT/lib/libpthread.a', '-sEMULATE_FUNCTION_POINTER_CASTS=1', '-sSTACK_SIZE=8388608']
 
 [host_machine]
 system = 'emscripten'
@@ -100,8 +104,9 @@ wasmtest() { # wasmtest <name> <src-under-tests/lib> [link args...]
   [ -d "$ROOT/tests/fixtures" ] && preload=(--preload-file "$ROOT/tests/fixtures@/fixtures")
   "$comp" "$src" -o "$TEST/$name.js" $CXXFLAGS \
     -sALLOW_MEMORY_GROWTH -sEXIT_RUNTIME=1 -sDEFAULT_TO_CXX=1 \
-    -sEXPORTED_FUNCTIONS=_malloc,_free "${preload[@]}" \
-    -I"$SYSROOT/include" -L"$SYSROOT/lib" "$@"
-  ( cd "$TEST" && node "$name.js" )
+    -sSTACK_SIZE=8388608 \
+    -sEXPORTED_FUNCTIONS=_malloc,_free,_main -sALLOW_TABLE_GROWTH=1 "${preload[@]}" \
+    -I"$SYSROOT/include" -L"$SYSROOT/lib" "$@" "$SYSROOT/lib/libpthread.a" || return 1
+  ( cd "$TEST" && node "$name.js" ) || return 1
   echo "PASS: $name"
 }
