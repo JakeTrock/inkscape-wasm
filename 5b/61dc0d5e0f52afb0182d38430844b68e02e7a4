@@ -1,0 +1,20 @@
+tests/fixtures/inkscape-prefs.xml
+  h_2ae8077fa5063a 1-9
+tests/golden/gen.sh
+  h_2ae8077fa5063a 11-16
+tests/t5/driver.mjs
+  h_2ae8077fa5063a 4,16
+tests/t5/run.sh
+  h_2ae8077fa5063a 9,17,19-20
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "5b61dc0d5e0f52afb0182d38430844b68e02e7a4",
+  "prompts": {},
+  "humans": {
+    "h_2ae8077fa5063a": {
+      "author": "Jacob Trock <jgh@geocrypt.me>"
+    }
+  }
+}
