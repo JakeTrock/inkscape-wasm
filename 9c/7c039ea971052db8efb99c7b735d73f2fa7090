@@ -1,0 +1,58 @@
+Makefile
+  h_2ae8077fa5063a 7-8,24-27
+packages/boost.sh
+  h_2ae8077fa5063a 20
+packages/common.sh
+  h_2ae8077fa5063a 128-141
+packages/inkscape.sh
+  h_2ae8077fa5063a 1-68
+packages/lib2geom.sh
+  h_2ae8077fa5063a 9-11
+packages/libxml2.sh
+  h_2ae8077fa5063a 15
+packages/native-inkscape.sh
+  h_2ae8077fa5063a 1-37
+patches/inkscape/broadway-env.patch
+  h_2ae8077fa5063a 1-18
+patches/inkscape/libcxx-compat.patch
+  h_2ae8077fa5063a 1-65
+patches/inkscape/no-asio-threadpool.patch
+  h_2ae8077fa5063a 1-20
+patches/inkscape/no-boost-stacktrace-runtime.patch
+  h_2ae8077fa5063a 1-20
+patches/inkscape/no-boost-stacktrace.patch
+  h_2ae8077fa5063a 1-21
+tests/fixtures/clip-mask.svg
+  h_2ae8077fa5063a 1-16
+tests/fixtures/gradients.svg
+  h_2ae8077fa5063a 1-15
+tests/fixtures/text.svg
+  h_2ae8077fa5063a 1-6
+tests/fixtures/transforms.svg
+  h_2ae8077fa5063a 1-7
+tests/golden/gen.sh
+  h_2ae8077fa5063a 1-18
+tests/manifest.json
+  h_2ae8077fa5063a 1-7
+tests/package-lock.json
+  h_2ae8077fa5063a 10-12,31-53,82-91
+tests/package.json
+  h_2ae8077fa5063a 6-8
+tests/t5/compare.mjs
+  h_2ae8077fa5063a 1-22
+tests/t5/driver.mjs
+  h_2ae8077fa5063a 1-34
+tests/t5/run.sh
+  h_2ae8077fa5063a 1-27
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "9c7c039ea971052db8efb99c7b735d73f2fa7090",
+  "prompts": {},
+  "humans": {
+    "h_2ae8077fa5063a": {
+      "author": "Jacob Trock <jgh@geocrypt.me>"
+    }
+  }
+}
