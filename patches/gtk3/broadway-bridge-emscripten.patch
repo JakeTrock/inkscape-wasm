@@ -1,0 +1,69 @@
+--- a/gdk/broadway/gdkbroadway-server.c
++++ b/gdk/broadway/gdkbroadway-server.c
+@@ -30,6 +30,10 @@
+ #endif
+ #include "gdkintl.h"
+ 
++#ifdef __EMSCRIPTEN__
++#include <bridge.h>
++#endif
++
+ typedef struct BroadwayInput BroadwayInput;
+ 
+ struct _GdkBroadwayServer {
+@@ -105,6 +109,23 @@
+   char *local_socket_type = NULL;
+   int port;
+ 
++#ifdef __EMSCRIPTEN__
++  /* wasm: the daemon lives in this module. bridge_daemon_init() builds it
++   * and hands us pipe A (app end); the stock pollable-source attach below
++   * works on our stream unchanged. */
++  server = g_object_new (GDK_TYPE_BROADWAY_SERVER, NULL);
++  server->connection = bridge_daemon_init ();
++
++  in = g_io_stream_get_input_stream (G_IO_STREAM (server->connection));
++  pollable = G_POLLABLE_INPUT_STREAM (in);
++
++  source = g_pollable_input_stream_create_source (pollable, NULL);
++  g_source_attach (source, NULL);
++  g_source_set_callback (source, (GSourceFunc)input_available_cb, server, NULL);
++
++  return server;
++#endif
++
+   if (display == NULL)
+     {
+ #ifdef G_OS_UNIX
+@@ -538,7 +559,16 @@
+ static void *
+ map_named_shm (char *name, gsize size, gboolean *is_shm)
+ {
+-#ifdef G_OS_UNIX
++#if defined(__EMSCRIPTEN__)
++  /* wasm: no shm — heap buffer registered by name so the in-module daemon
++   * can map the same memory. */
++  *is_shm = FALSE;
++  {
++    gpointer ptr = g_malloc0 (size);
++    bridge_shm_register (name, size, ptr);
++    return ptr;
++  }
++#elif defined(G_OS_UNIX)
+ 
+   char *filename = NULL;
+   int fd;
+@@ -689,6 +719,13 @@
+ {
+   BroadwayShmSurfaceData *data = _data;
+ 
++#ifdef __EMSCRIPTEN__
++  /* wasm: buffer stays alive — the daemon may still cache it by name.
++   * shortcut: bounded leak (one buffer per window resize), revisit in Leg C+. */
++  g_free (data);
++  return;
++#endif
++
+ #ifdef G_OS_UNIX
+ 
+   munmap (data->data, data->data_size);

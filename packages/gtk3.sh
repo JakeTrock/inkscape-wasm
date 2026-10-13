@@ -17,12 +17,18 @@ patch -d "$SRC/gtk3" -p1 -R --dry-run -f < "$PATCHES/gtk3/iface-init-signatures.
 # wasm: direct callers of the now-2-arg delegate iface_init
 patch -d "$SRC/gtk3" -p1 -R --dry-run -f < "patches/gtk3/filechooser-delegate-calls.patch" >/dev/null 2>&1 \
   || patch -d "$SRC/gtk3" -p1 < "patches/gtk3/filechooser-delegate-calls.patch"
-# wasm: broadway client without a broadwayd daemon (leg B adds the byte pipe)
-patch -d "$SRC/gtk3" -p1 -R --dry-run -f < "patches/gtk3/broadway-fake-server-emscripten.patch" >/dev/null 2>&1 \
-  || patch -d "$SRC/gtk3" -p1 < "patches/gtk3/broadway-fake-server-emscripten.patch"
+# wasm: broadway over the in-module bridge (leg B) — app seam, daemon glue
+patch -d "$SRC/gtk3" -p1 -R --dry-run -f < "$PATCHES/gtk3/broadway-bridge-emscripten.patch" >/dev/null 2>&1 \
+  || patch -d "$SRC/gtk3" -p1 < "$PATCHES/gtk3/broadway-bridge-emscripten.patch"
+patch -d "$SRC/gtk3" -p1 -R --dry-run -f < "$PATCHES/gtk3/broadwayd-bridge-emscripten.patch" >/dev/null 2>&1 \
+  || patch -d "$SRC/gtk3" -p1 < "$PATCHES/gtk3/broadwayd-bridge-emscripten.patch"
+patch -d "$SRC/gtk3" -p1 -R --dry-run -f < "$PATCHES/gtk3/broadway-server-bridge-emscripten.patch" >/dev/null 2>&1 \
+  || patch -d "$SRC/gtk3" -p1 < "$PATCHES/gtk3/broadway-server-bridge-emscripten.patch"
 # Libraries only: gtk's own executables (broadwayd aside) can't link on
 # emscripten (meson injects -pthread into exe links). broadwayd itself is
 # reused as source in leg B, not linked here.
+# bridge headers into the sysroot — gdk + daemon sources #include <bridge.h>
+mkdir -p "$SYSROOT/include" && cp "$ROOT"/bridge/*.h "$SYSROOT/include/"
 meson setup "$BUILD/gtk3" "$SRC/gtk3" --prefix="$SYSROOT" \
   --cross-file "$BUILD/emsdk.cross" --buildtype=release \
   --default-library=static \
@@ -46,6 +52,13 @@ for f in broadwayd.js broadwayd.wasm; do
   [ -f "$BUILD/gtk3/gdk/broadway/$f" ] && cp "$BUILD/gtk3/gdk/broadway/$f" "$BUILD/donor/$f"
 done
 meson install -C "$BUILD/gtk3" --no-rebuild
-wasmtest gtk3 gtk3_test.c $(pkg-config --static --cflags --libs gtk+-3.0) -lpthread
+# smoke test now links the bridge + daemon sources: the node test runs GDK
+# against the real in-module broadwayd relay over pipe A (no browser yet).
+DAEMON_SRC="$SRC/gtk3/gdk/broadway"
+wasmtest gtk3 gtk3_test.c bridge/bytepipe.c bridge/bridge.c \
+  "$DAEMON_SRC/broadwayd.c" "$DAEMON_SRC/broadway-server.c" \
+  "$DAEMON_SRC/broadway-buffer.c" "$DAEMON_SRC/broadway-output.c" \
+  -I"$BUILD/gtk3" -I"$BUILD/gtk3/gdk/broadway" -I"$SRC/gtk3/gdk" -I"$SRC/gtk3/gdk/broadway" \
+  $(pkg-config --static --cflags --libs gtk+-3.0) -lpthread
 manifest gtk3 "$VER"
 touch "$STAMPS/gtk3.ok"

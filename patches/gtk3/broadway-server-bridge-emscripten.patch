@@ -1,0 +1,112 @@
+--- a/gdk/broadway/broadway-server.c
++++ b/gdk/broadway/broadway-server.c
+@@ -4,6 +4,10 @@
+ 
+ #include "broadway-output.h"
+ 
++#ifdef __EMSCRIPTEN__
++#include <bridge.h>
++#endif
++
+ #include <glib.h>
+ #include <glib/gprintf.h>
+ #include "gdktypes.h"
+@@ -832,7 +836,10 @@
+ static void *
+ map_named_shm (char *name, gsize size)
+ {
+-#ifdef G_OS_UNIX
++#ifdef __EMSCRIPTEN__
++  /* wasm: buffer lives in the app's heap, registered by name */
++  return bridge_shm_lookup (name, size);
++#elif defined(G_OS_UNIX)
+ 
+   int fd;
+   void *ptr;
+@@ -1302,6 +1309,13 @@
+   GInetAddress *inet_address;
+   GSocketAddress *socket_address;
+ 
++#ifdef __EMSCRIPTEN__
++  /* wasm: no HTTP/socket service — the bridge connects the app and the
++   * browser client in-memory. */
++  server = g_object_new (BROADWAY_TYPE_SERVER, NULL);
++  return server;
++#endif
++
+   server = g_object_new (BROADWAY_TYPE_SERVER, NULL);
+   server->port = port;
+   server->address = g_strdup (address);
+@@ -1804,6 +1818,12 @@
+ shm_data_unmap (void *_data)
+ {
+   ShmSurfaceData *data = _data;
++#ifdef __EMSCRIPTEN__
++  /* wasm: buffer is owned by the app-side registry — never unmap. */
++  g_free (data);
++  return;
++#endif
++
+ #ifdef G_OS_UNIX
+   munmap (data->data, data->data_size);
+ #elif defined(G_OS_WIN32)
+@@ -1963,3 +1983,33 @@
+ 
+   broadway_server_flush (server);
+ }
++
++#ifdef __EMSCRIPTEN__
++
++void
++broadway_server_bridge_client_new (BroadwayServer *server,
++                                   GIOStream *connection)
++{
++  BroadwayInput *input;
++  GInputStream *in;
++
++  /* mirrors start_input()'s post-handshake path, minus HTTP/WebSocket */
++  input = g_new0 (BroadwayInput, 1);
++  input->server = server;
++  input->connection = g_object_ref (connection);
++  input->buffer = g_byte_array_new ();
++
++  input->output =
++    broadway_output_new (g_io_stream_get_output_stream (connection), 0);
++
++  in = g_io_stream_get_input_stream (input->connection);
++  input->source = g_pollable_input_stream_create_source (G_POLLABLE_INPUT_STREAM (in), NULL);
++  g_source_set_callback (input->source, (GSourceFunc)input_data_cb, input, NULL);
++  g_source_attach (input->source, NULL);
++
++  start (input);
++
++  parse_input (input);
++}
++
++#endif /* __EMSCRIPTEN__ */
+--- a/gdk/broadway/broadway-server.h
++++ b/gdk/broadway/broadway-server.h
+@@ -4,6 +4,9 @@
+ #include "broadway-protocol.h"
+ #include <glib-object.h>
+ #include <cairo.h>
++#ifdef __EMSCRIPTEN__
++#include <gio/gio.h>
++#endif
+ 
+ void broadway_events_got_input (BroadwayInputMsg *message,
+ 				gint32 client_id);
+@@ -99,4 +102,13 @@
+ 							   gint              id,
+ 							   gboolean          modal_hint);
+ 
++#ifdef __EMSCRIPTEN__
++/* wasm bridge glue (implemented in broadwayd.c / broadway-server.c) */
++void     broadway_daemon_set_server        (BroadwayServer *server);
++gpointer broadway_daemon_app_client_new    (GIOStream *connection);
++void     broadway_client_process_buffered  (gpointer client);
++void     broadway_server_bridge_client_new (BroadwayServer *server,
++                                            GIOStream *connection);
++#endif
++
+ #endif /* __BROADWAY_SERVER__ */

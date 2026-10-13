@@ -1,0 +1,87 @@
+--- a/gdk/broadway/broadwayd.c
++++ b/gdk/broadway/broadwayd.c
+@@ -412,6 +412,7 @@
+ }
+ 
+ 
++#ifndef __EMSCRIPTEN__
+ int
+ main (int argc, char *argv[])
+ {
+@@ -611,3 +612,76 @@
+ 	}
+     }
+ }
++#endif /* !__EMSCRIPTEN__ */
++
++#ifdef __EMSCRIPTEN__
++
++/* ---- wasm bridge glue: in-module app "client" without a socket ---- */
++
++void
++broadway_daemon_set_server (BroadwayServer *s)
++{
++  server = s;
++}
++
++BroadwayClient *
++broadway_daemon_app_client_new (GIOStream *connection)
++{
++  BroadwayClient *client;
++  GInputStream *input;
++  BroadwayInputMsg ev = { {0} };
++
++  client = g_new0 (BroadwayClient, 1);
++  client->id = client_id_count++;
++  client->connection = g_object_ref (connection);
++
++  input = g_io_stream_get_input_stream (G_IO_STREAM (client->connection));
++  client->in = (GBufferedInputStream *)g_buffered_input_stream_new (input);
++
++  clients = g_list_prepend (clients, client);
++
++  /* initial resize notify (mirrors incoming_client) */
++  ev.base.type = BROADWAY_EVENT_SCREEN_SIZE_CHANGED;
++  ev.base.serial = broadway_server_get_next_serial (server) - 1;
++  ev.base.time = broadway_server_get_last_seen_time (server);
++  broadway_server_get_screen_size (server,
++                                   &ev.screen_resize_notify.width,
++                                   &ev.screen_resize_notify.height);
++  broadway_events_got_input (&ev, client->id);
++
++  return client;
++}
++
++void
++broadway_client_process_buffered (BroadwayClient *client)
++{
++  guint32 size;
++  gsize count, remaining;
++  guint8 *buffer;
++  gssize res;
++
++  res = g_buffered_input_stream_fill (client->in, 4 * 1024, NULL, NULL);
++  if (res <= 0)
++    return;
++
++  buffer = (guint8 *)g_buffered_input_stream_peek_buffer (client->in, &count);
++
++  remaining = count;
++  while (remaining >= sizeof (guint32))
++    {
++      memcpy (&size, buffer, sizeof (guint32));
++
++      if (size <= remaining)
++        {
++          client_handle_request (client, (BroadwayRequest *)buffer);
++          remaining -= size;
++          buffer += size;
++        }
++      else
++        break; /* stock client_fill_cb spins here on a partial tail */
++    }
++
++  g_input_stream_skip (G_INPUT_STREAM (client->in), count - remaining, NULL, NULL);
++}
++
++#endif /* __EMSCRIPTEN__ */
