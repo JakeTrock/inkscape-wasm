@@ -110,3 +110,18 @@ wasmtest() { # wasmtest <name> <src-under-tests/lib> [link args...]
   ( cd "$TEST" && node "$name.js" ) || return 1
   echo "PASS: $name"
 }
+
+daemon_objs() { # daemon_objs <outdir> — broadwayd relay sources to .o files
+  # (compiled apart from consumers: they need -DGDK_COMPILATION, which must
+  # not leak into app code that includes <gdk/gdk.h>)
+  local out="$1" daemon="$SRC/gtk3/gdk/broadway" f
+  mkdir -p "$out"
+  for f in broadwayd broadway-server broadway-buffer broadway-output; do
+    [ "$out/$f.o" -nt "$daemon/$f.c" ] && continue
+    emcc -c "$daemon/$f.c" -o "$out/$f.o" -O1 -g1 -ffunction-sections -fdata-sections -fexceptions \
+      -DGDK_COMPILATION \
+      -I"$BUILD/gtk3" -I"$BUILD/gtk3/gdk/broadway" \
+      -I"$SRC/gtk3" -I"$SRC/gtk3/gdk" -I"$SRC/gtk3/gdk/broadway" \
+      -I"$SYSROOT/include" $(pkg-config --cflags gtk+-3.0) || return 1
+  done
+}

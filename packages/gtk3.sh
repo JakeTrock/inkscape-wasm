@@ -52,13 +52,11 @@ for f in broadwayd.js broadwayd.wasm; do
   [ -f "$BUILD/gtk3/gdk/broadway/$f" ] && cp "$BUILD/gtk3/gdk/broadway/$f" "$BUILD/donor/$f"
 done
 meson install -C "$BUILD/gtk3" --no-rebuild
-# smoke test now links the bridge + daemon sources: the node test runs GDK
+# smoke test now links the bridge + daemon objects: the node test runs GDK
 # against the real in-module broadwayd relay over pipe A (no browser yet).
-DAEMON_SRC="$SRC/gtk3/gdk/broadway"
-wasmtest gtk3 gtk3_test.c bridge/bytepipe.c bridge/bridge.c \
-  "$DAEMON_SRC/broadwayd.c" "$DAEMON_SRC/broadway-server.c" \
-  "$DAEMON_SRC/broadway-buffer.c" "$DAEMON_SRC/broadway-output.c" \
-  -I"$BUILD/gtk3" -I"$BUILD/gtk3/gdk/broadway" -I"$SRC/gtk3/gdk" -I"$SRC/gtk3/gdk/broadway" \
+daemon_objs "$TEST/daemon"
+wasmtest gtk3 gtk3_test.c bridge/bytepipe.c bridge/bridge.c "$TEST/daemon"/*.o \
+  -I"$SRC/gtk3/gdk/broadway" \
   $(pkg-config --static --cflags --libs gtk+-3.0) -lpthread
 manifest gtk3 "$VER"
 touch "$STAMPS/gtk3.ok"

@@ -5,7 +5,7 @@ PKGS := zlib libpng freetype expat fontconfig pixman fribidi harfbuzz cairo \
         gtkmm libxml2 libxslt gsl dconv boost libgc potrace lib2geom
 # if potrace is cut (Task 19 optional rule), remove it from this list
 
-.PHONY: deps deps-real pkg-% check-0 check-1 clean
+.PHONY: deps deps-real pkg-% check-0 check-1 check-2 check-3 clean
 
 deps:
 	$(OBG) build/logs/deps -- $(MAKE) deps-real
@@ -18,6 +18,8 @@ pkg-%:
 
 check-0: ; bash tests/t0/run.sh
 check-1: ; bash tests/check-1.sh
+check-2: ; bash tests/t2/run.sh
+check-3: ; bash tests/t3/run.sh
 
 clean:
 	rm -rf build

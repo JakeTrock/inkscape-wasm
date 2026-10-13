@@ -1,5 +1,23 @@
 --- a/gdk/broadway/broadwayd.c
 +++ b/gdk/broadway/broadwayd.c
+@@ -47,7 +47,7 @@
+ 
+ typedef struct  {
+   guint32 id;
+-  GSocketConnection *connection;
++  GIOStream *connection; /* wasm: also holds the bridge pipe end */
+   GBufferedInputStream *in;
+   GSList *serial_mappings;
+   GList *windows;
+@@ -384,7 +384,7 @@
+ 
+   client = g_new0 (BroadwayClient, 1);
+   client->id = client_id_count++;
+-  client->connection = g_object_ref (connection);
++  client->connection = (GIOStream *) g_object_ref (connection);
+ 
+   input = g_io_stream_get_input_stream (G_IO_STREAM (client->connection));
+   client->in = (GBufferedInputStream *)g_buffered_input_stream_new (input);
 @@ -412,6 +412,7 @@
  }
  
@@ -8,12 +26,18 @@
  int
  main (int argc, char *argv[])
  {
-@@ -611,3 +612,76 @@
+@@ -541,6 +542,7 @@
+   
+   return 0;
+ }
++#endif /* !__EMSCRIPTEN__ */
+ 
+ static gsize
+ get_event_size (int type)
+@@ -611,3 +613,75 @@
  	}
      }
  }
-+#endif /* !__EMSCRIPTEN__ */
-+
 +#ifdef __EMSCRIPTEN__
 +
 +/* ---- wasm bridge glue: in-module app "client" without a socket ---- */
@@ -24,7 +48,7 @@
 +  server = s;
 +}
 +
-+BroadwayClient *
++gpointer
 +broadway_daemon_app_client_new (GIOStream *connection)
 +{
 +  BroadwayClient *client;
@@ -53,8 +77,9 @@
 +}
 +
 +void
-+broadway_client_process_buffered (BroadwayClient *client)
++broadway_client_process_buffered (gpointer client_)
 +{
++  BroadwayClient *client = client_;
 +  guint32 size;
 +  gsize count, remaining;
 +  guint8 *buffer;

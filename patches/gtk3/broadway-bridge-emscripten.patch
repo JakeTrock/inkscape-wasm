@@ -1,6 +1,6 @@
 --- a/gdk/broadway/gdkbroadway-server.c
 +++ b/gdk/broadway/gdkbroadway-server.c
-@@ -30,6 +30,10 @@
+@@ -30,13 +30,21 @@
  #endif
  #include "gdkintl.h"
  
@@ -11,7 +11,18 @@
  typedef struct BroadwayInput BroadwayInput;
  
  struct _GdkBroadwayServer {
-@@ -105,6 +109,23 @@
+   GObject parent_instance;
+ 
+   guint32 next_serial;
++#ifdef __EMSCRIPTEN__
++  GIOStream *connection;      /* wasm: bridge pipe end */
++#else
+   GSocketConnection *connection;
++#endif
+ 
+   guint32 recv_buffer_size;
+   guint8 recv_buffer[1024];
+@@ -105,6 +113,23 @@
    char *local_socket_type = NULL;
    int port;
  
@@ -35,7 +46,19 @@
    if (display == NULL)
      {
  #ifdef G_OS_UNIX
-@@ -538,7 +559,16 @@
+@@ -158,7 +183,11 @@
+     return NULL;
+ 
+   server = g_object_new (GDK_TYPE_BROADWAY_SERVER, NULL);
++#ifdef __EMSCRIPTEN__
++  server->connection = G_IO_STREAM (connection); /* field is GIOStream on wasm */
++#else
+   server->connection = connection;
++#endif
+ 
+   in = g_io_stream_get_input_stream (G_IO_STREAM (server->connection));
+   pollable = G_POLLABLE_INPUT_STREAM (in);
+@@ -538,7 +567,16 @@
  static void *
  map_named_shm (char *name, gsize size, gboolean *is_shm)
  {
@@ -53,7 +76,7 @@
  
    char *filename = NULL;
    int fd;
-@@ -689,6 +719,13 @@
+@@ -689,6 +727,13 @@
  {
    BroadwayShmSurfaceData *data = _data;
  
