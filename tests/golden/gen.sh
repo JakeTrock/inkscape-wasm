@@ -8,6 +8,12 @@ source packages/common.sh
 BIN="$BUILD/native/inkscape/bin/inkscape"
 [ -x "$BIN" ] || { echo "no native inkscape — run: make native-inkscape"; exit 1; }
 
+# same clean profile as the wasm side (no welcome screen / splash blocking)
+PROFILE="$BUILD/native-profile"
+mkdir -p "$PROFILE"
+cp "$ROOT/tests/fixtures/inkscape-prefs.xml" "$PROFILE/preferences.xml"
+export INKSCAPE_PROFILE_DIR="$PROFILE"
+
 mkdir -p tests/golden
 for f in basic text gradients transforms clip-mask; do
   "$BIN" --batch-process --actions \

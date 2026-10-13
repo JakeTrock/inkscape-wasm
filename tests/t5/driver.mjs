@@ -1,6 +1,7 @@
 // T5 driver: run inkscape.wasm headless in node, export an SVG to PNG.
 // usage: node driver.mjs <module.js> <in-fs-svg> <out-host-png>
 import { writeFileSync } from 'node:fs';
+import { dirname, join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
 const [, , modulePath, svg, out] = process.argv;
@@ -12,6 +13,7 @@ if (!modulePath || !svg || !out) {
 const factory = (await import(pathToFileURL(modulePath))).default;
 const m = await factory({
   noInitialRun: true,
+  locateFile: f => join(dirname(modulePath), f), // inkscape.data sits next to inkscape.js
   print: t => console.log(t),
   printErr: t => console.error(t),
 });

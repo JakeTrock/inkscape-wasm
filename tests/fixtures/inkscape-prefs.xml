@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Minimal deterministic profile: disable the welcome screen and splash so
+     headless batch runs never block on UI. Used by BOTH the wasm build
+     (staged at /home/web_user) and the native golden generator. -->
+<inkscape version="1.4.4" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape">
+  <group id="options">
+    <group id="boot" showwelcome="0" showsplash="0"/>
+  </group>
+</inkscape>
