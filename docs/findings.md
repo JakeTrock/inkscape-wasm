@@ -349,3 +349,70 @@ boots in node and batch-exports SVG→PNG pixel-identical to native
   use a CDP client (`--inspect-brk` + Profiler.start/stop over WebSocket)
   to sample a spinning wasm stack, then resolve wasm-function[N] via
   `wasm-objdump -x`.
+
+## Leg D/E — GUI + harness (T6/T7 gates, 2026-10-13)
+
+Both gates green. T6: boot stages + canvas paint (toolDark=3026,
+bodyLight=5332). T7: F4 → canvas drag → `<rect>` in doc → real
+`document-save` → export PNG **pixelmatch 0/480000 (0.000%)** vs a native
+export of the same saved document.
+
+### The renderer crash (root cause + fix)
+
+The browser renderer SEGV'd ~5.5s after boot with **no user input**. Chain:
+broadway/GTK bookmarks a `GPollFileMonitor` (5s poll timeout) → its GTask
+completes → **`g_task_run_in_thread` re-completes tasks that already
+completed during the inline thread-pool push** (our
+`gthreadpool-inline-push` leg-C patch) → every GTask callback runs twice →
+monitor freed twice + duplicated timeout GSource → `g_source_unref` on a
+dangling source → wasm OOB (clean RuntimeError in node, renderer SEGV in
+Chromium). Fix: `patches/glib/gtask-no-double-complete-emscripten.patch` —
+skip the re-complete when `thread_complete && !thread_cancelled` (wasm-
+guarded). Node time-repro (real-time 16ms frame pumping — instant pumping
+hides time-based paths) survives 25s; headless shell 60s incl. a click.
+
+### The document-save hang (root cause + fix)
+
+`document-save` spun at 100% CPU between `sp_file_save_document` entry and
+`file_save` entry. Breadcrumbs showed `fn=(null)`: the desktop document
+had **no filename**. Why: the `file-open` app action
+(`actions-file.cpp::file_open`) opens the doc as a *second, invisible*
+document and nulls the active desktop — the canvas kept showing the
+untitled template doc, so Save correctly took the SaveAs-dialog branch,
+and **constructing a `Gtk::FileChooserDialog` spins forever in wasm**
+(hangs before `dialog_run`'s blocking iteration is even reached — no
+surface is created). Dragging/exporting "worked" because both target the
+desktop/app-active doc — the template — which is why earlier save tests
+were an illusion (they read back bytes the test itself had written).
+
+Fix: `patches/inkscape/file-open-swap-emscripten.patch` — under
+`__EMSCRIPTEN__`, `file_open` swaps the opened document into the active
+window via the stock `InkscapeApplication::document_swap` (one window on
+broadway, desktop doc == opened file, filename intact) →
+`sp_file_save_document` takes the plain-write branch and returns.
+Harness Save button no longer fires `document-save-as` with no doc open
+(the SaveAs dialog hang is unfixed and inherent — see hazards).
+
+### Leg D/E quirks worth keeping
+
+- **F4 needs a focused window**: the broadway daemon drops key events
+  until a button press focuses a window — click the canvas *before*
+  pressing F4 (t7.spec does click → F4 → drag, with a verify-and-retry in
+  case the keypress lands early).
+- Keymap loads via `inkscape.xml` fallback; `default.xml` is a
+  CMake-install rename absent when staging from the source tree.
+- `parse_actions` only resolves *app* actions; `document-save` /
+  `tool-switch` are *window* actions — the action-hook patch now falls
+  back to `_active_window->lookup_action` under `__EMSCRIPTEN__`.
+- `dialog_run` (ui/dialog-run.cpp) blocks in
+  `main_context->iteration(true)` — **any** modal dialog hangs wasm
+  (Filechooser construction spins even before that). Everything in the
+  harness avoids modal paths.
+- Emscripten `ENV` is empty: host env vars never reach `getenv`.
+- Emscripten mutexes/conds are no-ops (no -pthread); gdb attach to node
+  is blocked by yama ptrace_scope — use breadcrumbs + wasm-objdump maps
+  (`wasm-d.txt` disasm offsets match stack addresses directly), or
+  Chromium `--enable-logging=stderr` for native backtraces.
+- `db.get(".svg")` returning null is *stock* behavior (dict is keyed by
+  module id, not extension) — `Extension::save` autodetects the output
+  module from the filename; not a wasm bug.

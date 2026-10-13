@@ -68,7 +68,7 @@ Makefile                                            — check-6, check-7, serve
   `_bridge_js_poll_ptr`, `_inkscape_run_actions(const char *actions)`.
 - Produces (C++, inkscape-internal): `InkscapeApplication::run_actions(const Glib::ustring&)` (emscripten only).
 
-- [ ] **Step 1: Generate `main-loop-yield-emscripten.patch`**
+  - [x] **Step 1: Generate `main-loop-yield-emscripten.patch`**
 
   Pristine-tree edit of `src/inkscape-main.cpp` (the tree in
   `build/src/inkscape-1.4.4` is already patched — copy file to
@@ -101,7 +101,7 @@ Makefile                                            — check-6, check-7, serve
   (Keep the `_WIN32` block and `return ret;` under the `#else` — mind that
   `return ret` now needs to live in the non-emscripten path.)
 
-- [ ] **Step 2: Generate `action-hook-emscripten.patch`**
+  - [x] **Step 2: Generate `action-hook-emscripten.patch`**
 
   a. `src/inkscape-application.h` — public section, after `parse_actions`:
 
@@ -139,7 +139,7 @@ Makefile                                            — check-6, check-7, serve
   EXPORTED_FUNCTIONS; verify with `grep -c _inkscape_run_actions` on the
   relinked inkscape.js.)
 
-- [ ] **Step 3: `packages/inkscape.sh` changes**
+  - [x] **Step 3: `packages/inkscape.sh` changes**
 
   a. Add both patches to the patch loop.
   b. Append to `CMAKE_EXE_LINKER_FLAGS`:
@@ -148,7 +148,7 @@ Makefile                                            — check-6, check-7, serve
   -sEXPORTED_FUNCTIONS=_main,_malloc,_free,_bridge_frame,_bridge_js_connect,_bridge_js_write,_bridge_js_poll,_bridge_js_poll_ptr
   ```
 
-- [ ] **Step 4: Relink (oc-bg — cmake reconfigure + link, ccache makes it minutes)**
+  - [x] **Step 4: Relink (oc-bg — cmake reconfigure + link, ccache makes it minutes)**
 
   ```bash
   rm build/stamps/inkscape.ok build/inkscape/bin/inkscape.{js,wasm}
@@ -157,7 +157,7 @@ Makefile                                            — check-6, check-7, serve
 
   Verify in the log: build OK; `grep -c "_bridge_frame\|_inkscape_run_actions" build/inkscape/bin/inkscape.js` ≥ 2. Also rerun `make check-5` (cached stamp is fine — only if flags changed the module, drop the stamp and rerun: headless boot must not regress).
 
-- [ ] **Step 5: Node GUI-boot smoke (`tests/t6/boot-smoke.mjs`)**
+  - [x] **Step 5: Node GUI-boot smoke (`tests/t6/boot-smoke.mjs`)**
 
   ```js
   // Boots inkscape.wasm in GUI mode (broadway) in node: callMain must RETURN,
@@ -199,7 +199,7 @@ Makefile                                            — check-6, check-7, serve
   around). If it aborts, read the console stderr — icon/font issues were
   solved in Leg C; new aborts get findings entries.
 
-- [ ] **Step 6: Commit**
+  - [x] **Step 6: Commit**
 
   ```bash
   git add -A && git commit -m "leg D: main-loop yield + JS action hook + bridge exports — inkscape GUI boots headless-in-node (boot-smoke PASS)"
@@ -220,7 +220,7 @@ Makefile                                            — check-6, check-7, serve
   `build/`); page globals for tests: `window.__boot` (stage flags), each stage
   lights a DOM node with `id="stage-<n>"` + `data-state="ok"`.
 
-- [ ] **Step 1: `harness/index.html`** — spec-05 layout, no frameworks:
+  - [x] **Step 1: `harness/index.html`** — spec-05 layout, no frameworks:
 
 ```
 toolbar: [Open SVG] [Save] [Export PNG] [Hard reload] | status line
@@ -234,7 +234,7 @@ boot-stage checklist: module fetched / runtime ready / broadway connected / wind
   `bridge.js`, `broadway.js` (sed'd). Body script imports `./loader.js`
   (type=module).
 
-- [ ] **Step 2: `harness/loader.js`** — the whole harness brain (~120 lines):
+  - [x] **Step 2: `harness/loader.js`** — the whole harness brain (~120 lines):
 
   - `Module({ noInitialRun: true, locateFile, print, printErr })` → stage 1-2.
   - `window.__bridge_mod = m`; `connect()` (broadway.js → `BridgeSocket`) →
@@ -254,7 +254,7 @@ boot-stage checklist: module fetched / runtime ready / broadway connected / wind
   - Status line: current stage text + last console line. Errors from
     `window.onerror` render with stack in the console panel (spec 05).
 
-- [ ] **Step 3: `tests/lib/harness_stage.sh`**
+  - [x] **Step 3: `tests/lib/harness_stage.sh`**
 
   ```bash
   # stage_harness — build/harness/ gets: module trio, bridge.js, broadway.js
@@ -275,10 +275,10 @@ boot-stage checklist: module fetched / runtime ready / broadway connected / wind
   (Check where `rawinflate.min.js` actually lives — `wasm_harness.sh` copies
   it into every harness dir; reuse the same source path.)
 
-- [ ] **Step 4: Makefile** — `check-6 check-7 serve` phony targets;
+  - [x] **Step 4: Makefile** — `check-6 check-7 serve` phony targets;
   `serve: ; python3 -m http.server 8824 --directory build`.
 
-- [ ] **Step 5: Manual smoke (foreground, quick)** — `make serve` in
+  - [x] **Step 5: Manual smoke (foreground, quick)** — `make serve` in
   background, `node tests/t2/debug.mjs`-style textual probe or just
   `curl -s localhost:8824/harness/index.html | head` (page loads; full browser
   check is Task 3's job). Commit:
@@ -301,7 +301,7 @@ both detectable as pixel statistics, and a screenshot lands in
 `build/t6/t6-shot.png`. Canvas geometry dumped as TEXT to
 `build/t6/t6-geom.json` (Task 4 consumes it).
 
-- [ ] **Step 1: `tests/t6/t6.spec.ts`** (fixed viewport 1280×800, per spec 04):
+  - [x] **Step 1: `tests/t6/t6.spec.ts`** (fixed viewport 1280×800, per spec 04):
 
   ```ts
   test('T6: inkscape GUI boots — chrome, toolbox, canvas', async ({ page }) => {
@@ -354,19 +354,19 @@ both detectable as pixel statistics, and a screenshot lands in
   isn't the ink window (broadway makes one canvas per surface), adjust the
   picker to the largest *content* canvas and note it.)
 
-- [ ] **Step 2: `tests/t6/run.sh`** — t2 pattern: stamp check, source
+  - [x] **Step 2: `tests/t6/run.sh`** — t2 pattern: stamp check, source
   common.sh + harness_stage.sh, `stage_harness`, ensure node_modules,
   `npx playwright test t6/t6.spec.ts`, stamp `check-6.ok`. Also dump
   `build/t6/t6-geom.json` from inside the spec (write facts there via
   `fs.writeFileSync` in the test) for Task 4.
 
-- [ ] **Step 3: Run `make check-6`** (foreground; page load is the slow part,
+  - [x] **Step 3: Run `make check-6`** (foreground; page load is the slow part,
   still < 2 min). Debug with the t2/t3 `debug.mjs` probe pattern (textual
   facts only). On hang: check which boot stage never lit — module (fetch),
   runtime (wasm compile), broadway (connect), window (canvas), frame — each
   maps to a distinct subsystem.
 
-- [ ] **Step 4: Commit**
+  - [x] **Step 4: Commit**
 
   ```bash
   git add -A && git commit -m "leg D: T6 gate green — inkscape GUI painted in browser (check-6)"
@@ -381,9 +381,9 @@ both detectable as pixel statistics, and a screenshot lands in
   `tests/t7/run.sh`, `tests/t7/t7.spec.ts`
 - Modify: `tests/manifest.json` (`"t7": 0.5`), `Makefile`
 
-- [ ] **Step 1: fixture** — minimal valid svg: `<svg xmlns="http://www.w3.org/2000/svg" width="800" height="600" viewBox="0 0 800 600"><rect width="800" height="600" fill="#ffffff"/></svg>`.
+  - [x] **Step 1: fixture** — minimal valid svg: `<svg xmlns="http://www.w3.org/2000/svg" width="800" height="600" viewBox="0 0 800 600"><rect width="800" height="600" fill="#ffffff"/></svg>`.
 
-- [ ] **Step 2: `tests/t7/t7.spec.ts`** — scripted session on the same page:
+  - [x] **Step 2: `tests/t7/t7.spec.ts`** — scripted session on the same page:
 
   1. Boot + stages (shared helper or copy from t6 — 10 lines, not worth a
      shared module yet).
@@ -405,7 +405,7 @@ both detectable as pixel statistics, and a screenshot lands in
      `/home/web_user/export.png` → host-write `build/t7/t7-wasm.png`.
   8. Screenshot `build/t7/t7-shot.png`.
 
-- [ ] **Step 3: `tests/t7/run.sh`** — playwright spec, then the native leg +
+  - [x] **Step 3: `tests/t7/run.sh`** — playwright spec, then the native leg +
   compare (mirrors t5/run.sh):
 
   ```bash
@@ -420,14 +420,14 @@ both detectable as pixel statistics, and a screenshot lands in
   copy the t5 golden-gen invocation exactly; check `tests/golden/gen.sh` for
   the established env and reuse it.)
 
-- [ ] **Step 4: Run `make check-7`** — expect the fiddliest gate: if the drag
+  - [x] **Step 4: Run `make check-7`** — expect the fiddliest gate: if the drag
   produces no rect, dump `document.elementFromPoint` at the drag origin and
   the canvas stack order (broadway overlays canvases — the top one must
   receive the events; t2's click worked, so trust the pattern and check
   coordinates first). If the tool didn't switch, the F4 keypress may need the
   canvas focused (`page.click` on the canvas first) — or use the fallback.
 
-- [ ] **Step 5: Commit**
+  - [x] **Step 5: Commit**
 
   ```bash
   git add -A && git commit -m "leg E: T7 gate green — draw rect via canvas drag, save, export pixel-matches native (check-7)"
@@ -437,10 +437,10 @@ both detectable as pixel statistics, and a screenshot lands in
 
 ### Task 5: Wrap-up — findings, roadmap, exit conditions
 
-- [ ] `docs/findings.md`: Leg D/E section — gate results, the deviations
+  - [x] `docs/findings.md`: Leg D/E section — gate results, the deviations
   above, any new wasm quirks found (there will be some).
-- [ ] Roadmap table: plan 4 status → done, gates column green.
-- [ ] Exit check per spec 05: `make check-6 check-7` from clean stamps, and
+  - [x] Roadmap table: plan 4 status → done, gates column green.
+  - [x] Exit check per spec 05: `make check-6 check-7` from clean stamps, and
   `make serve` → draw a shape in under a minute of page load (the T7 spec
   *is* this check, scripted).
-- [ ] Commit: `leg D/E: findings + roadmap — port complete, T6/T7 green`.
+  - [x] Commit: `leg D/E: findings + roadmap — port complete, T6/T7 green`.
