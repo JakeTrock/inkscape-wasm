@@ -1,0 +1,21 @@
+diff --git a/src/actions/actions-file.cpp b/src/actions/actions-file.cpp
+index 99cb590..61c345b 100644
+--- a/src/actions/actions-file.cpp
++++ b/src/actions/actions-file.cpp
+@@ -35,6 +35,16 @@ file_open(const Glib::VariantBase& value, InkscapeApplication *app)
+         return;
+     }
+     SPDocument *document = app->document_open(file);
++#ifdef __EMSCRIPTEN__
++    /* wasm: opening a second broadway window is useless in the harness —
++     * swap the document into the active window instead, so the desktop
++     * (and document-save) sees the opened file and its filename. */
++    if (auto *win = app->get_active_window()) {
++        app->document_swap(win, document);
++        document->ensureUpToDate();
++        return;
++    }
++#endif
+     INKSCAPE.add_document(document);
+ 
+     app->set_active_document(document);

@@ -12,7 +12,7 @@ git -C "$SRC/inkscape-1.4.4" submodule update --init --quiet -- src/3rdparty
 
 # patches (reverse-dry-run guards, gtk3.sh pattern)
 for p in broadway-env libcxx-compat no-boost-stacktrace no-boost-stacktrace-runtime no-asio-threadpool \
-         main-loop-yield-emscripten action-hook-emscripten; do
+         main-loop-yield-emscripten action-hook-emscripten file-open-swap-emscripten; do
   patch -d "$SRC/inkscape-1.4.4" -p1 -R --dry-run -f < "$PATCHES/inkscape/$p.patch" >/dev/null 2>&1 \
     || patch -d "$SRC/inkscape-1.4.4" -p1 < "$PATCHES/inkscape/$p.patch"
 done

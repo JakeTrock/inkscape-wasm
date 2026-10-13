@@ -1,5 +1,21 @@
 --- a/src/inkscape-application.cpp
 +++ b/src/inkscape-application.cpp
+@@ -1241,6 +1241,13 @@
+         }
+ 
+         Glib::RefPtr<Gio::Action> action_ptr = _gio_application->lookup_action(action);
++#ifdef __EMSCRIPTEN__
++        /* wasm harness: window actions (tool-switch, document-save...) are
++         * valid run_actions targets — resolve them here so they reach
++         * activate_any_actions' app->window->doc fallback. */
++        if (!action_ptr && _active_window)
++            action_ptr = _active_window->lookup_action(action);
++#endif
+         if (action_ptr) {
+             // Doesn't seem to be a way to test this using the C++ binding without Glib-CRITICAL errors.
+             const  GVariantType* gtype = g_action_get_parameter_type(action_ptr->gobj());
+--- a/src/inkscape-application.cpp
++++ b/src/inkscape-application.cpp
 @@ -1350,6 +1350,26 @@
  #endif // WITH_GNU_READLINE
  

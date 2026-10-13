@@ -1,0 +1,21 @@
+--- a/gio/gtask.c
++++ b/gio/gtask.c
+@@ -1709,7 +1709,18 @@
+   /* The task may already be cancelled, or g_thread_pool_push() may
+    * have failed.
+    */
++#ifdef __EMSCRIPTEN__
++  /* wasm single-thread: the inline thread pool (gthreadpool-inline-push)
++   * already ran the task AND completed it during g_thread_pool_push() —
++   * g_task_return() was called from g_task_thread_complete() there.
++   * Completing again here would run every GTask callback twice
++   * (double g_object_unref on user_data, duplicated GSources). Only the
++   * cancelled-before-push path still needs completion here; there
++   * thread_cancelled was set alongside thread_complete. */
++  if (task->thread_complete && task->thread_cancelled)
++#else
+   if (task->thread_complete)
++#endif
+     {
+       g_mutex_unlock (&task->lock);
+       g_task_return (task, G_TASK_RETURN_FROM_THREAD);

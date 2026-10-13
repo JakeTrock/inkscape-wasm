@@ -29,6 +29,10 @@ patch -d "$SRC/glib" -p1 -R --dry-run -f < "$PATCHES/glib/gobject-ctor-priority.
 # module loading etc. would otherwise wait forever for a worker)
 patch -d "$SRC/glib" -p1 -R --dry-run -f < "$PATCHES/glib/gthreadpool-inline-push.patch" >/dev/null 2>&1 \
   || patch -d "$SRC/glib" -p1 < "$PATCHES/glib/gthreadpool-inline-push.patch"
+# wasm: inline push completes the task during the push itself; the stock
+# re-complete in g_task_run_in_thread would run every GTask callback twice
+patch -d "$SRC/glib" -p1 -R --dry-run -f < "$PATCHES/glib/gtask-no-double-complete-emscripten.patch" >/dev/null 2>&1 \
+  || patch -d "$SRC/glib" -p1 < "$PATCHES/glib/gtask-no-double-complete-emscripten.patch"
 # hand-written param spec registrations: 22 1-arg instance_init functions
 patch -d "$SRC/glib" -p1 -R --dry-run -f < "$PATCHES/glib/gparamspecs-instance-init-signatures.patch" >/dev/null 2>&1 \
   || patch -d "$SRC/glib" -p1 < "$PATCHES/glib/gparamspecs-instance-init-signatures.patch"

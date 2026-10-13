@@ -6,6 +6,7 @@
 const $ = id => document.getElementById(id);
 const status = t => { $('status').textContent = t; };
 const conlog = (t, err) => {
+  console.log(t); // also to the browser console (tests capture it)
   const d = document.createElement('div');
   if (err) d.className = 'err';
   d.textContent = t;
@@ -72,11 +73,12 @@ $('btn-open').onclick = () => $('file-input').click();
 
 $('btn-save').onclick = () => {
   if (!docPath) {
-    status('Save: no file opened yet — Inkscape Save-As dialog opens instead');
-    runActions('file-save');
+    // no document-save-as here: the SaveAs dialog spins forever in wasm
+    // (blocking dialog_run / FileChooser construction — see findings)
+    status('Save: no file opened — open a file first');
     return;
   }
-  runActions('file-save');
+  runActions('document-save');
   download(docPath.split('/').pop(), m.FS.readFile(docPath), 'image/svg+xml');
   status('saved ' + docPath);
 };
