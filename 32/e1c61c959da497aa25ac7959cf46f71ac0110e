@@ -1,0 +1,18 @@
+docs/findings.md
+  h_2ae8077fa5063a 352-418
+docs/superpowers/plans/2026-10-12-inkscape-wasm-roadmap.md
+  h_2ae8077fa5063a 15
+docs/superpowers/plans/2026-10-13-leg-d-gui-harness.md
+  h_2ae8077fa5063a 71,104,142,151,160,202,223,237,257,278,281,304,357,363,369,384,386,408,423,430,440,442-443,446
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "32e1c61c959da497aa25ac7959cf46f71ac0110e",
+  "prompts": {},
+  "humans": {
+    "h_2ae8077fa5063a": {
+      "author": "Jacob Trock <jgh@geocrypt.me>"
+    }
+  }
+}
