@@ -1,0 +1,14 @@
+docs/superpowers/plans/2026-10-13-leg-b-broadway-bridge.md
+  h_2ae8077fa5063a 1-1649
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "fce63428102f5f109d0f368938236199769e3758",
+  "prompts": {},
+  "humans": {
+    "h_2ae8077fa5063a": {
+      "author": "Jacob Trock <jgh@geocrypt.me>"
+    }
+  }
+}
