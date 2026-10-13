@@ -1,0 +1,36 @@
+Makefile
+  h_2ae8077fa5063a 8,21-22
+packages/common.sh
+  h_2ae8077fa5063a 113-127
+packages/gtk3.sh
+  h_2ae8077fa5063a 55,57-59
+patches/gtk3/broadway-bridge-emscripten.patch
+  h_2ae8077fa5063a 3,14-25,49-61,79
+patches/gtk3/broadwayd-bridge-emscripten.patch
+  h_2ae8077fa5063a 3-20,29-37,51,80,82
+tests/lib/wasm_harness.sh
+  h_2ae8077fa5063a 1-33
+tests/package.json
+  h_2ae8077fa5063a 1-8
+tests/playwright.config.ts
+  h_2ae8077fa5063a 1-12
+tests/t2/hello.c
+  h_2ae8077fa5063a 1-37
+tests/t2/index.html
+  h_2ae8077fa5063a 1-25
+tests/t2/run.sh
+  h_2ae8077fa5063a 1-20
+tests/t2/t2.spec.ts
+  h_2ae8077fa5063a 1-32
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "d05b80fceac3087701a924fd003c83caf16307de",
+  "prompts": {},
+  "humans": {
+    "h_2ae8077fa5063a": {
+      "author": "Jacob Trock <jgh@geocrypt.me>"
+    }
+  }
+}
