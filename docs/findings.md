@@ -232,3 +232,61 @@ link-time catch-all:
 - Patch hygiene: overlapping patches (iface-init + calls/fc-thread, both
   based on post-iface state) break each other's reverse-dry-run guards —
   gtk3.sh and pango.sh now wipe their source dir before extract.
+
+## Leg B — broadway bridge (T2/T3 gates, 2026-10-13)
+
+- Gates PASS: `make check-2` (GTK C hello world: label text rasterizes,
+  button click → "button clicked" console line) and `make check-3`
+  (gtkmm: `signal_clicked` fires + cairo red rectangle). Playwright
+  drives a real browser tab; artifacts `build/t2/t2-shot.png`,
+  `build/t3/t3-shot.png`, stamps `build/stamps/check-{2,3}.ok`.
+  Plan: `docs/superpowers/plans/2026-10-13-leg-b-broadway-bridge.md`
+  (executed task-by-task; all tasks done).
+- Architecture as built — the four spec deviations, all deliberate:
+  1. **Pipe A is self-pumping**: a write hook on the pipe's daemon end
+     calls `broadway_client_process_buffered` synchronously, so in the
+     single-threaded module every GDK round-trip resolves inside the
+     write call that triggered it.
+  2. **Main loop = spec's fallback design**: exported `bridge_frame()`
+     runs `g_main_context_iteration(NULL, FALSE)` once per rAF tick.
+     Asyncify was not needed.
+  3. **WebSocket framing kept on the daemon↔JS seam**: `bridge/bridge.js`
+     `BridgeSocket` frames/unframes; `parse_input` and `broadway.js`
+     work unpatched (one sed swaps `new WebSocket(...)` for
+     `new BridgeSocket()` in the shipped broadway.js copy).
+  4. **shm = name→pointer registry** in bridge.c: `map_named_shm` hands
+     the daemon the app's heap pointer; surfaces are never freed
+     (bounded leak per window resize); `shm_data_unmap` no-ops.
+- `g_pollable_source_new`-created sources never dispatch on wasm
+  (prepare/check are NULL) — bytepipe.c implements its own
+  `BridgePollSource` polling `is_readable`; used by both pipe ends and
+  the daemon's `BroadwayInput`.
+- Stock broadwayd `client_fill_cb` spins forever on a partial trailing
+  request; the broadwayd patch adds the missing `else break;`.
+- Daemon sources need `-DGDK_COMPILATION`, which must not leak into app
+  code → `daemon_objs()` (packages/common.sh) compiles them to .o
+  separately. `build_harness` now does the same for the bridge .c files
+  whenever the app is C++: em++ compiles them as C++ and rejects the
+  implicit `void*` casts GObject C relies on.
+- Harness quirks: broadway.js needs `Zlib` from `rawinflate.min.js`
+  (copied into every harness dir, loaded before broadway.js) and the
+  module must export `HEAPU8` (`pumpDaemon` reads it).
+- **CSD click geometry** (cost a debugging session): the toplevel
+  surface is 352x289 — 300x200 content plus a (26,60) margin (shadow +
+  client-side titlebar) — and the daemon parks it at (-26,-23) so the
+  *content* sits at the requested (0,0). GtkButton's input-only event
+  window lands at surface (46,180)-(146,220); specs click
+  canvas-relative (96,200). GDK-side routing (daemon reports the
+  toplevel id, `_gdk_window_find_descendant_at` resolves the
+  input-only child) works unpatched — only the test coordinates were
+  wrong.
+- **glib ctor ordering** (C++ apps): gtkmm static initializers call
+  glib before glib's own *unprioritized* `glib_init` constructor runs →
+  `quark_ht` stays NULL → CRITICALs → `g_quark_init` assert → abort
+  before main. bridge.c installs `constructor(101)` calling
+  `glib_init()` (idempotent, so C apps are unaffected); bridge.o also
+  precedes the archives in link order, so it wins even if wasm-lld
+  ignored priorities.
+- gtkmm windows must be heap-allocated and leaked: a stack C++ wrapper
+  destructs when main() returns and tears the window down with it.
+

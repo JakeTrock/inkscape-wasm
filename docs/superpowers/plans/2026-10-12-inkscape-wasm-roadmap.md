@@ -10,7 +10,7 @@ produce fabricated detail.
 | # | Plan | Gate in | Status | Produces |
 |---|------|---------|--------|----------|
 | 1 | [2026-10-12-leg-a-toolchain-sysroot.md](2026-10-12-leg-a-toolchain-sysroot.md) | T0, T1 | **this repo, ready to execute** | emsdk-verified sysroot with all ~28 deps, per-package Node smoke tests, libgc + libffi decisions |
-| 2 | Leg B — Broadway bridge (written after T1) | T2, T3 | blocked on plan 1 | in-memory byte-pipe bridge, patched broadway.js, GTK + gtkmm hello worlds painting in a browser tab |
+| 2 | Leg B — Broadway bridge (written after T1) | T2, T3 | **done — gates green (2026-10-13)**, see [2026-10-13-leg-b-broadway-bridge.md](2026-10-13-leg-b-broadway-bridge.md) | in-memory byte-pipe bridge, patched broadway.js, GTK + gtkmm hello worlds painting in a browser tab |
 | 3 | Leg C — Inkscape headless (written after T2) | T4, T5 | blocked on plan 2 | lib2geom tests green; `inkscape.wasm` headless in Node, golden-compared PNG export |
 | 4 | Leg D/E — GUI + harness (written after T5) | T6, T7 | blocked on plan 3 | full GUI in the harness page; Playwright draw-rect → save SVG → export PNG acceptance |
 
