@@ -1,6 +1,28 @@
+diff --git a/src/inkscape-application.cpp b/src/inkscape-application.cpp
+index bf1d8ac..378a685 100644
 --- a/src/inkscape-application.cpp
 +++ b/src/inkscape-application.cpp
-@@ -1241,6 +1241,13 @@
+@@ -1089,6 +1089,19 @@ InkscapeApplication::on_startup()
+     gapp->add_action("quit",   sigc::mem_fun(*this, &InkscapeApplication::on_quit  ));
+ 
+     // ========================= GUI Init =========================
++#ifdef __EMSCRIPTEN__
++    Glib::add_exception_handler([]() {
++        try {
++            throw;
++        } catch (const Glib::Error &e) {
++            g_warning("Handled Glib::Error in signal handler: %s", e.what().c_str());
++        } catch (const std::exception &e) {
++            g_warning("Handled std::exception in signal handler: %s", e.what());
++        } catch (...) {
++            g_warning("Handled unknown exception in signal handler");
++        }
++    });
++#endif
+     Gtk::Window::set_default_icon_name("org.inkscape.Inkscape");
+ 
+     // build_menu(); // Builds and adds menu to app. Used by all Inkscape windows. This can be done
+@@ -1241,6 +1254,13 @@ InkscapeApplication::parse_actions(const Glib::ustring& input, action_vector_t&
          }
  
          Glib::RefPtr<Gio::Action> action_ptr = _gio_application->lookup_action(action);
@@ -14,9 +36,7 @@
          if (action_ptr) {
              // Doesn't seem to be a way to test this using the C++ binding without Glib-CRITICAL errors.
              const  GVariantType* gtype = g_action_get_parameter_type(action_ptr->gobj());
---- a/src/inkscape-application.cpp
-+++ b/src/inkscape-application.cpp
-@@ -1350,6 +1350,26 @@
+@@ -1350,6 +1370,34 @@ void readline_init()
  #endif // WITH_GNU_READLINE
  
  
@@ -26,10 +46,18 @@
 +void
 +InkscapeApplication::run_actions(const Glib::ustring &input)
 +{
-+    Glib::ustring wrapped = "active-window-start;" + input + ";active-window-end";
-+    action_vector_t action_vector;
-+    parse_actions(wrapped, action_vector);
-+    activate_any_actions(action_vector, _gio_application, _active_window, _active_document);
++    try {
++        Glib::ustring wrapped = "active-window-start;" + input + ";active-window-end";
++        action_vector_t action_vector;
++        parse_actions(wrapped, action_vector);
++        activate_any_actions(action_vector, _gio_application, _active_window, _active_document);
++    } catch (const Glib::Error &e) {
++        g_warning("run_actions Glib::Error: %s", e.what().c_str());
++    } catch (const std::exception &e) {
++        g_warning("run_actions exception: %s", e.what());
++    } catch (...) {
++        g_warning("run_actions unknown exception");
++    }
 +}
 +
 +extern "C" __attribute__((used)) void
@@ -43,9 +71,21 @@
  // Once we don't need to create a window just to process verbs!
  void
  InkscapeApplication::shell(bool active_window)
+@@ -1940,6 +1988,9 @@ InkscapeApplication::on_new()
+ void
+ InkscapeApplication::on_quit()
+ {
++#ifdef __EMSCRIPTEN__
++    if (_with_gui) return;
++#endif
+     if (gtk_app()) {
+         if (!destroy_all()) return; // Quit aborted.
+         // For mac, ensure closing the gtk_app windows
+diff --git a/src/inkscape-application.h b/src/inkscape-application.h
+index 4f90671..b6cb715 100644
 --- a/src/inkscape-application.h
 +++ b/src/inkscape-application.h
-@@ -67,6 +67,10 @@
+@@ -67,6 +67,10 @@ public:
      bool destroy_all();
      void print_action_list();
      void print_input_type_list() const;

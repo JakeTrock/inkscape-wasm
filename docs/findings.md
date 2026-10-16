@@ -472,3 +472,47 @@ Harness Save button no longer fires `document-save-as` with no doc open
   and translate `ev.pageY` in `window.getPositionsFromEvent` so the menu bar
   is unoccluded while canvas click/drag coordinates stay exact; `Save` on an
   unopened canvas exports to `/home/web_user/documents/drawing.svg`.
+- **Drawing latency fixes (2026-10-16)**:
+  1. `bridge/bridge.c` (`bridge_frame`): previously ran only one
+     `g_main_context_iteration(NULL, FALSE)` per rAF tick, which only
+     dispatched the single highest ready priority (`G_PRIORITY_DEFAULT = 0`
+     for input pipes/events) and starved `GDK_PRIORITY_REDRAW` (`120`) and
+     Inkscape's `Canvas::on_idle` tile renderer (`200`) during continuous
+     mouse motion. `bridge_frame` now drains up to 32 iterations within a
+     10ms frame budget, and `harness/loader.js` coalesces `mousemove` to one
+     event per rAF tick.
+  2. `broadway-buffer.c` / `broadway-output.c` / `broadway-server.c` /
+     `broadway.js`: eliminated full-screen 32x32 Adler block-hash diffing,
+     `GZlibCompressor` deflate in C, pure-JS `Zlib.RawInflate` decompression,
+     and byte-by-byte `decodeBuffer()` in JS. `unpremultiply_line` now writes
+     Canvas `ImageData` RGBA order directly into a reused per-window buffer in
+     WASM linear memory, `broadway_output_put_buffer` sends its 4-byte heap
+     pointer, and `cmdPutBuffer` constructs `ImageData` directly over
+     `HEAPU8.buffer`.
+- **Critical runtime error & hang fixes (2026-10-16)**:
+  - `patches/gdk-pixbuf/svg-png-fallback-emscripten.patch` +
+    `packages/encode-icons.py`: `Gdk::Pixbuf::create_from_file` on `.svg` UI
+    resources (`preview-loading.svg` in `Export` dialog, `missing-icon.svg`,
+    `filter-test.svg`, etc.) previously threw uncaught `Gdk::PixbufError`
+    (`CppException`). `encode-icons.py` now rasterizes `ui/`, `branding/`, and
+    `screens/` SVGs to `.png`, and `gdk_pixbuf_new_from_file{,_at_scale}`
+    redirects `.svg` to `<stem>.png` (falling back to a transparent
+    `GdkPixbuf` if absent).
+  - `broadway.js`: null-guarded `surfaces[id]` across `getSurfaceId`,
+    `getPositionsFromAbsCoord`, and `cmd*Surface`, cleared `canvas.surface` on
+    delete (preventing `Uncaught TypeError: Cannot read properties of
+    undefined (reading 'x')` when a popup menu closes under the cursor), and
+    ignored `id == 0` in `onMouseDown`/`onMouseUp`.
+  - `patches/inkscape/clean-boot-emscripten.patch` +
+    `patches/inkscape/action-hook-emscripten.patch`: replaced
+    `Gtk::FileChooserDialog` in `FileOpenDialog::create` /
+    `FileSaveDialog::create` / `choose-file.cpp` / `export-batch.cpp` with
+    non-blocking WASM implementations wired to `#btn-open` and
+    `window.__on_wasm_save` / `window.__on_wasm_export`; made `dialog_run`,
+    `gtk_dialog_run`, `gtk_native_dialog_run`, `sp_ui_error_dialog`,
+    `sp_ui_overwrite_file`, `document_check_for_data_loss`, and
+    `NewFromTemplate` non-blocking; wired in-memory `_clipboardSPDoc`
+    copy/paste in `clipboard.cpp`; fixed `gulong` vs `uint64_t` `GValue`
+    assertion in `DocumentResources`; guarded null `SPObject*` in
+    `ObjectSet::includes`; and installed `Glib::add_exception_handler` +
+    `try/catch` in `run_actions`.

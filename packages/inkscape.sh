@@ -60,7 +60,18 @@ fi
 cp "$ROOT/tests/fixtures/inkscape-prefs.xml" "$FS/home/web_user/preferences.xml"
 cp "$SRC/inkscape-1.4.4/share/keys/inkscape.xml" "$FS/inkscape/share/inkscape/keys/default.xml"
 printf '<?xml version="1.0" encoding="UTF-8"?><cphistory><operations/><params/></cphistory>\n' > "$FS/home/web_user/cphistory.xml"
-[ -f "$FS/.icons-encoded" ] || { python3 "$ROOT/packages/encode-icons.py" "$FS" && touch "$FS/.icons-encoded"; }
+mkdir -p "$FS/home/web_user/.cache" "$FS/home/web_user/.config" "$FS/home/web_user/.local/share" "$FS/tmp" \
+         "$FS/inkscape/share/inkscape/doc" "$FS/inkscape/share/inkscape/branding" "$FS/inkscape/share/inkscape/tutorials"
+cp "$SRC/inkscape-1.4.4"/AUTHORS "$SRC/inkscape-1.4.4"/TRANSLATORS "$SRC/inkscape-1.4.4"/COPYING \
+   "$SRC/inkscape-1.4.4/share/doc/LICENSE" "$FS/inkscape/share/inkscape/doc/" 2>/dev/null || true
+cp "$SRC/inkscape-1.4.4/share/branding"/*.svg "$FS/inkscape/share/inkscape/branding/" 2>/dev/null || true
+for f in "$SRC/inkscape-1.4.4/share/tutorials"/*.svg "$SRC/inkscape-1.4.4/share/tutorials"/*.png "$SRC/inkscape-1.4.4/share/tutorials"/*.jpg; do
+  case "$(basename "$f")" in
+    *.*.svg|*.*.png) ;; # skip translated tutorial copies to keep preload lean
+    *) [ -f "$f" ] && cp "$f" "$FS/inkscape/share/inkscape/tutorials/" ;;
+  esac
+done
+[ -f "$FS/.icons-encoded-v2" ] || { python3 "$ROOT/packages/encode-icons.py" "$FS" && touch "$FS/.icons-encoded-v2"; }
 
 cmake -S "$SRC/inkscape-1.4.4" -B "$BUILD/inkscape" -G Ninja \
   -DCMAKE_TOOLCHAIN_FILE="$EMSDK/upstream/emscripten/cmake/Modules/Platform/Emscripten.cmake" \

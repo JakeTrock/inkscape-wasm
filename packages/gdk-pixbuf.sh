@@ -11,6 +11,8 @@ patch -d "$SRC/gdk-pixbuf" -p1 -R --dry-run -f < "patches/gdk-pixbuf/iface-init-
 # wasm: drop 3 unused params so table-resident line funcs fit fpcast-emu's limit
 patch -d "$SRC/gdk-pixbuf" -p1 -R --dry-run -f < "patches/gdk-pixbuf/pixops-line-func-params.patch" >/dev/null 2>&1 \
   || patch -d "$SRC/gdk-pixbuf" -p1 < "patches/gdk-pixbuf/pixops-line-func-params.patch"
+patch -d "$SRC/gdk-pixbuf" -p1 -R --dry-run -f < "patches/gdk-pixbuf/svg-png-fallback-emscripten.patch" >/dev/null 2>&1 \
+  || patch -d "$SRC/gdk-pixbuf" -p1 < "patches/gdk-pixbuf/svg-png-fallback-emscripten.patch"
 # Libraries only (tools fail to link on emscripten, as with pango/cairo/glib);
 # man/journal/intspection off; png+jpeg built-in, tiff off.
 # jpeg: the subproject-built libjpeg is installed in the sysroot (17:52 build),

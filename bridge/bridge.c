@@ -103,5 +103,13 @@ bridge_js_poll_ptr (void)
 int
 bridge_frame (void)
 {
-  return g_main_context_iteration (NULL, FALSE);
+  gint64 deadline = g_get_monotonic_time () + 10000; /* 10ms budget */
+  int n = 0;
+  while (n < 32 && g_main_context_iteration (NULL, FALSE))
+    {
+      n++;
+      if (g_get_monotonic_time () >= deadline)
+        break;
+    }
+  return n;
 }

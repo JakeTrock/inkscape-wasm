@@ -94,9 +94,219 @@
  
    g_signal_emit_by_name (screen, "size-changed");
    toplevels = gdk_screen_get_toplevel_windows (screen);
+--- a/gdk/broadway/broadway-buffer.h
++++ b/gdk/broadway/broadway-buffer.h
+@@ -16,5 +16,11 @@
+                                             GString        *dest);
+ int             broadway_buffer_get_width  (BroadwayBuffer *buffer);
+ int             broadway_buffer_get_height (BroadwayBuffer *buffer);
++#ifdef __EMSCRIPTEN__
++void            broadway_buffer_update     (BroadwayBuffer *buffer,
++                                            guint8         *data,
++                                            int             stride);
++guint8         *broadway_buffer_get_data   (BroadwayBuffer *buffer);
++#endif
+ 
+ #endif /* __BROADWAY_BUFFER__ */
+--- a/gdk/broadway/broadway-buffer.c
++++ b/gdk/broadway/broadway-buffer.c
+@@ -314,15 +314,23 @@
+       alpha = (pixel & 0xff000000) >> 24;
+ 
+       if (alpha == 0xff)
++#ifdef __EMSCRIPTEN__
++        *dest++ = (pixel & 0xff00ff00) | ((pixel & 0x00ff0000) >> 16) | ((pixel & 0x000000ff) << 16);
++#else
+         *dest++ = pixel;
++#endif
+       else if (alpha == 0)
+         *dest++ = 0;
+       else
+         {
+           r = (((pixel & 0xff0000) >> 16) * 255 + alpha / 2) / alpha;
+           g = (((pixel & 0x00ff00) >>  8) * 255 + alpha / 2) / alpha;
+-          b = (((pixel & 0x0000ff) >>  0) * 255 + alpha / 2) / alpha;
++          b = (((pixel & 0x00ff00 >> 8) ? 0 : 0) | (((pixel & 0x0000ff) >>  0) * 255 + alpha / 2) / alpha);
++#ifdef __EMSCRIPTEN__
++          *dest++ = (guint32)alpha << 24 | (guint32)b << 16 | (guint32)g << 8 | (guint32)r;
++#else
+           *dest++ = (guint32)alpha << 24 | (guint32)r << 16 | (guint32)g << 8 | (guint32)b;
++#endif
+         }
+     }
+ }
+@@ -345,7 +353,9 @@
+   buffer->shift = 32 - bits_required;
+   buffer->length = 1 << bits_required;
+ 
++#ifndef __EMSCRIPTEN__
+   buffer->table = g_malloc0 (buffer->length * sizeof buffer->table[0]);
++#endif
+ 
+   memset (buffer->stats, 0, sizeof buffer->stats);
+   buffer->clashes = 0;
+@@ -357,6 +367,22 @@
+ 
+   return buffer;
+ }
++
++#ifdef __EMSCRIPTEN__
++void
++broadway_buffer_update (BroadwayBuffer *buffer, guint8 *data, int stride)
++{
++  int y;
++  for (y = 0; y < buffer->height; y++)
++    unpremultiply_line (buffer->data + y * buffer->stride, data + y * stride, buffer->width);
++}
++
++guint8 *
++broadway_buffer_get_data (BroadwayBuffer *buffer)
++{
++  return buffer->data;
++}
++#endif
+ 
+ void
+ broadway_buffer_encode (BroadwayBuffer *buffer, BroadwayBuffer *prev, GString *dest)
+--- a/gdk/broadway/broadway-output.c
++++ b/gdk/broadway/broadway-output.c
+@@ -307,6 +307,13 @@
+   append_uint16 (output, w);
+   append_uint16 (output, h);
+ 
++#ifdef __EMSCRIPTEN__
++  (void)prev_buffer; (void)len; (void)compressor; (void)out; (void)out_mem; (void)encoded;
++  append_uint32 (output, 4);
++  append_uint32 (output, (guint32)(guintptr)broadway_buffer_get_data (buffer));
++  return;
++#endif
++
+   encoded = g_string_new ("");
+   broadway_buffer_encode (buffer, prev_buffer, encoded);
+ 
+--- a/gdk/broadway/broadway.js
++++ b/gdk/broadway/broadway.js
+@@ -232,6 +232,8 @@
+ function cmdShowSurface(id)
+ {
+     var surface = surfaces[id];
++    if (!surface)
++	return;
+ 
+     if (surface.visible)
+ 	return;
+@@ -253,6 +255,8 @@
+ 	doUngrab();
+ 
+     var surface = surfaces[id];
++    if (!surface)
++	return;
+ 
+     if (!surface.visible)
+ 	return;
+@@ -310,10 +314,13 @@
+ 	doUngrab();
+ 
+     var surface = surfaces[id];
++    if (!surface)
++	return;
+     var i = stackingOrder.indexOf(surface);
+     if (i >= 0)
+ 	stackingOrder.splice(i, 1);
+     var canvas = surface.canvas;
++    canvas.surface = null;
+     canvas.parentNode.removeChild(canvas);
+     if (id == windowWithMouse) {
+ 	windowWithMouse = 0;
+@@ -328,6 +335,8 @@
+ function cmdMoveResizeSurface(id, has_pos, x, y, has_size, w, h)
+ {
+     var surface = surfaces[id];
++    if (!surface)
++	return;
+     if (has_pos) {
+ 	surface.positioned = true;
+ 	surface.x = x;
+@@ -569,7 +578,19 @@
+ function cmdPutBuffer(id, w, h, compressed)
+ {
+     var surface = surfaces[id];
++    if (!surface)
++	return;
+     var context = surface.canvas.getContext("2d");
++
++    if (compressed.length === 4 && window.__bridge_mod) {
++        var ptr = (compressed[0] | (compressed[1] << 8) | (compressed[2] << 16) | (compressed[3] << 24)) >>> 0;
++        var bytes = new Uint8ClampedArray(window.__bridge_mod.HEAPU8.buffer, ptr, w * h * 4);
++        var imageData = new ImageData(bytes, w, h);
++        context.imageSmoothingEnabled = false;
++        context.putImageData(imageData, 0, 0);
++        surface.imageData = imageData;
++        return;
++    }
+ 
+     var inflate = new Zlib.RawInflate(compressed);
+     var data = inflate.decompress();
+@@ -770,8 +791,8 @@
+ }
+ 
+ function getSurfaceId(ev) {
+-    var surface = ev.target.surface;
+-    if (surface != undefined)
++    var surface = ev && ev.target ? ev.target.surface : undefined;
++    if (surface != undefined && surfaces[surface.id])
+ 	return surface.id;
+     return 0;
+ }
+@@ -800,8 +821,10 @@
+     res.winY = absY;
+     if (relativeId != 0) {
+ 	var surface = surfaces[relativeId];
+-	res.winX = res.winX - surface.x;
+-	res.winY = res.winY - surface.y;
++	if (surface) {
++	    res.winX = res.winX - surface.x;
++	    res.winY = res.winY - surface.y;
++	}
+     }
+ 
+     return res;
+@@ -933,6 +956,8 @@
+     lastState = lastState | getButtonMask (button);
+     var id = getSurfaceId(ev);
+     id = getEffectiveEventTarget (id);
++    if (id == 0 && grab.window == null)
++	return true;
+ 
+     var pos = getPositionsFromEvent(ev, id);
+     if (grab.window == null)
+@@ -946,7 +971,9 @@
+     var button = ev.button + 1;
+     lastState = lastState & ~getButtonMask (button);
+     var evId = getSurfaceId(ev);
+-    id = getEffectiveEventTarget (evId);
++    var id = getEffectiveEventTarget (evId);
++    if (id == 0 && grab.window == null)
++	return true;
+     var pos = getPositionsFromEvent(ev, id);
+ 
+     sendInput ("B", [realWindowWithMouse, id, pos.rootX, pos.rootY, pos.winX, pos.winY, lastState, button]);
 --- a/gtk/gtksettings.c
 +++ b/gtk/gtksettings.c
-@@ -1628,7 +1628,7 @@
+@@ -230,8 +230,10 @@
+ };
+ 
+ /* --- prototypes --- */
+-static void     gtk_settings_provider_iface_init (GtkStyleProviderIface *iface);
+-static void     gtk_settings_provider_private_init (GtkStyleProviderPrivateInterface *iface);
++static void     gtk_settings_provider_iface_init (GtkStyleProviderIface *iface,
++		  gpointer      iface_data);
++static void     gtk_settings_provider_private_init (GtkStyleProviderPrivateInterface *iface,
++		  gpointer      iface_data);
+ 
+ static void     gtk_settings_finalize            (GObject               *object);
+ static void     gtk_settings_get_property        (GObject               *object,
+@@ -1626,7 +1628,7 @@
                                               g_param_spec_string ("gtk-decoration-layout",
                                                                    P_("Decoration Layout"),
                                                                     P_("The layout for window decorations"),
@@ -104,4 +314,80 @@
 +                                                                   "", GTK_PARAM_READWRITE),
                                               NULL);
    g_assert (result == PROP_DECORATION_LAYOUT);
+ 
+@@ -1799,8 +1801,11 @@
+ }
+ 
+ static void
+-gtk_settings_provider_iface_init (GtkStyleProviderIface *iface)
+-{
++gtk_settings_provider_iface_init (GtkStyleProviderIface *iface,
++		  gpointer      iface_data)
++{
++  /* wasm: match GInterfaceInitFunc 2-arg type */
++  (void) iface_data;
+ }
+ 
+ static GtkSettings *
+@@ -1810,8 +1815,11 @@
+ }
+ 
+ static void
+-gtk_settings_provider_private_init (GtkStyleProviderPrivateInterface *iface)
+-{
++gtk_settings_provider_private_init (GtkStyleProviderPrivateInterface *iface,
++		  gpointer      iface_data)
++{
++  /* wasm: match GInterfaceInitFunc 2-arg type */
++  (void) iface_data;
+   iface->get_settings = gtk_settings_style_provider_get_settings;
+ }
+ 
+--- a/gtk/gtkdialog.c
++++ b/gtk/gtkdialog.c
+@@ -208,7 +208,8 @@
+ static ResponseData * get_response_data          (GtkWidget    *widget,
+                                                   gboolean      create);
+ 
+-static void      gtk_dialog_buildable_interface_init     (GtkBuildableIface *iface);
++static void      gtk_dialog_buildable_interface_init     (GtkBuildableIface *iface,
++		  gpointer      iface_data);
+ static gboolean  gtk_dialog_buildable_custom_tag_start   (GtkBuildable  *buildable,
+                                                           GtkBuilder    *builder,
+                                                           GObject       *child,
+@@ -727,8 +728,11 @@
+ static GtkBuildableIface *parent_buildable_iface;
+ 
+ static void
+-gtk_dialog_buildable_interface_init (GtkBuildableIface *iface)
+-{
++gtk_dialog_buildable_interface_init (GtkBuildableIface *iface,
++		  gpointer      iface_data)
++{
++  /* wasm: match GInterfaceInitFunc 2-arg type */
++  (void) iface_data;
+   parent_buildable_iface = g_type_interface_peek_parent (iface);
+   iface->custom_tag_start = gtk_dialog_buildable_custom_tag_start;
+   iface->custom_finished = gtk_dialog_buildable_custom_finished;
+@@ -1359,6 +1363,9 @@
+   gulong delete_handler;
+ 
+   g_return_val_if_fail (GTK_IS_DIALOG (dialog), -1);
++#ifdef __EMSCRIPTEN__
++  return GTK_RESPONSE_CANCEL;
++#endif
+ 
+   g_object_ref (dialog);
+ 
+--- a/gtk/gtknativedialog.c
++++ b/gtk/gtknativedialog.c
+@@ -619,6 +619,9 @@
+   guint response_handler;
+ 
+   g_return_val_if_fail (GTK_IS_NATIVE_DIALOG (self), -1);
++#ifdef __EMSCRIPTEN__
++  return GTK_RESPONSE_CANCEL;
++#endif
+   g_return_val_if_fail (!priv->visible, -1);
+   g_return_val_if_fail (priv->run_loop == NULL, -1);
  

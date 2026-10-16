@@ -47,10 +47,27 @@ window.getPositionsFromEvent = (ev, relativeId) => {
   window.lastY = res.rootY;
   return res;
 };
+// Coalesce high-frequency mousemove events to at most one per rAF tick so
+// GDK_PRIORITY_EVENTS (0) never starves GDK_PRIORITY_REDRAW (120) / Canvas idle (200).
+let pendingMove = null;
+const origMouseMove = window.onMouseMove;
+const flushMove = () => {
+  if (pendingMove) {
+    const ev = pendingMove;
+    pendingMove = null;
+    origMouseMove(ev);
+  }
+};
+window.onMouseMove = ev => { pendingMove = ev; };
+for (const fn of ['onMouseDown', 'onMouseUp', 'onMouseOver', 'onMouseOut', 'onMouseWheel']) {
+  const orig = window[fn];
+  window[fn] = function(ev) { flushMove(); return orig.apply(this, arguments); };
+}
 window.__boot.broadway = true; setStage('broadway');
 
 const tick = () => {
-  m._bridge_frame();       // one nonblocking main-loop pass
+  flushMove();
+  m._bridge_frame();       // drains ready main-loop work within 10ms budget
   pumpDaemon();            // daemon -> broadway.js frames
   if (!window.__boot.window && document.querySelector('canvas')) {
     window.__boot.window = true; setStage('window');
@@ -76,7 +93,11 @@ const DOCS = '/home/web_user/documents';
 m.FS.mkdirTree(DOCS);
 m.FS.mount(m.FS.filesystems.IDBFS, {}, DOCS);
 const fsLoaded = new Promise(res => m.FS.syncfs(true, res));
-const flush = () => { window.__fs_flushed = new Promise(res => m.FS.syncfs(false, res)); };
+let syncChain = fsLoaded;
+const flush = () => {
+  syncChain = syncChain.then(() => new Promise(res => m.FS.syncfs(false, res)));
+  window.__fs_flushed = syncChain;
+};
 fsLoaded.then(() => {
   // exactly one persisted svg -> resume the last session's document
   const svgs = m.FS.readdir(DOCS).filter(f => f.endsWith('.svg'));
@@ -109,10 +130,10 @@ $('btn-save').onclick = () => {
     runActions('document-save');
   } else {
     runActions('export-filename:' + docPath + ';export-do');
+    download(docPath.split('/').pop(), m.FS.readFile(docPath), 'image/svg+xml');
+    flush();
+    status('saved ' + docPath);
   }
-  download(docPath.split('/').pop(), m.FS.readFile(docPath), 'image/svg+xml');
-  flush();
-  status('saved ' + docPath);
 };
 
 $('btn-export').onclick = () => {
@@ -123,6 +144,26 @@ $('btn-export').onclick = () => {
 };
 
 $('btn-reload').onclick = () => location.reload();
+
+window.__on_wasm_save = path => {
+  docPath = path;
+  docOpened = true;
+  window.__doc_path = path;
+  try {
+    download(path.split('/').pop(), m.FS.readFile(path), 'image/svg+xml');
+  } catch (_) {}
+  flush();
+  status('saved ' + path);
+};
+
+window.__on_wasm_export = path => {
+  try {
+    const mime = path.endsWith('.svg') ? 'image/svg+xml' : 'image/png';
+    download(path.split('/').pop(), m.FS.readFile(path), mime);
+  } catch (_) {}
+  flush();
+  status('exported ' + path);
+};
 
 function runActions(actions) {
   const ptr = m._malloc(actions.length + 1);

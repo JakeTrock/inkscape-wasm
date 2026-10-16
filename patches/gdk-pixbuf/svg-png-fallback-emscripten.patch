@@ -1,0 +1,83 @@
+--- a/gdk-pixbuf/gdk-pixbuf-io.c
++++ b/gdk-pixbuf/gdk-pixbuf-io.c
+@@ -1195,6 +1195,40 @@
+  *
+  * Returns: (nullable): A newly-created pixbuf
+  */
++#ifdef __EMSCRIPTEN__
++static gchar *
++wasm_resolve_svg_png (const char *filename)
++{
++        if (filename != NULL && g_str_has_suffix (filename, ".svg")) {
++                gsize len = strlen (filename);
++                gchar *png = g_strdup_printf ("%.*s.png", (int)(len - 4), filename);
++                if (g_file_test (png, G_FILE_TEST_EXISTS))
++                        return png;
++                g_free (png);
++                png = g_strdup_printf ("%.*s.symbolic.png", (int)(len - 4), filename);
++                if (g_file_test (png, G_FILE_TEST_EXISTS))
++                        return png;
++                g_free (png);
++        }
++        return NULL;
++}
++
++static GdkPixbuf *
++wasm_fallback_svg_pixbuf (const char *filename, int width, int height)
++{
++        if (filename != NULL && (g_str_has_suffix (filename, ".svg") || g_str_has_suffix (filename, ".svgz"))) {
++                int w = width > 0 ? width : 16;
++                int h = height > 0 ? height : 16;
++                GdkPixbuf *pb = gdk_pixbuf_new (GDK_COLORSPACE_RGB, TRUE, 8, w, h);
++                if (pb) {
++                        gdk_pixbuf_fill (pb, 0);
++                        return pb;
++                }
++        }
++        return NULL;
++}
++#endif
++
+ GdkPixbuf *
+ gdk_pixbuf_new_from_file (const char *filename,
+                           GError    **error)
+@@ -1205,6 +1239,19 @@
+ 
+         g_return_val_if_fail (filename != NULL, NULL);
+         g_return_val_if_fail (error == NULL || *error == NULL, NULL);
++#ifdef __EMSCRIPTEN__
++        {
++                gchar *alt = wasm_resolve_svg_png (filename);
++                if (alt != NULL) {
++                        pixbuf = gdk_pixbuf_new_from_file (alt, error);
++                        g_free (alt);
++                        return pixbuf;
++                }
++                pixbuf = wasm_fallback_svg_pixbuf (filename, 16, 16);
++                if (pixbuf != NULL)
++                        return pixbuf;
++        }
++#endif
+         
+         f = g_fopen (filename, "rb");
+         if (!f) {
+@@ -1479,6 +1526,19 @@
+         g_return_val_if_fail (filename != NULL, NULL);
+         g_return_val_if_fail (width > 0 || width == -1, NULL);
+         g_return_val_if_fail (height > 0 || height == -1, NULL);
++#ifdef __EMSCRIPTEN__
++        {
++                gchar *alt = wasm_resolve_svg_png (filename);
++                if (alt != NULL) {
++                        pixbuf = gdk_pixbuf_new_from_file_at_scale (alt, width, height, preserve_aspect_ratio, error);
++                        g_free (alt);
++                        return pixbuf;
++                }
++                pixbuf = wasm_fallback_svg_pixbuf (filename, width, height);
++                if (pixbuf != NULL)
++                        return pixbuf;
++        }
++#endif
+ 
+         f = g_fopen (filename, "rb");
+         if (!f) {

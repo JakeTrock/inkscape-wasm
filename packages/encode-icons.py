@@ -49,9 +49,14 @@ def main():
     roots = [
         os.path.join(fs, "inkscape/share/inkscape/icons"),
         os.path.join(fs, "inkscape/share/icons"),
+        os.path.join(fs, "inkscape/share/inkscape/ui"),
+        os.path.join(fs, "inkscape/share/inkscape/branding"),
+        os.path.join(fs, "inkscape/share/inkscape/screens"),
     ]
     sym_svgs, reg_svgs = [], []
     for root in roots:
+        if not os.path.isdir(root):
+            continue
         for dirpath, _, filenames in os.walk(root):
             if "/cursors" in dirpath:
                 continue
