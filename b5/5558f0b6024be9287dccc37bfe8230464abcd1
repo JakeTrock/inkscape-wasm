@@ -1,0 +1,20 @@
+bridge/bridge.js
+  h_2ae8077fa5063a 60,65-68,88-92
+docs/findings.md
+  h_2ae8077fa5063a 454-463
+patches/gtk3/clean-boot-emscripten.patch
+  h_2ae8077fa5063a 64-107
+tests/t8/t8.spec.ts
+  h_2ae8077fa5063a 63-70,77,86-105,149-150
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "b55558f0b6024be9287dccc37bfe8230464abcd1",
+  "prompts": {},
+  "humans": {
+    "h_2ae8077fa5063a": {
+      "author": "Jacob Trock <jgh@geocrypt.me>"
+    }
+  }
+}
