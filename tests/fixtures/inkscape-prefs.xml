@@ -3,6 +3,8 @@
      headless batch runs never block on UI. Used by BOTH the wasm build
      (staged at /home/web_user) and the native golden generator. -->
 <inkscape version="1.4.4" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape">
+  <group id="theme" iconTheme="multicolor" defaultIconTheme="multicolor" symbolicIcons="1"
+         preferDarkTheme="1" darkTheme="1" symbolicDefaultBaseColors="1" symbolicDefaultHighColors="0"/>
   <group id="options">
     <group id="boot" showwelcome="0" showsplash="0"/>
   </group>

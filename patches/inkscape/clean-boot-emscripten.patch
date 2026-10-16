@@ -1,0 +1,34 @@
+--- a/src/path-prefix.cpp
++++ b/src/path-prefix.cpp
+@@ -236,6 +236,8 @@ char const *get_program_name()
+        } else {
+            g_warning("get_program_name() - sysctl failed");
+        }      
++#elif defined(__EMSCRIPTEN__)
++        program_name = g_strdup("/inkscape/bin/inkscape");
+ #else
+ #warning get_program_name() - no known way to obtain executable name on this platform
+         g_info("get_program_name() - no known way to obtain executable name on this platform");
+--- a/src/ui/shortcuts.cpp
++++ b/src/ui/shortcuts.cpp
+@@ -354,7 +354,9 @@ void Shortcuts::_read(XML::Node const &keys_node, bool user_set)
+             std::vector<Glib::ustring> key_vector = Glib::Regex::split_simple("\\s*,\\s*", Keys);
+             // Set one shortcut at a time so we can check if it has been previously used.
+             for (auto const &key : key_vector) {
+-                add_shortcut(gaction, key, user_set);
++                if (!key.empty()) {
++                    add_shortcut(gaction, key, user_set);
++                }
+             }
+ 
+             // Uncomment to see what the cat dragged in.
+@@ -522,6 +524,9 @@ std::vector<Glib::ustring> Shortcuts::list_all_actions()
+ bool
+ Shortcuts::add_shortcut(Glib::ustring const &name, const Gtk::AccelKey& shortcut, bool const user)
+ {
++    if (shortcut.is_null() || shortcut.get_abbrev().empty()) {
++        return false;
++    }
+     // Remove previous use of shortcut (already removed if new user shortcut).
+     if (auto const &old_name = remove_shortcut(shortcut); !old_name.empty()) {
+         // std::cerr << "Shortcut::add_shortcut: duplicate shortcut found for: " << shortcut.get_abbrev().raw()

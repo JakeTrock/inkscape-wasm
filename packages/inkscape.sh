@@ -12,7 +12,7 @@ git -C "$SRC/inkscape-1.4.4" submodule update --init --quiet -- src/3rdparty
 
 # patches (reverse-dry-run guards, gtk3.sh pattern)
 for p in broadway-env libcxx-compat no-boost-stacktrace no-boost-stacktrace-runtime no-asio-threadpool \
-         main-loop-yield-emscripten action-hook-emscripten file-open-swap-emscripten; do
+         main-loop-yield-emscripten action-hook-emscripten file-open-swap-emscripten clean-boot-emscripten; do
   patch -d "$SRC/inkscape-1.4.4" -p1 -R --dry-run -f < "$PATCHES/inkscape/$p.patch" >/dev/null 2>&1 \
     || patch -d "$SRC/inkscape-1.4.4" -p1 < "$PATCHES/inkscape/$p.patch"
 done
@@ -56,8 +56,11 @@ if [ ! -d "$FS/inkscape/share/inkscape/ui" ] || [ ! -d "$FS/inkscape/share/icons
   cp "$ROOT/tests/fixtures/fonts.conf" "$FS/fixtures/"
   cp "$ROOT"/tests/fixtures/*.ttf "$FS/fixtures/"
   cp "$ROOT"/tests/fixtures/*.svg "$FS/fixtures/"
-  cp "$ROOT/tests/fixtures/inkscape-prefs.xml" "$FS/home/web_user/preferences.xml"
 fi
+cp "$ROOT/tests/fixtures/inkscape-prefs.xml" "$FS/home/web_user/preferences.xml"
+cp "$SRC/inkscape-1.4.4/share/keys/inkscape.xml" "$FS/inkscape/share/inkscape/keys/default.xml"
+printf '<?xml version="1.0" encoding="UTF-8"?><cphistory><operations/><params/></cphistory>\n' > "$FS/home/web_user/cphistory.xml"
+[ -f "$FS/.icons-encoded" ] || { python3 "$ROOT/packages/encode-icons.py" "$FS" && touch "$FS/.icons-encoded"; }
 
 cmake -S "$SRC/inkscape-1.4.4" -B "$BUILD/inkscape" -G Ninja \
   -DCMAKE_TOOLCHAIN_FILE="$EMSDK/upstream/emscripten/cmake/Modules/Platform/Emscripten.cmake" \
@@ -83,6 +86,7 @@ cmake -S "$SRC/inkscape-1.4.4" -B "$BUILD/inkscape" -G Ninja \
   -DWITH_NLS=OFF -DWITH_X11=OFF -DWITH_OPENMP=OFF -DWITH_GNU_READLINE=OFF \
   -DWITH_INTERNAL_2GEOM=OFF -DWITH_SVG2=ON -DBUILD_SHARED_LIBS=OFF
 
+rm -f "$BUILD/inkscape/bin/inkscape.js" "$BUILD/inkscape/bin/inkscape.wasm" "$BUILD/inkscape/bin/inkscape.data"
 cmake --build "$BUILD/inkscape" -j 64 --target inkscape
 
 manifest inkscape "$VER"

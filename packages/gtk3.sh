@@ -3,7 +3,7 @@ set -euo pipefail; cd "$(dirname "$0")/.." ; source packages/common.sh
 begin_pkg gtk3
 VER=3.24.43
 fetch "https://download.gnome.org/sources/gtk+/3.24/gtk+-$VER.tar.xz"
-rm -rf "$SRC/gtk3" # overlapping patches break each other's reverse guards; always fresh
+rm -rf "$SRC/gtk3" "$BUILD/gtk3" # overlapping patches break each other's reverse guards; always fresh
 extract_auto "gtk+-$VER.tar.xz" gtk3
 grep -q "to-pixdata" "$SRC/gtk3/gtk/gen-gtk-gresources-xml.py" \
   && patch -d "$SRC/gtk3" -p1 < "$PATCHES/gtk3/no-to-pixdata.patch"
@@ -24,6 +24,8 @@ patch -d "$SRC/gtk3" -p1 -R --dry-run -f < "$PATCHES/gtk3/broadwayd-bridge-emscr
   || patch -d "$SRC/gtk3" -p1 < "$PATCHES/gtk3/broadwayd-bridge-emscripten.patch"
 patch -d "$SRC/gtk3" -p1 -R --dry-run -f < "$PATCHES/gtk3/broadway-server-bridge-emscripten.patch" >/dev/null 2>&1 \
   || patch -d "$SRC/gtk3" -p1 < "$PATCHES/gtk3/broadway-server-bridge-emscripten.patch"
+patch -d "$SRC/gtk3" -p1 -R --dry-run -f < "$PATCHES/gtk3/clean-boot-emscripten.patch" >/dev/null 2>&1 \
+  || patch -d "$SRC/gtk3" -p1 < "$PATCHES/gtk3/clean-boot-emscripten.patch"
 # Libraries only: gtk's own executables (broadwayd aside) can't link on
 # emscripten (meson injects -pthread into exe links). broadwayd itself is
 # reused as source in leg B, not linked here.

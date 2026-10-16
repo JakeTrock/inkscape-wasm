@@ -433,3 +433,33 @@ Harness Save button no longer fires `document-save-as` with no doc open
   root), unshadowed by the mount.
 - T7 now ends with a hard reload: saved doc + restored `__doc_path` must
   survive a fresh boot (IndexedDB-backed).
+
+## Leg F — icons, zero-error boot & harness polish (T8 gate, 2026-10-16)
+
+- **Icons (`packages/encode-icons.py`)**: wasm `gdk-pixbuf` has no `librsvg`,
+  so `GtkIconTheme` ignored all `.svg` icon files and fell back to 1x1
+  `image-missing.png`. Pre-encoding 2,513 symbolic SVGs via host
+  `/usr/bin/gtk-encode-symbolic-svg` to `.symbolic.png` (which GTK3's
+  built-in `gtk_icon_info_load_symbolic_png` recolors in C with no SVG loader)
+  and rasterizing 1,701 scalable SVGs via host `libgdk_pixbuf-2.0.so.0` to
+  `.png`, plus setting `iconTheme="multicolor" symbolicIcons="1"` in
+  `inkscape-prefs.xml`, restores all toolbox/toolbar/widget icons (T8:
+  12/12 left toolbox slots, 16/16 top toolbar slots).
+- **Zero-error boot**:
+  - `packages/pthread_supp.c`: dropped leftover `console.warn`/`console.trace`
+    in `pthread_create`.
+  - `patches/gtk3/clean-boot-emscripten.patch`: null-check `g_module_open(NULL, 0)`
+    in `_gtk_module_has_mixed_deps`; drop `.svg` primary URLs from Adwaita
+    CSS `-gtk-icon-source` rules so GTK uses the `.symbolic.png` GResources
+    directly without logging pixbuf warnings.
+  - `patches/inkscape/clean-boot-emscripten.patch`: return
+    `"/inkscape/bin/inkscape"` from `get_program_name()` under `__EMSCRIPTEN__`;
+    skip empty key strings in `Shortcuts::_read` and `Shortcuts::add_shortcut`
+    before constructing `Gtk::AccelKey("")`.
+  - `packages/inkscape.sh`: stage `keys/default.xml` and a valid
+    `cphistory.xml` (`<cphistory><operations/><params/></cphistory>` —
+    `CPHistoryXML` assumes both child nodes exist when the file is present).
+- **Harness UX**: offset `body > canvas` by `52px` (`#toolbar` + `#stagebar`)
+  and translate `ev.pageY` in `window.getPositionsFromEvent` so the menu bar
+  is unoccluded while canvas click/drag coordinates stay exact; `Save` on an
+  unopened canvas exports to `/home/web_user/documents/drawing.svg`.

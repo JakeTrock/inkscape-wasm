@@ -7,12 +7,14 @@
   html, body { margin: 0; height: 100%; overflow: hidden;
                display: flex; flex-direction: column; }
   #toolbar { display: flex; gap: 8px; align-items: center; padding: 4px 8px;
+             height: 32px; box-sizing: border-box;
              background: #eee; font: 13px sans-serif; flex: none;
              position: relative; z-index: 10; }
   #toolbar button { padding: 3px 10px; }
   #status { margin-left: auto; color: #555; max-width: 40em;
             overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  #stagebar { display: flex; gap: 12px; padding: 2px 8px; background: #f8f8f8;
+  #stagebar { display: flex; gap: 12px; align-items: center; padding: 2px 8px;
+              height: 20px; box-sizing: border-box; background: #f8f8f8;
               font: 12px sans-serif; color: #999; flex: none;
               position: relative; z-index: 10; }
   .stage[data-state="ok"] { color: #080; }
@@ -23,9 +25,9 @@
              color: #ccc; font: 11px monospace; padding: 4px 8px;
              white-space: pre-wrap; position: relative; z-index: 10; }
   #console .err { color: #f66; }
-  /* broadway.js appends absolutely-positioned canvases to body — keep them
-   * under the harness chrome */
-  body > canvas { z-index: 1; }
+  /* broadway.js appends absolutely-positioned canvases to body — offset them
+   * below #toolbar (32px) + #stagebar (20px) so the menu bar is never covered */
+  body > canvas { z-index: 1; margin-top: 52px; }
 </style>
 <script type="text/javascript" src="inkscape.js"></script>
 <script type="text/javascript" src="rawinflate.min.js"></script>

@@ -6,10 +6,13 @@
 const $ = id => document.getElementById(id);
 const status = t => { $('status').textContent = t; };
 const conlog = (t, err) => {
-  console.log(t); // also to the browser console (tests capture it)
+  const clean = String(t).replace(/\x1b\[[0-9;]*m/g, '');
+  console.log(clean); // also to the browser console (tests capture it)
   const d = document.createElement('div');
-  if (err) d.className = 'err';
-  d.textContent = t;
+  if (err === 'fatal' || (err && /CRITICAL|ERROR|Uncaught|RuntimeError/i.test(clean))) {
+    d.className = 'err';
+  }
+  d.textContent = clean;
   $('console').appendChild(d);
   $('console').scrollTop = $('console').scrollHeight;
 };
@@ -35,6 +38,15 @@ m.callMain([]);            // returns immediately (main-loop-yield patch)
 window.__boot.runtime = true; setStage('runtime');
 
 connect();                 // broadway.js -> new BridgeSocket() -> daemon
+// Translate page mouse/touch coords by the #broadway top offset (52px) so
+// CSS-shifted body > canvas receives exact window-relative coordinates.
+window.getPositionsFromEvent = (ev, relativeId) => {
+  const top = Math.round($('broadway').getBoundingClientRect().top);
+  const res = window.getPositionsFromAbsCoord(ev.pageX, ev.pageY - top, relativeId);
+  window.lastX = res.rootX;
+  window.lastY = res.rootY;
+  return res;
+};
 window.__boot.broadway = true; setStage('broadway');
 
 const tick = () => {
@@ -56,7 +68,8 @@ status('ready');
  * persist in IndexedDB across page reloads. flush() mirrors memory -> IDB
  * after every write; fsLoaded restores the last session's document. */
 
-let docPath = null;        // last-opened file; Save writes back to it
+let docPath = null;        // last-opened/saved file; Save writes back to it
+let docOpened = false;
 window.__doc_path = null;
 
 const DOCS = '/home/web_user/documents';
@@ -76,6 +89,7 @@ $('file-input').addEventListener('change', async e => {
   const bytes = new Uint8Array(await f.arrayBuffer());
   await fsLoaded;
   docPath = DOCS + '/' + f.name;
+  docOpened = true;
   m.FS.writeFile(docPath, bytes);
   window.__doc_path = docPath;
   flush();
@@ -88,12 +102,14 @@ $('btn-open').onclick = () => $('file-input').click();
 
 $('btn-save').onclick = () => {
   if (!docPath) {
-    // no document-save-as here: the SaveAs dialog spins forever in wasm
-    // (blocking dialog_run / FileChooser construction — see findings)
-    status('Save: no file opened — open a file first');
-    return;
+    docPath = DOCS + '/drawing.svg';
+    window.__doc_path = docPath;
   }
-  runActions('document-save');
+  if (docOpened) {
+    runActions('document-save');
+  } else {
+    runActions('export-filename:' + docPath + ';export-do');
+  }
   download(docPath.split('/').pop(), m.FS.readFile(docPath), 'image/svg+xml');
   flush();
   status('saved ' + docPath);
