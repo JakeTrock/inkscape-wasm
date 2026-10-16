@@ -1,0 +1,36 @@
+bridge/bridge.c
+  h_2ae8077fa5063a 106-114
+docs/findings.md
+  h_2ae8077fa5063a 475-518
+harness/loader.js
+  h_2ae8077fa5063a 50-65,69-70,96-100,133-135,148-167
+packages/encode-icons.py
+  h_2ae8077fa5063a 52-54,58-59
+packages/gdk-pixbuf.sh
+  h_2ae8077fa5063a 14-15
+packages/inkscape.sh
+  h_2ae8077fa5063a 63-74
+patches/gdk-pixbuf/svg-png-fallback-emscripten.patch
+  h_2ae8077fa5063a 1-83
+patches/gtk3/broadway-server-bridge-emscripten.patch
+  h_2ae8077fa5063a 3-4,7,11,26-27,30,37,40-65,78
+patches/gtk3/clean-boot-emscripten.patch
+  h_2ae8077fa5063a 97-293,296-309,318-393
+patches/inkscape/action-hook-emscripten.patch
+  h_2ae8077fa5063a 1-2,5-25,39,49-60,74-85,88
+patches/inkscape/clean-boot-emscripten.patch
+  h_2ae8077fa5063a 1-125,137-407,410,421
+tests/t8/t8.spec.ts
+  h_2ae8077fa5063a 4,14,16-19,21,81,83-88,90,93,96-97,99-101,103,114-115,117,120,122-123,130-131,140-144,147,154-183
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "76fe7777df37c13da64a1e2bc36515a3a8927f72",
+  "prompts": {},
+  "humans": {
+    "h_2ae8077fa5063a": {
+      "author": "Jacob Trock <jgh@geocrypt.me>"
+    }
+  }
+}
