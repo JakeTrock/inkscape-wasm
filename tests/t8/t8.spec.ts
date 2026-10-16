@@ -60,12 +60,21 @@ test('T8: icons render, zero boot errors, non-occluded canvas, save on fresh can
       if (fgPixels >= 15) topSlotsWithIcons++;
     }
 
+    // Verify top-right titlebar has NO close/minimize/maximize button glyphs (y in [4..32], x in [width-120..width-4])
+    let topRightButtons = 0;
+    for (let y = 4; y <= 32; y++) {
+      for (let x = big.width - 120; x < big.width - 4; x++) {
+        if (differs(x, y)) topRightButtons++;
+      }
+    }
+
     return {
       stageBottom: Math.round(stageBottom),
       canvasTop: Math.round(rect.top),
       canvasLeft: Math.round(rect.left),
       leftSlotsWithIcons,
       topSlotsWithIcons,
+      topRightButtons,
     };
   });
   console.log('T8 uiFacts:', JSON.stringify(uiFacts));
@@ -74,6 +83,26 @@ test('T8: icons render, zero boot errors, non-occluded canvas, save on fresh can
   expect(uiFacts.canvasTop).toBeGreaterThanOrEqual(uiFacts.stageBottom);
   expect(uiFacts.leftSlotsWithIcons).toBeGreaterThanOrEqual(8);
   expect(uiFacts.topSlotsWithIcons).toBeGreaterThanOrEqual(8);
+  expect(uiFacts.topRightButtons).toBe(0);
+
+  // 2b. Verify File, Edit, View, Layer, Object dropdown menus open full-sized popup surfaces
+  const menuY = uiFacts.canvasTop + 50;
+  await page.mouse.click(uiFacts.canvasLeft + 20, menuY); // File
+  await page.waitForTimeout(500);
+  for (const [name, xOff] of [['File', 20], ['Edit', 60], ['View', 100], ['Layer', 150], ['Object', 205]] as const) {
+    await page.mouse.move(uiFacts.canvasLeft + xOff, menuY);
+    await page.waitForTimeout(400);
+    const popup = await page.evaluate(() => {
+      const s = Object.values((window as any).surfaces).find((p: any) => p.visible && p.id !== 1) as any;
+      return s ? { id: s.id, w: s.width, h: s.height } : null;
+    });
+    expect(popup, `${name} dropdown popup`).not.toBeNull();
+    expect(popup!.w, `${name} dropdown width`).toBeGreaterThan(200);
+    expect(popup!.h, `${name} dropdown height`).toBeGreaterThan(200);
+  }
+  // Close the open menu by clicking the canvas body before drawing
+  await page.mouse.click(uiFacts.canvasLeft + 260, uiFacts.canvasTop + 240);
+  await page.waitForTimeout(400);
 
   // 3. Draw a rectangle on the fresh default canvas (no Open SVG first) and Save
   const x0 = uiFacts.canvasLeft + 260, y0 = uiFacts.canvasTop + 240;
@@ -117,6 +146,8 @@ test('T8: icons render, zero boot errors, non-occluded canvas, save on fresh can
   });
   expect(saved.path).toBe('/home/web_user/documents/drawing.svg');
   expect(saved.svg).toContain('<rect');
+  const postMenuBadConsole = consoleLines.filter(l => /CRITICAL|WARNING|pthread_create/i.test(l));
+  expect(postMenuBadConsole, `postMenuBadConsole: ${JSON.stringify(postMenuBadConsole)}`).toEqual([]);
   writeFileSync('../build/t8/t8-saved.svg', saved.svg);
   await page.screenshot({ path: '../build/t8/t8-shot.png' });
 });

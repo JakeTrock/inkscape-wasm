@@ -61,3 +61,47 @@
  
  radio:not(:indeterminate):not(:checked):active:not(:backdrop) { -gtk-icon-transform: scale(0); }
  
+--- a/gdk/broadway/gdkdisplay-broadway.c
++++ b/gdk/broadway/gdkdisplay-broadway.c
+@@ -62,6 +62,8 @@
+                                    NULL);
+   gdk_monitor_set_manufacturer (display->monitor, "browser");
+   gdk_monitor_set_model (display->monitor, "0");
++  gdk_monitor_set_size (display->monitor, 1024, 768);
++  gdk_monitor_set_physical_size (display->monitor, 1024 * 25.4 / 96, 768 * 25.4 / 96);
+ }
+ 
+ static void
+--- a/gdk/broadway/gdkscreen-broadway.c
++++ b/gdk/broadway/gdkscreen-broadway.c
+@@ -101,14 +101,14 @@
+   broadway_screen->width   = msg->width;
+   broadway_screen->height  = msg->height;
+ 
++  monitor = GDK_BROADWAY_DISPLAY (broadway_screen->display)->monitor;
++
++  gdk_monitor_set_size (monitor, msg->width, msg->height);
++  gdk_monitor_set_physical_size (monitor, msg->width * 25.4 / 96, msg->height * 25.4 / 96);
++
+   if (width == gdk_screen_get_width (screen) &&
+       height == gdk_screen_get_height (screen))
+     return;
+-
+-  monitor = GDK_BROADWAY_DISPLAY (broadway_screen->display)->monitor;
+-
+-  gdk_monitor_set_size (monitor, msg->width, msg->height);
+-  gdk_monitor_set_physical_size (monitor, msg->width * 25.4 / 96, msg->height * 25.4 / 96);
+ 
+   g_signal_emit_by_name (screen, "size-changed");
+   toplevels = gdk_screen_get_toplevel_windows (screen);
+--- a/gtk/gtksettings.c
++++ b/gtk/gtksettings.c
+@@ -1628,7 +1628,7 @@
+                                              g_param_spec_string ("gtk-decoration-layout",
+                                                                   P_("Decoration Layout"),
+                                                                    P_("The layout for window decorations"),
+-                                                                   "menu:minimize,maximize,close", GTK_PARAM_READWRITE),
++                                                                   "", GTK_PARAM_READWRITE),
+                                              NULL);
+   g_assert (result == PROP_DECORATION_LAYOUT);
+ 

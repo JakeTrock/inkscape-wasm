@@ -57,11 +57,15 @@ function BridgeSocket() {
     var self = this;
     this.binaryType = 'arraybuffer';
     this.onopen = null; this.onclose = null; this.onmessage = null;
+    this._opened = false;
     this._rx = new Uint8Array(0);
     var mod = window.__bridge_mod;
     mod._bridge_js_connect();
     setTimeout(function () {
-        if (self.onopen) self.onopen();
+        if (!self._opened && self.onopen) {
+            self._opened = true;
+            self.onopen();
+        }
         pumpDaemon(); /* hello/resync may already be queued */
     }, 0);
     BridgeSocket.socket = this;
@@ -81,11 +85,15 @@ BridgeSocket.prototype.send = function (data) {
 function pumpDaemon() {
     var mod = window.__bridge_mod;
     if (!mod || !BridgeSocket.socket) return;
+    var sock = BridgeSocket.socket;
+    if (!sock._opened && sock.onopen) {
+        sock._opened = true;
+        sock.onopen();
+    }
     var len = mod._bridge_js_poll();
     if (len <= 0) return;
     var ptr = mod._bridge_js_poll_ptr();
     var chunk = mod.HEAPU8.slice(ptr, ptr + len); /* copies out of wasm heap */
-    var sock = BridgeSocket.socket;
     if (!sock.onmessage) { sock._rx = new Uint8Array(0); return; }
     var res = parseServerFrames(sock._rx, chunk);
     sock._rx = res.rest;

@@ -451,7 +451,16 @@ Harness Save button no longer fires `document-save-as` with no doc open
   - `patches/gtk3/clean-boot-emscripten.patch`: null-check `g_module_open(NULL, 0)`
     in `_gtk_module_has_mixed_deps`; drop `.svg` primary URLs from Adwaita
     CSS `-gtk-icon-source` rules so GTK uses the `.symbolic.png` GResources
-    directly without logging pixbuf warnings.
+    directly without logging pixbuf warnings; initialize `GdkBroadwayMonitor`
+    size (`1024x768`) in `gdk_broadway_display_init` and update it before the
+    early return in `_gdk_broadway_screen_size_changed` (upstream left
+    `display->monitor` at `0x0`, which collapsed every `GtkMenu` popup to `1x1`
+    with `Negative content width -11`); set default `gtk-decoration-layout` to
+    `""` so sovereign windows do not render minimize/maximize/close buttons in
+    the top right.
+  - `bridge/bridge.js`: fire `sock.onopen()` before delivering the first frame
+    in `pumpDaemon()` so `broadway.js`'s `start() -> sendInput("d", [w, h])`
+    is not dropped while `inputSocket` is still `null`.
   - `patches/inkscape/clean-boot-emscripten.patch`: return
     `"/inkscape/bin/inkscape"` from `get_program_name()` under `__EMSCRIPTEN__`;
     skip empty key strings in `Shortcuts::_read` and `Shortcuts::add_shortcut`
