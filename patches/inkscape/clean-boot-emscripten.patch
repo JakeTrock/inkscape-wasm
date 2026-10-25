@@ -24,8 +24,84 @@ index b62e5f6..3066ad1 100644
      try {
          window->show_uri(url, GDK_CURRENT_TIME);
      } catch (const Glib::Error &e) {
+diff --git a/src/async/async.h b/src/async/async.h
+index f4e3003..a82d2a6 100644
+--- a/src/async/async.h
++++ b/src/async/async.h
+@@ -28,7 +28,11 @@ void extend(std::future<void> &&future);
+ template <typename F>
+ inline void fire_and_forget(F &&f)
+ {
++#ifdef __EMSCRIPTEN__
++    f();
++#else
+     detail::extend(std::async(std::launch::async, std::forward<F>(f)));
++#endif
+ }
+ 
+ } // namespace Async
+diff --git a/src/async/background-task.h b/src/async/background-task.h
+index 9107b68..c5c4c1a 100644
+--- a/src/async/background-task.h
++++ b/src/async/background-task.h
+@@ -182,9 +182,13 @@ private:
+             [this](Status s, std::optional<R> result){ notify(s, result); });
+ 
+         // move task state into lambda capture and run it
++#ifdef __EMSCRIPTEN__
++        task.run_async();
++#else
+         _future = std::async(std::launch::async, [this, task = std::move(task)] () mutable {
+             task.run_async();
+         });
++#endif
+     }
+ 
+     // Emit notification(s) on a GUI thread
+diff --git a/src/async/channel.h b/src/async/channel.h
+index d58841e..77434bc 100644
+--- a/src/async/channel.h
++++ b/src/async/channel.h
+@@ -23,10 +23,12 @@ class Shared final
+ public:
+     Shared()
+     {
++#ifndef __EMSCRIPTEN__
+         dispatcher->connect([this] {
+             auto ref = shared_from_this();
+             grab().exec_while([this] { return is_open; });
+         });
++#endif
+     }
+ 
+     Shared(Shared const &) = delete;
+@@ -43,9 +45,24 @@ public:
+     {
+         auto g = std::lock_guard(mutables);
+         if (!is_open) return false;
++#ifdef __EMSCRIPTEN__
++        bool const was_empty = funclog.empty();
++        funclog.emplace(std::forward<F>(f));
++        if (was_empty) {
++            auto self = const_cast<Shared *>(this)->shared_from_this();
++            g_idle_add_full(G_PRIORITY_DEFAULT, [](gpointer data) -> gboolean {
++                auto *sp = static_cast<std::shared_ptr<Shared> *>(data);
++                (*sp)->grab().exec_while([s = sp->get()] { return s->is_open; });
++                delete sp;
++                return G_SOURCE_REMOVE;
++            }, new std::shared_ptr<Shared>(std::move(self)), nullptr);
++        }
++        return true;
++#else
+         if (funclog.empty()) dispatcher->emit();
+         funclog.emplace(std::forward<F>(f));
+         return true;
++#endif
+     }
+ 
+     void close()
 diff --git a/src/file.cpp b/src/file.cpp
-index 7388de3..7f92b6d 100644
+index 7388de3..3c08a4a 100644
 --- a/src/file.cpp
 +++ b/src/file.cpp
 @@ -72,6 +72,9 @@
@@ -61,6 +137,18 @@ index 7388de3..7f92b6d 100644
      return true;
  }
  
+@@ -453,7 +465,11 @@ sp_file_save_document(Gtk::Window &parentWindow, SPDocument *doc)
+ {
+     bool success = true;
+ 
++#ifdef __EMSCRIPTEN__
++    if (true) {
++#else
+     if (doc->isModifiedSinceSave()) {
++#endif
+         if ( doc->getDocumentFilename() == nullptr )
+         {
+             // In this case, an argument should be given that indicates that the document is the first
 diff --git a/src/helper/choose-file.cpp b/src/helper/choose-file.cpp
 index 48fbfbb..b73abcc 100644
 --- a/src/helper/choose-file.cpp
@@ -99,6 +187,18 @@ index 48fbfbb..b73abcc 100644
  
      if (!parent) return {};
  
+diff --git a/src/object/box3d-side.cpp b/src/object/box3d-side.cpp
+index 1811172..d68ebb5 100644
+--- a/src/object/box3d-side.cpp
++++ b/src/object/box3d-side.cpp
+@@ -152,7 +152,6 @@ void Box3DSide::set_shape() {
+ 
+     auto box = cast<SPBox3D>(parent);
+     if (!box) {
+-        g_warning("Parent of 3D box side is not a 3D box.");
+         return;
+     }
+ 
 diff --git a/src/object/object-set.cpp b/src/object/object-set.cpp
 index 4628157..1a7fa3a 100644
 --- a/src/object/object-set.cpp
@@ -121,6 +221,97 @@ index 4628157..1a7fa3a 100644
      SPObject* o = object;
      while (o != nullptr) {
          if (includes(o)) {
+diff --git a/src/object/sp-lpe-item.cpp b/src/object/sp-lpe-item.cpp
+index 57c2eb9..7cd0979 100755
+--- a/src/object/sp-lpe-item.cpp
++++ b/src/object/sp-lpe-item.cpp
+@@ -444,7 +444,7 @@ lpeobject_ref_modified(SPObject */*href*/, guint flags, SPLPEItem *lpeitem)
+ static void
+ sp_lpe_item_create_original_path_recursive(SPLPEItem *lpeitem)
+ {
+-    g_return_if_fail(lpeitem != nullptr);
++    if (!lpeitem) return;
+ 
+     SPClipPath *clip_path = lpeitem->getClipObject();
+     if(clip_path) {
+diff --git a/src/object/sp-namedview.cpp b/src/object/sp-namedview.cpp
+index 63b34be..1e076ed 100644
+--- a/src/object/sp-namedview.cpp
++++ b/src/object/sp-namedview.cpp
+@@ -574,6 +574,13 @@ void sp_namedview_window_from_document(SPDesktop *desktop)
+     Gtk::Window *win = desktop->getToplevel();
+     g_assert(win);
+ 
++#ifdef __EMSCRIPTEN__
++    (void)nv; (void)prefs; (void)window_geometry; (void)default_size; (void)new_document;
++    win->maximize();
++    desktop->clear_transform_history();
++    return;
++#endif
++
+     if (window_geometry == PREFS_WINDOW_GEOMETRY_LAST) {
+         gint pw = prefs->getInt("/desktop/geometry/width", -1);
+         gint ph = prefs->getInt("/desktop/geometry/height", -1);
+diff --git a/src/path-chemistry.cpp b/src/path-chemistry.cpp
+index 0ff4807..04f866a 100644
+--- a/src/path-chemistry.cpp
++++ b/src/path-chemistry.cpp
+@@ -17,6 +17,7 @@
+ 
+ #include <cstring>
+ #include <string>
++#include <unordered_set>
+ #include <boost/range/adaptor/reversed.hpp>
+ #include <glibmm/i18n.h>
+ 
+@@ -319,11 +320,23 @@ void ObjectSet::toCurves(bool skip_undo, bool clonesjustunlink)
+         unlinkRecursive(true, false, true);
+     }
+     std::vector<SPItem*> selected(items().begin(), items().end());
++    std::vector<std::string> orig_ids;
++    orig_ids.reserve(selected.size());
++    for (auto *it : selected) {
++        if (it && it->getId()) orig_ids.emplace_back(it->getId());
++    }
+     std::vector<Inkscape::XML::Node*> to_select;
+     std::vector<SPItem*> items(selected);
+ 
+     did = sp_item_list_to_curves(items, selected, to_select);
+     if (did) {
++        std::unordered_set<SPObject *> live_objs;
++        if (auto *doc = document()) {
++            for (auto const &id : orig_ids) {
++                if (auto *obj = doc->getObjectById(id)) live_objs.insert(obj);
++            }
++        }
++        std::erase_if(selected, [&](SPItem *it) { return !live_objs.count(it); });
+         setReprList(to_select);
+         addList(selected);
+     }
+@@ -378,9 +391,22 @@ bool
+ sp_item_list_to_curves(const std::vector<SPItem*> &items, std::vector<SPItem*>& selected, std::vector<Inkscape::XML::Node*> &to_select, bool skip_all_lpeitems)
+ {
+     bool did = false;
+-    for (auto item : items){
++    if (items.empty()) return false;
++    SPDocument *doc_root = items.front() ? items.front()->document : nullptr;
++    std::vector<std::string> item_ids;
++    item_ids.reserve(items.size());
++    for (auto *it : items) {
++        item_ids.emplace_back(it && it->getId() ? it->getId() : "");
++    }
++    for (size_t idx = 0; idx < items.size(); ++idx){
++        auto item = items[idx];
++        if (!item_ids[idx].empty() && doc_root) {
++            item = cast<SPItem>(doc_root->getObjectById(item_ids[idx]));
++            if (!item) continue;
++        }
+         g_assert(item != nullptr);
+         SPDocument *document = item->document;
++        if (!document || !item->getRepr()) continue;
+ 
+         auto group = cast<SPGroup>(item);
+         if ( skip_all_lpeitems &&
 diff --git a/src/path-prefix.cpp b/src/path-prefix.cpp
 index e3be584..acc2ee7 100644
 --- a/src/path-prefix.cpp
@@ -134,6 +325,38 @@ index e3be584..acc2ee7 100644
  #else
  #warning get_program_name() - no known way to obtain executable name on this platform
          g_info("get_program_name() - no known way to obtain executable name on this platform");
+diff --git a/src/path/path-boolop.cpp b/src/path/path-boolop.cpp
+index c7c92ca..cd60903 100644
+--- a/src/path/path-boolop.cpp
++++ b/src/path/path-boolop.cpp
+@@ -356,7 +356,7 @@ void Inkscape::ObjectSet::_pathBoolOp(BooleanOp bop)
+     auto const doc = document();
+ 
+     // Grab the items list.
+-    auto const il = std::vector<SPItem*>(items().begin(), items().end());
++    auto il = std::vector<SPItem*>(items().begin(), items().end());
+ 
+     // Validate number of items.
+     switch (bop) {
+@@ -454,15 +454,16 @@ void Inkscape::ObjectSet::_pathBoolOp(BooleanOp bop)
+         auto &operand = operands[i];
+ 
+         // apply live path effects prior to performing boolean operation
+-        char const *id = item->getAttribute("id");
++        std::string const id = item->getId() ? item->getId() : "";
+         if (auto lpeitem = cast<SPLPEItem>(item)) {
+             SPDocument * document = item->document;
+             lpeitem->removeAllPathEffects(true);
+-            SPObject *elemref = document->getObjectById(id);
++            SPObject *elemref = !id.empty() ? document->getObjectById(id) : nullptr;
+             if (elemref && elemref != item) {
+                 // If the LPE item is a shape, it is converted to a path
+                 // so we need to reupdate the item
+                 item = cast<SPItem>(elemref);
++                il[i] = item;
+             }
+         }
+ 
 diff --git a/src/ui/clipboard.cpp b/src/ui/clipboard.cpp
 index eca6512..6e33ff8 100644
 --- a/src/ui/clipboard.cpp
@@ -196,6 +419,21 @@ index bf9d5ed..652d4d9 100644
      std::optional<int> result;
  
      auto response_conn = dialog.signal_response().connect([&] (int response) {
+diff --git a/src/ui/dialog/dialog-manager.cpp b/src/ui/dialog/dialog-manager.cpp
+index 4fb9e83..c0d38d2 100644
+--- a/src/ui/dialog/dialog-manager.cpp
++++ b/src/ui/dialog/dialog-manager.cpp
+@@ -84,6 +84,10 @@ void DialogManager::store_state(DialogWindow &wnd)
+ 
+ bool DialogManager::should_open_floating(const Glib::ustring& dialog_type)
+ {
++#ifdef __EMSCRIPTEN__
++    (void)dialog_type;
++    return false;
++#endif
+     return _floating_dialogs.count(dialog_type) > 0;
+ }
+ 
 diff --git a/src/ui/dialog/document-resources.cpp b/src/ui/dialog/document-resources.cpp
 index 3723bfb..7a896c2 100644
 --- a/src/ui/dialog/document-resources.cpp
@@ -269,10 +507,10 @@ index d74d644..5b1c9dd 100644
  }
  
 diff --git a/src/ui/dialog/filedialog.cpp b/src/ui/dialog/filedialog.cpp
-index c6e997c..52665f5 100644
+index c6e997c..061d83f 100644
 --- a/src/ui/dialog/filedialog.cpp
 +++ b/src/ui/dialog/filedialog.cpp
-@@ -33,6 +33,46 @@
+@@ -33,6 +33,54 @@
  #include "extension/output.h"
  
  
@@ -281,9 +519,14 @@ index c6e997c..52665f5 100644
 +namespace {
 +class FileOpenDialogImplWasm : public Inkscape::UI::Dialog::FileOpenDialog {
 +public:
-+    explicit FileOpenDialogImplWasm(std::string dir) : _dir(std::move(dir)) {}
++    FileOpenDialogImplWasm(std::string dir, Inkscape::UI::Dialog::FileDialogType type)
++        : _dir(std::move(dir)), _type(type) {}
 +    bool show() override {
-+        emscripten_run_script("if (typeof document !== 'undefined') document.getElementById('btn-open')?.click();");
++        if (_type == Inkscape::UI::Dialog::IMPORT_TYPES) {
++            emscripten_run_script("if (typeof window !== 'undefined') { window.__file_input_mode = 'import'; document.getElementById('btn-open')?.click(); }");
++        } else {
++            emscripten_run_script("if (typeof window !== 'undefined') { window.__file_input_mode = 'open'; document.getElementById('btn-open')?.click(); }");
++        }
 +        return false;
 +    }
 +    void addFilterMenu(const Glib::ustring &, Glib::ustring, Inkscape::Extension::Extension *) override {}
@@ -293,6 +536,7 @@ index c6e997c..52665f5 100644
 +    Glib::RefPtr<Gio::File> const getFile() override { return {}; }
 +private:
 +    std::string _dir;
++    Inkscape::UI::Dialog::FileDialogType _type;
 +};
 +
 +class FileSaveDialogImplWasm : public Inkscape::UI::Dialog::FileSaveDialog {
@@ -301,6 +545,8 @@ index c6e997c..52665f5 100644
 +        if (docTitle) myDocTitle = docTitle;
 +        if (_path.empty() || Glib::file_test(_path, Glib::FILE_TEST_IS_DIR)) {
 +            _path = "/home/web_user/documents/drawing.svg";
++        } else if (_path.rfind("/home/web_user/documents/", 0) != 0) {
++            _path = Glib::build_filename("/home/web_user/documents", Glib::path_get_basename(_path));
 +        }
 +    }
 +    bool show() override { return true; }
@@ -319,18 +565,18 @@ index c6e997c..52665f5 100644
  namespace Inkscape::UI::Dialog {
  
  /*#########################################################################
-@@ -138,6 +178,10 @@ FileOpenDialog *FileOpenDialog::create(Gtk::Window &parentWindow,
+@@ -138,6 +186,10 @@ FileOpenDialog *FileOpenDialog::create(Gtk::Window &parentWindow,
                                         FileDialogType fileTypes,
                                         const char *title)
  {
 +#ifdef __EMSCRIPTEN__
-+    (void)parentWindow; (void)fileTypes; (void)title;
-+    return new FileOpenDialogImplWasm(path);
++    (void)parentWindow; (void)title;
++    return new FileOpenDialogImplWasm(path, fileTypes);
 +#endif
  #ifdef _WIN32
      if (Inkscape::Preferences::get()->getBool( "/options/desktopintegration/value")) {
          return new FileOpenDialogImplWin32(parentWindow, path, fileTypes, title);
-@@ -162,6 +206,10 @@ FileSaveDialog *FileSaveDialog::create(Gtk::Window& parentWindow,
+@@ -162,6 +214,10 @@ FileSaveDialog *FileSaveDialog::create(Gtk::Window& parentWindow,
                                         const gchar *docTitle,
                                         const Inkscape::Extension::FileSaveMethod save_method)
  {
@@ -403,6 +649,50 @@ index 6c5d6f8..949c9ca 100644
      // Fixme: Passing a std::string filename to an argument expecting utf8.
      if (!Inkscape::IO::file_test(filename.c_str(), G_FILE_TEST_EXISTS)) {
          return true;
+diff --git a/src/ui/modifiers.cpp b/src/ui/modifiers.cpp
+index 097a2a9..60ff5f6 100644
+--- a/src/ui/modifiers.cpp
++++ b/src/ui/modifiers.cpp
+@@ -20,6 +20,16 @@
+ 
+ #include "modifiers.h"
+ #include "ui/tools/tool-base.h"
++#ifdef __EMSCRIPTEN__
++#include <emscripten.h>
++static bool is_mac_platform() {
++    return EM_ASM_INT({
++        if (typeof window !== 'undefined' && typeof window.__is_mac === 'boolean') return window.__is_mac ? 1 : 0;
++        var p = (typeof navigator !== 'undefined' && ((navigator.userAgentData && navigator.userAgentData.platform) || navigator.platform || navigator.userAgent)) || '';
++        return /Mac|iPod|iPhone|iPad/i.test(p) ? 1 : 0;
++    }) != 0;
++}
++#endif
+ 
+ namespace Inkscape::Modifiers {
+ 
+@@ -236,14 +246,22 @@ std::string generate_label(KeyMask mask, std::string sep)
+         ret.append(_("[NEVER]"));
+         return ret;
+     }
++#ifdef __EMSCRIPTEN__
++    if(mask & CTRL) ret.append(is_mac_platform() ? "Cmd" : _("Ctrl"));
++#else
+     if(mask & CTRL) ret.append(_("Ctrl"));
++#endif
+     if(mask & SHIFT) {
+         if(!ret.empty()) ret.append(sep);
+         ret.append(_("Shift"));
+     }
+     if(mask & ALT) {
+         if(!ret.empty()) ret.append(sep);
++#ifdef __EMSCRIPTEN__
++        ret.append(is_mac_platform() ? "Opt" : _("Alt"));
++#else
+         ret.append(_("Alt"));
++#endif
+     }
+     if(mask & SUPER) {
+         if(!ret.empty()) ret.append(sep);
 diff --git a/src/ui/shortcuts.cpp b/src/ui/shortcuts.cpp
 index 655696e..d7a9425 100644
 --- a/src/ui/shortcuts.cpp
@@ -428,3 +718,160 @@ index 655696e..d7a9425 100644
      // Remove previous use of shortcut (already removed if new user shortcut).
      if (auto const &old_name = remove_shortcut(shortcut); !old_name.empty()) {
          // std::cerr << "Shortcut::add_shortcut: duplicate shortcut found for: " << shortcut.get_abbrev().raw()
+diff --git a/src/ui/tools/eraser-tool.cpp b/src/ui/tools/eraser-tool.cpp
+index a377dc6..df95da6 100644
+--- a/src/ui/tools/eraser-tool.cpp
++++ b/src/ui/tools/eraser-tool.cpp
+@@ -629,10 +629,28 @@ bool EraserTool::_doWork()
+ 
+     bool work_done = false;
+     if (!to_erase.empty()) {
++        std::vector<std::string> surviver_ids;
++        for (auto *s : _survivers) {
++            if (s && s->getId()) surviver_ids.emplace_back(s->getId());
++        }
++        _survivers.clear();
+         selection->clear();
+         work_done = _performEraseOperation(to_erase, true);
+-        if (was_selection && !_survivers.empty()) {
+-            selection->add(_survivers.begin(), _survivers.end());
++        if (was_selection) {
++            std::vector<SPItem *> valid_survivers;
++            for (auto const &id : surviver_ids) {
++                if (auto *it = cast<SPItem>(document->getObjectById(id))) {
++                    valid_survivers.push_back(it);
++                }
++            }
++            for (auto *s : _survivers) {
++                if (s && s->document == document && s->getRepr()) {
++                    valid_survivers.push_back(s);
++                }
++            }
++            if (!valid_survivers.empty()) {
++                selection->add(valid_survivers.begin(), valid_survivers.end());
++            }
+         }
+     }
+     // Clean up the eraser stroke repr:
+@@ -663,9 +681,16 @@ bool EraserTool::_cutErase(EraseTarget target, bool store_survivers)
+         }
+         // A simple clone of a cuttable item: unlink and erase it.
+         target.item = use->unlink();
++        if (!target.item) {
++            return false;
++        }
++        if (_booleanErase(target, store_survivers)) {
++            return true;
++        }
+         if (target.was_selected && store_survivers) { // Reselect the freshly unlinked item
+             _survivers.push_back(target.item);
+         }
++        return false;
+     }
+     return _booleanErase(target, store_survivers);
+ }
+@@ -727,12 +752,17 @@ bool EraserTool::_probeUnlinkCutClonedGroup(EraseTarget &original_target, SPUse
+         }
+         auto overlapping = _filterCutEraseables(_filterByCollision(unlinked_children, _acid));
+ 
+-        // If the clone was selected, the newly unlinked group should stay selected
+-        if (original_target.was_selected && store_survivers) {
+-            _survivers.push_back(unlinked);
++        std::string const unlinked_id = unlinked->getId() ? unlinked->getId() : "";
++        bool const res = _performEraseOperation(overlapping, false);
++
++        // If the clone was selected, the newly unlinked group should stay selected if it survived
++        if (original_target.was_selected && store_survivers && !unlinked_id.empty()) {
++            if (auto *survived = cast<SPItem>(_desktop->doc()->getObjectById(unlinked_id))) {
++                _survivers.push_back(survived);
++            }
+         }
+ 
+-        return _performEraseOperation(overlapping, false);
++        return res;
+     } else {
+         if (original_target.was_selected && store_survivers) {
+             _survivers.push_back(original_target.item); // If the clone was selected, it should stay so
+@@ -823,9 +853,21 @@ bool EraserTool::_booleanErase(EraseTarget target, bool store_survivers)
+  */
+ bool EraserTool::_performEraseOperation(std::vector<EraseTarget> const &items_to_erase, bool store_survivers)
+ {
++    auto *doc = _desktop->doc();
++    std::vector<std::pair<std::string, bool>> target_ids;
++    target_ids.reserve(items_to_erase.size());
++    for (auto const &t : items_to_erase) {
++        target_ids.emplace_back(t.item && t.item->getId() ? t.item->getId() : "", t.was_selected);
++    }
++    auto resolve = [&](size_t i) -> EraseTarget {
++        if (target_ids[i].first.empty() || !doc) return {nullptr, false};
++        return {cast<SPItem>(doc->getObjectById(target_ids[i].first)), target_ids[i].second};
++    };
+     if (mode == EraserToolMode::CUT) {
+         bool erased_something = false;
+-        for (auto const &target : items_to_erase) {
++        for (size_t i = 0; i < target_ids.size(); ++i) {
++            auto target = resolve(i);
++            if (!target.item) continue;
+             erased_something = _cutErase(target, store_survivers) || erased_something;
+         }
+         return erased_something;
+@@ -833,12 +875,16 @@ bool EraserTool::_performEraseOperation(std::vector<EraseTarget> const &items_to
+         if (nowidth) {
+             return false;
+         }
+-        for (auto const &target : items_to_erase) {
+-            _clipErase(target.item);
++        for (size_t i = 0; i < target_ids.size(); ++i) {
++            auto target = resolve(i);
++            if (target.item) {
++                _clipErase(target.item);
++            }
+         }
+         return true;
+     } else { // mode == EraserToolMode::DELETE
+-        for (auto const &target : items_to_erase) {
++        for (size_t i = 0; i < target_ids.size(); ++i) {
++            auto target = resolve(i);
+             if (target.item) {
+                 target.item->deleteObject(true);
+             }
+diff --git a/src/ui/tools/tool-base.cpp b/src/ui/tools/tool-base.cpp
+index 20a0cf8..bd923c0 100644
+--- a/src/ui/tools/tool-base.cpp
++++ b/src/ui/tools/tool-base.cpp
+@@ -602,7 +602,11 @@ bool ToolBase::root_handler(CanvasEvent const &event)
+             auto const event_w = event.pos;
+             auto const event_dt = _desktop->w2d(event_w);
+ 
++#ifdef __EMSCRIPTEN__
++            double const zoom_inc = prefs->getDoubleLimited("/options/zoomincrement/value", 1.15, 1.01, 10);
++#else
+             double const zoom_inc = prefs->getDoubleLimited("/options/zoomincrement/value", M_SQRT2, 1.01, 10);
++#endif
+ 
+             _desktop->zoom_relative(event_dt, (event.modifiers & GDK_SHIFT_MASK) ? 1 / zoom_inc : zoom_inc);
+             ret = true;
+@@ -818,7 +822,11 @@ bool ToolBase::root_handler(CanvasEvent const &event)
+     },
+ 
+     [&] (ScrollEvent const &event) {
++#ifdef __EMSCRIPTEN__
++        int constexpr WHEEL_SCROLL_DEFAULT = 12;
++#else
+         int constexpr WHEEL_SCROLL_DEFAULT = 40;
++#endif
+         
+         // previously we did two wheel_scrolls for each mouse scroll
+         int const wheel_scroll = prefs->getIntLimited( "/options/wheelscroll/value", WHEEL_SCROLL_DEFAULT, 0, 1000) * 2;
+@@ -902,7 +910,11 @@ bool ToolBase::root_handler(CanvasEvent const &event)
+         } else if (action == Type::CANVAS_ZOOM) {
+             /* ctrl + wheel, zoom in--out */
+             double rel_zoom;
++#ifdef __EMSCRIPTEN__
++            double const zoom_inc = prefs->getDoubleLimited("/options/zoomincrement/value", 1.15, 1.01, 10);
++#else
+             double const zoom_inc = prefs->getDoubleLimited("/options/zoomincrement/value", M_SQRT2, 1.01, 10);
++#endif
+ 
+             switch (event.direction) {
+             case GDK_SCROLL_UP:

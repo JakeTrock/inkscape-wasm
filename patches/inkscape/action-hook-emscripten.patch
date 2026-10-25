@@ -1,12 +1,18 @@
 diff --git a/src/inkscape-application.cpp b/src/inkscape-application.cpp
-index bf1d8ac..378a685 100644
+index bf1d8ac..b196a7d 100644
 --- a/src/inkscape-application.cpp
 +++ b/src/inkscape-application.cpp
-@@ -1089,6 +1089,19 @@ InkscapeApplication::on_startup()
+@@ -1089,6 +1089,25 @@ InkscapeApplication::on_startup()
      gapp->add_action("quit",   sigc::mem_fun(*this, &InkscapeApplication::on_quit  ));
  
      // ========================= GUI Init =========================
 +#ifdef __EMSCRIPTEN__
++    gapp->add_action_with_parameter("file-import", Glib::VARIANT_TYPE_STRING, [this](const Glib::VariantBase &value) {
++        auto s = Glib::VariantBase::cast_dynamic<Glib::Variant<Glib::ustring>>(value);
++        if (auto *doc = get_active_document()) {
++            file_import(doc, s.get().raw(), nullptr);
++        }
++    });
 +    Glib::add_exception_handler([]() {
 +        try {
 +            throw;
@@ -22,21 +28,23 @@ index bf1d8ac..378a685 100644
      Gtk::Window::set_default_icon_name("org.inkscape.Inkscape");
  
      // build_menu(); // Builds and adds menu to app. Used by all Inkscape windows. This can be done
-@@ -1241,6 +1254,13 @@ InkscapeApplication::parse_actions(const Glib::ustring& input, action_vector_t&
+@@ -1241,6 +1260,15 @@ InkscapeApplication::parse_actions(const Glib::ustring& input, action_vector_t&
          }
  
          Glib::RefPtr<Gio::Action> action_ptr = _gio_application->lookup_action(action);
 +#ifdef __EMSCRIPTEN__
-+        /* wasm harness: window actions (tool-switch, document-save...) are
-+         * valid run_actions targets — resolve them here so they reach
-+         * activate_any_actions' app->window->doc fallback. */
++        /* wasm harness: window actions (tool-switch, document-save...) and
++         * document actions (undo, redo...) are valid run_actions targets —
++         * resolve them here so they reach activate_any_actions. */
 +        if (!action_ptr && _active_window)
 +            action_ptr = _active_window->lookup_action(action);
++        if (!action_ptr && _active_document && _active_document->getActionGroup())
++            action_ptr = _active_document->getActionGroup()->lookup_action(action);
 +#endif
          if (action_ptr) {
              // Doesn't seem to be a way to test this using the C++ binding without Glib-CRITICAL errors.
              const  GVariantType* gtype = g_action_get_parameter_type(action_ptr->gobj());
-@@ -1350,6 +1370,34 @@ void readline_init()
+@@ -1350,6 +1378,34 @@ void readline_init()
  #endif // WITH_GNU_READLINE
  
  
@@ -71,7 +79,7 @@ index bf1d8ac..378a685 100644
  // Once we don't need to create a window just to process verbs!
  void
  InkscapeApplication::shell(bool active_window)
-@@ -1940,6 +1988,9 @@ InkscapeApplication::on_new()
+@@ -1940,6 +1996,9 @@ InkscapeApplication::on_new()
  void
  InkscapeApplication::on_quit()
  {

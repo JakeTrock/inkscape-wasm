@@ -7,5 +7,11 @@
          preferDarkTheme="1" darkTheme="1" symbolicDefaultBaseColors="1" symbolicDefaultHighColors="0"/>
   <group id="options">
     <group id="boot" showwelcome="0" showsplash="0"/>
+    <group id="wheelscroll" value="12"/>
+    <group id="zoomincrement" value="1.15"/>
+    <group id="defaultwindowsize" value="2"/>
+  </group>
+  <group id="dialogs">
+    <group id="import" ask="0" ask_svg="0" link="embed" import_mode_svg="include" forcexdpi="1" scale="auto"/>
   </group>
 </inkscape>

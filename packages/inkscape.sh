@@ -99,6 +99,7 @@ cmake -S "$SRC/inkscape-1.4.4" -B "$BUILD/inkscape" -G Ninja \
 
 rm -f "$BUILD/inkscape/bin/inkscape.js" "$BUILD/inkscape/bin/inkscape.wasm" "$BUILD/inkscape/bin/inkscape.data"
 cmake --build "$BUILD/inkscape" -j 64 --target inkscape
+source "$ROOT/tests/lib/harness_stage.sh" && stage_harness
 
 manifest inkscape "$VER"
 touch "$STAMPS/inkscape.ok"

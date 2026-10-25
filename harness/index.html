@@ -4,30 +4,9 @@
 <meta charset="utf8">
 <title>Inkscape WASM</title>
 <style type="text/css">
-  html, body { margin: 0; height: 100%; overflow: hidden;
-               display: flex; flex-direction: column; }
-  #toolbar { display: flex; gap: 8px; align-items: center; padding: 4px 8px;
-             height: 32px; box-sizing: border-box;
-             background: #eee; font: 13px sans-serif; flex: none;
-             position: relative; z-index: 10; }
-  #toolbar button { padding: 3px 10px; }
-  #status { margin-left: auto; color: #555; max-width: 40em;
-            overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  #stagebar { display: flex; gap: 12px; align-items: center; padding: 2px 8px;
-              height: 20px; box-sizing: border-box; background: #f8f8f8;
-              font: 12px sans-serif; color: #999; flex: none;
-              position: relative; z-index: 10; }
-  .stage[data-state="ok"] { color: #080; }
-  .stage[data-state="fail"] { color: #c00; font-weight: bold; }
-  #broadway { flex: 1; overflow: hidden; position: relative;
-              background: #404040; }
-  #console { flex: none; height: 120px; overflow-y: scroll; background: #111;
-             color: #ccc; font: 11px monospace; padding: 4px 8px;
-             white-space: pre-wrap; position: relative; z-index: 10; }
-  #console .err { color: #f66; }
-  /* broadway.js appends absolutely-positioned canvases to body — offset them
-   * below #toolbar (32px) + #stagebar (20px) so the menu bar is never covered */
-  body > canvas { z-index: 1; margin-top: 52px; }
+  html, body { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden;
+               background: #2b2b2b; }
+  body > canvas { z-index: 1; margin: 0; }
 </style>
 <script type="text/javascript" src="inkscape.js"></script>
 <script type="text/javascript" src="rawinflate.min.js"></script>
@@ -35,23 +14,21 @@
 <script type="text/javascript" src="broadway.js"></script>
 </head>
 <body>
-<div id="toolbar">
+<div style="position:fixed;left:0;top:0;width:1px;height:1px;opacity:0;pointer-events:none;overflow:hidden">
   <button id="btn-open">Open SVG</button>
   <button id="btn-save">Save</button>
   <button id="btn-export">Export PNG</button>
   <button id="btn-reload">Hard reload</button>
   <span id="status">booting…</span>
-  <input id="file-input" type="file" accept=".svg" hidden>
+  <input id="file-input" type="file" accept=".svg,.png,.jpg,.jpeg,.webp,.gif,.bmp,image/*" multiple hidden>
+  <span class="stage" id="stage-module">·</span>
+  <span class="stage" id="stage-runtime">·</span>
+  <span class="stage" id="stage-broadway">·</span>
+  <span class="stage" id="stage-window">·</span>
+  <span class="stage" id="stage-frame">·</span>
+  <div id="broadway"></div>
+  <div id="console"></div>
 </div>
-<div id="stagebar">
-  <span class="stage" id="stage-module">module fetched</span>
-  <span class="stage" id="stage-runtime">runtime ready</span>
-  <span class="stage" id="stage-broadway">broadway connected</span>
-  <span class="stage" id="stage-window">window up</span>
-  <span class="stage" id="stage-frame">first frame</span>
-</div>
-<div id="broadway"></div>
-<div id="console"></div>
 <script type="module" src="loader.js"></script>
 </body>
 </html>

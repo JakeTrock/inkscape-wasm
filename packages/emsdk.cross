@@ -7,6 +7,7 @@ pkg-config = 'pkg-config'
 
 [properties]
 needs_exe_wrapper = true
+cpp_args = ['-fexceptions', '-frtti']
 # every wasm link pulls our single-threaded pthread/DNS supplement
 c_link_args = ['-lpthread']
 cpp_link_args = ['-lpthread']

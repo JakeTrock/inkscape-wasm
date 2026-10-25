@@ -38,19 +38,14 @@ m.callMain([]);            // returns immediately (main-loop-yield patch)
 window.__boot.runtime = true; setStage('runtime');
 
 connect();                 // broadway.js -> new BridgeSocket() -> daemon
-// Translate page mouse/touch coords by the #broadway top offset (52px) so
-// CSS-shifted body > canvas receives exact window-relative coordinates.
-window.getPositionsFromEvent = (ev, relativeId) => {
-  const top = Math.round($('broadway').getBoundingClientRect().top);
-  const res = window.getPositionsFromAbsCoord(ev.pageX, ev.pageY - top, relativeId);
-  window.lastX = res.rootX;
-  window.lastY = res.rootY;
-  return res;
-};
 // Coalesce high-frequency mousemove events to at most one per rAF tick so
-// GDK_PRIORITY_EVENTS (0) never starves GDK_PRIORITY_REDRAW (120) / Canvas idle (200).
+// GDK_PRIORITY_EVENTS (0) never starves GDK_PRIORITY_REDRAW (120) / Canvas idle (200),
+// and accumulate wheel deltas so trackpads/wheels don't fire excessive scroll steps.
 let pendingMove = null;
+let wheelAccum = 0;
+let lastWheelTime = 0;
 const origMouseMove = window.onMouseMove;
+const origMouseWheel = window.onMouseWheel;
 const flushMove = () => {
   if (pendingMove) {
     const ev = pendingMove;
@@ -59,7 +54,25 @@ const flushMove = () => {
   }
 };
 window.onMouseMove = ev => { pendingMove = ev; };
-for (const fn of ['onMouseDown', 'onMouseUp', 'onMouseOver', 'onMouseOut', 'onMouseWheel']) {
+window.onMouseWheel = ev => {
+  flushMove();
+  const now = performance.now();
+  if (now - lastWheelTime > 180) wheelAccum = 0;
+  lastWheelTime = now;
+  const raw = ev.wheelDelta !== undefined ? -ev.wheelDelta
+            : (ev.deltaY !== undefined ? ev.deltaY * 3 : (ev.detail || 0) * 40);
+  wheelAccum += raw;
+  if (Math.abs(wheelAccum) < 120) {
+    if (ev.preventDefault) ev.preventDefault();
+    if (ev.stopPropagation) ev.stopPropagation();
+    return false;
+  }
+  const sign = wheelAccum > 0 ? 1 : -1;
+  wheelAccum -= sign * 120;
+  if (Math.abs(wheelAccum) > 120) wheelAccum = sign * 60;
+  return origMouseWheel(ev);
+};
+for (const fn of ['onMouseDown', 'onMouseUp', 'onMouseOver', 'onMouseOut']) {
   const orig = window[fn];
   window[fn] = function(ev) { flushMove(); return orig.apply(this, arguments); };
 }
@@ -104,20 +117,77 @@ fsLoaded.then(() => {
   if (svgs.length === 1) { docPath = DOCS + '/' + svgs[0]; window.__doc_path = docPath; }
 });
 
-$('file-input').addEventListener('change', async e => {
-  const f = e.target.files[0];
-  if (!f) return;
-  const bytes = new Uint8Array(await f.arrayBuffer());
+async function normalizeImageFile(f) {
+  const name = f.name || 'image.png';
+  if (/\.(svg|png|jpe?g)$/i.test(name)) {
+    return { name, bytes: new Uint8Array(await f.arrayBuffer()) };
+  }
+  if ((f.type && f.type.startsWith('image/')) || /\.(webp|gif|bmp|avif|ico)$/i.test(name)) {
+    try {
+      const bmp = await createImageBitmap(f);
+      const c = document.createElement('canvas');
+      c.width = bmp.width;
+      c.height = bmp.height;
+      c.getContext('2d').drawImage(bmp, 0, 0);
+      const blob = await new Promise(res => c.toBlob(res, 'image/png'));
+      const pngName = name.replace(/\.[^.]+$/, '') + '.png';
+      return { name: pngName, bytes: new Uint8Array(await blob.arrayBuffer()) };
+    } catch (_) {}
+  }
+  return { name, bytes: new Uint8Array(await f.arrayBuffer()) };
+}
+
+async function handleIncomingFile(f, mode) {
+  const { name, bytes } = await normalizeImageFile(f);
   await fsLoaded;
-  docPath = DOCS + '/' + f.name;
-  docOpened = true;
-  m.FS.writeFile(docPath, bytes);
-  window.__doc_path = docPath;
+  const targetPath = DOCS + '/' + name;
+  m.FS.writeFile(targetPath, bytes);
   flush();
-  runActions('file-open:' + docPath);
-  status('opened ' + docPath);
+  const isSvg = /\.svg$/i.test(name);
+  if (mode === 'import' || !isSvg) {
+    runActions('file-import:' + targetPath);
+    status('imported ' + targetPath);
+  } else {
+    docPath = targetPath;
+    docOpened = true;
+    window.__doc_path = docPath;
+    runActions('file-open:' + targetPath);
+    status('opened ' + targetPath);
+  }
+}
+
+$('file-input').addEventListener('change', async e => {
+  const files = [...(e.target.files || [])];
+  const mode = window.__file_input_mode || 'open';
+  window.__file_input_mode = 'open';
+  for (const f of files) {
+    await handleIncomingFile(f, mode);
+  }
   e.target.value = '';
 });
+
+// Full-screen file drop zone: dragging an image/SVG onto the window imports it
+// into the current document at the drop position instead of navigating the tab.
+for (const evt of ['dragenter', 'dragover']) {
+  window.addEventListener(evt, e => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.dataTransfer) e.dataTransfer.dropEffect = 'copy';
+  }, true);
+}
+window.addEventListener('drop', async e => {
+  e.preventDefault();
+  e.stopPropagation();
+  const files = [...(e.dataTransfer?.files || [])];
+  if (!files.length) return;
+  try {
+    origMouseMove(e);
+    m._bridge_frame();
+  } catch (_) {}
+  for (const f of files) {
+    await handleIncomingFile(f, 'import');
+  }
+}, true);
 
 $('btn-open').onclick = () => $('file-input').click();
 

@@ -15,4 +15,8 @@ stage_harness() {
       "$daemon/broadway.js" > "$out/broadway.js"
   grep -q "new BridgeSocket()" "$out/broadway.js" # sed must have matched
   cp "$ROOT"/harness/index.html "$ROOT"/harness/loader.js "$out/"
+  local ver
+  ver="$(sha256sum "$out/inkscape.wasm" | cut -c1-12)"
+  sed -i -E "s/(src=\"[^\"]+\\.(js))\"/\\1?v=$ver\"/g" "$out/index.html"
+  sed -i -E "s/new URL\\(f, document\\.baseURI\\)\\.href/new URL(f + '?v=$ver', document.baseURI).href/" "$out/loader.js"
 }

@@ -516,3 +516,27 @@ Harness Save button no longer fires `document-save-as` with no doc open
     assertion in `DocumentResources`; guarded null `SPObject*` in
     `ObjectSet::includes`; and installed `Glib::add_exception_handler` +
     `try/catch` in `run_actions`.
+  - **Path boolean operations & C++ dependency exception handling**:
+    - `lib2geom` uses C++ exceptions for normal control flow in geometry
+      intersections (`EllipticalArc::intersect` catches
+      `Geom::InfinitelyManySolutions` thrown by `Ellipse::intersect` whenever
+      two arcs belong to the same ellipse, as in every `<circle>`/`<ellipse>`'s
+      `Path::intersectSelf()`; `Curve::winding` and `conicsec.cpp` catch
+      `Geom::InfiniteSolutions`). Because `em++` disables exception catching by
+      default unless `-fexceptions` is passed at compile time, building
+      `lib2geom` (and `sigcpp`/`glibmm`/`cairomm`/`pangomm`/`atkmm`/`gtkmm`)
+      without `-fexceptions` stripped their `try/catch` blocks while still
+      compiling `throw` into `__cxa_throw`, causing `path-difference` and all
+      other boolean ops on circles/ellipses/arcs to crash with an uncaught
+      `CppException`. Added `-fexceptions -frtti` to `emsdk.cross` (`cpp_args`)
+      and `cm()` (`-DCMAKE_CXX_FLAGS`) in `packages/common.sh` and rebuilt all
+      C++ sysroot libraries.
+    - Fixed UAF / dangling `SPItem*` bugs in `EraserTool` (`_cutErase`,
+      `_probeUnlinkCutClonedGroup`, `_performEraseOperation`, `_doWork`),
+      `ObjectSet::toCurves` / `sp_item_list_to_curves` (`path-chemistry.cpp`),
+      and `ObjectSet::_pathBoolOp` (`path-boolop.cpp`).
+    - Replaced `std::async(std::launch::async, ...)` and `Glib::Dispatcher`
+      pipes in `src/async/{async,background-task,channel}.h` with inline
+      execution + `g_idle_add_full` on `__EMSCRIPTEN__`, enabling Potrace
+      bitmap tracing (`object-trace` and `Trace Bitmap` dialog) and
+      `FontDiscovery`.

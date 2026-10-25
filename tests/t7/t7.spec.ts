@@ -67,10 +67,10 @@ test('T7: draw rect, save, export', async ({ page }) => {
   }
   expect(drew, 'canvas drag produced a <rect>').toBe(true);
 
-  // Save via toolbar -> document-save -> file written in the wasm FS.
+  // Save via document-save action -> file written in the wasm FS.
   // The saved doc must keep the fixture background AND contain the new rect
   // (a real Inkscape save rewrites the whole document).
-  await page.click('#btn-save');
+  await runActions('document-save');
   await page.waitForTimeout(1500);
   const svg = await page.evaluate(() => {
     const m = window.__bridge_mod;
@@ -93,8 +93,8 @@ test('T7: draw rect, save, export', async ({ page }) => {
   expect(num('height')).toBeGreaterThan(60);
   expect(num('height')).toBeLessThan(320);
 
-  // Export PNG via toolbar -> export-do
-  await page.click('#btn-export');
+  // Export PNG via export-do
+  await page.evaluate(() => document.getElementById('btn-export')!.click());
   await page.waitForTimeout(2000);
   const png = await page.evaluate(() =>
     window.__bridge_mod.FS.readFile('/home/web_user/documents/export.png'));

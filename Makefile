@@ -2,7 +2,7 @@ ROOT := $(abspath $(dir $(lastword $(MAKEFILE_LIST))))
 OBG  := $(HOME)/.config/opencode/bin/oc-bg
 PKGS := zlib libpng freetype expat fontconfig pixman fribidi harfbuzz cairo \
         libffi glib pango gdk-pixbuf atk gtk3 sigcpp glibmm cairomm pangomm \
-        gtkmm libxml2 libxslt gsl dconv lcms2 boost libgc potrace lib2geom
+        atkmm gtkmm libxml2 libxslt gsl dconv lcms2 boost libgc potrace lib2geom
 
 .PHONY: deps deps-real pkg-% check-0 check-1 check-2 check-3 check-4 check-5 \
         check-6 check-7 check-8 serve native-inkscape goldens-regen clean
@@ -27,7 +27,7 @@ check-7: ; bash tests/t7/run.sh
 check-8: ; bash tests/t8/run.sh
 
 serve:
-	python3 -m http.server 8824 --directory build
+	python3 -c 'import http.server, functools; H = type("H", (http.server.SimpleHTTPRequestHandler,), {"end_headers": lambda s: (s.send_header("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0"), http.server.SimpleHTTPRequestHandler.end_headers(s))}); http.server.ThreadingHTTPServer(("0.0.0.0", 8824), functools.partial(H, directory="build")).serve_forever()'
 
 native-inkscape: ; bash packages/native-inkscape.sh
 goldens-regen: ; bash tests/golden/gen.sh

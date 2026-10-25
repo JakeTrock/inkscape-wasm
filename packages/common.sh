@@ -41,6 +41,7 @@ pkg-config = 'pkg-config'
 
 [properties]
 needs_exe_wrapper = true
+cpp_args = ['-fexceptions', '-frtti']
 # wasm strict function types: glib/gtk cast function pointers across arities
 # everywhere (g_list_insert_sorted's 2-arg GCompareFunc → 3-arg GFunc etc.);
 # emulation thunks are the systemic fix. LINK-ONLY setting — as a compile arg
@@ -77,6 +78,7 @@ cm() { # cm <name> [cmake args...] — CMake+Ninja build+install
     -DCMAKE_FIND_ROOT_PATH="$SYSROOT" \
     -DCMAKE_INSTALL_PREFIX="$SYSROOT" -DCMAKE_PREFIX_PATH="$SYSROOT" \
     -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_CXX_FLAGS="-fexceptions -frtti" \
     -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache "$@"
   cmake --build "$BUILD/$name" -j 64
   cmake --install "$BUILD/$name"
