@@ -1,0 +1,42 @@
+Makefile
+  h_2ae8077fa5063a 5,30
+docs/findings.md
+  h_2ae8077fa5063a 519-542
+harness/index.html
+  h_2ae8077fa5063a 7-9,17,23-30
+harness/loader.js
+  h_2ae8077fa5063a 42-43,45-46,48,57-75,120-141,143-144,146-165,169-191
+packages/common.sh
+  h_2ae8077fa5063a 44,81
+packages/emsdk.cross
+  h_2ae8077fa5063a 10
+packages/inkscape.sh
+  h_2ae8077fa5063a 102
+patches/gtk3/clean-boot-emscripten.patch
+  h_2ae8077fa5063a 24-25,32-33,46-47,54-55,73,77-79,81,83-89,92,144,147,163,166,185-198,207,216,230,239,246,256,259-260,271,284-293,302,313-366,398,411,436,464-495
+patches/inkscape/action-hook-emscripten.patch
+  h_2ae8077fa5063a 2,5,10-15,31,36-38,41-42,47,82
+patches/inkscape/clean-boot-emscripten.patch
+  h_2ae8077fa5063a 27-102,104,140-151,190-201,224-314,328-359,422-436,510,513,522-523,525-529,539,548-549,568,573-574,579,652-695,721-877
+tests/fixtures/inkscape-prefs.xml
+  h_2ae8077fa5063a 10-15
+tests/lib/harness_stage.sh
+  h_2ae8077fa5063a 18-21
+tests/lib/lib2geom_test.cpp
+  h_2ae8077fa5063a 15-19
+tests/t7/t7.spec.ts
+  h_2ae8077fa5063a 70,73,96-97
+tests/t8/t8.spec.ts
+  h_2ae8077fa5063a 67-68,71-72,78-81,151,161-260,264,267,270,277,280-281
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "66d650d438d2a42e3aa2dd865ec5c729749acce6",
+  "prompts": {},
+  "humans": {
+    "h_2ae8077fa5063a": {
+      "author": "Jacob Trock <jgh@geocrypt.me>"
+    }
+  }
+}
